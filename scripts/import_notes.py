@@ -13,6 +13,7 @@ import json
 import re
 import shutil
 import subprocess
+from quiz_metadata import grading_for, quiz_markup
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'public' / 'data'
@@ -202,7 +203,8 @@ class Converter:
         text = text.replace(r'\begin{annotation}', '\n\\begin{studynote}\n').replace(r'\end{annotation}', '\n\\end{studynote}\n')
         text = re.sub(r'\\begin\{chaptersummary\}\{([^}]+)\}', lambda m: '\n\\subsection*{' + m[1] + '}\n\\begin{tabular}{ll}\n', text)
         text = text.replace(r'\end{chaptersummary}', r'\end{tabular}')
-        text = text.replace(r'\begin{choices}', r'\begin{enumerate}[A.]').replace(r'\end{choices}', r'\end{enumerate}')
+        # Choice environments are converted to semantic radio controls below,
+        # after they have been associated with their own question and answer.
         for command in ['code', 'rinline']:
             text = macro(text, command, 1, lambda body: r'\texttt{' + body.replace('_', r'\_').replace('#', r'\#').replace('%', r'\%') + '}')
         for command in ['tbltitle', 'figtitle', 'Example', 'dpart']:
@@ -282,8 +284,23 @@ def build_chapter(course, path, number=None):
             for aid in answer_ids:
                 namespaced = f'answer-{qid}-{aid}'
                 answer_html = answer_html.replace(f'id="{aid}"', f'id="{namespaced}"').replace(f'href="#{aid}"', f'href="#{namespaced}"')
-            questions.append(dict(id=qid, number=qnum, title=qtitle, anchor=anchor, answer=answer_html))
-        for start, end, replacement in reversed(replacements):
+            question = dict(id=qid, number=qnum, title=qtitle, anchor=anchor, answer=answer_html)
+            segment_end = question_markers[index + 1].start() if index + 1 < len(question_markers) else len(question_text)
+            segment = question_text[marker.end():segment_end]
+            choice_sets = list(re.finditer(r'\\begin\{choices\}(.*?)\\end\{choices\}', segment, re.S))
+            if len(choice_sets) > 1:
+                raise ValueError(f'{identifier}:{qid}: multiple choice sets need explicit handling')
+            if choice_sets:
+                choices = choice_sets[0]
+                parts = re.split(r'\\item(?:\s*\[[^\]]*\])?', choices[1])[1:]
+                options = [dict(value=chr(65 + i), html=converter.convert(part.strip())) for i, part in enumerate(parts)]
+                grading = grading_for(course['id'], qid, answers.get(qid, ''), [o['value'] for o in options])
+                question['quiz'] = dict(options=options, grading=grading)
+                start = marker.end() + choices.start()
+                end = marker.end() + choices.end()
+                replacements.append((start, end, converter.token(quiz_markup(identifier, question, options, grading))))
+            questions.append(question)
+        for start, end, replacement in sorted(replacements, reverse=True):
             question_text = question_text[:start] + replacement + question_text[end:]
         # Use a marker at the exact end of each question to place its own answer,
         # while shared-material headings remain outside the preceding answer.
@@ -337,6 +354,7 @@ def main():
             all_warnings.extend([record['id'] + ': ' + w for w in warnings])
             metadata = {k: v for k, v in record.items() if k not in ('html', 'questions', 'text')}
             metadata['questionCount'] = len(record['questions'])
+            metadata['choiceCount'] = sum('quiz' in q for q in record['questions'])
             manifest['chapters'].append(metadata); course['documents'].append(record['id'])
             search.append(dict(id=record['id'], course=record['course'], title=record['title'], kind=record['kind'], text=record['text'], toc=record['toc']))
             counts['questions'] += len(record['questions']); counts['figures'] += len(figures); counts['codeBlocks'] += record['codeCount']

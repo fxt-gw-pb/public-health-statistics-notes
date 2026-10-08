@@ -28,6 +28,7 @@ export function normalizeMath(source) {
 }
 export function enrichContent(root) {
   root.querySelectorAll('.math').forEach(element => {
+    if (element.dataset.formula) return;
     const source = normalizeMath(element.textContent);
     element.dataset.formula = source;
     katex.render(source, element, { displayMode: element.classList.contains('display'), throwOnError: false, strict: 'ignore', macros: mathMacros, trust: false });

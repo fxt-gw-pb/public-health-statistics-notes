@@ -15,7 +15,7 @@
     "sourceQuestions": 28,
     "webQuestions": 28,
     "sourceChars": 16090,
-    "webChars": 6282
+    "webChars": 7317
   },
   "linear-lec3": {
     "sourceQuestions": 0,
@@ -27,7 +27,7 @@
     "sourceQuestions": 50,
     "webQuestions": 50,
     "sourceChars": 33557,
-    "webChars": 6795
+    "webChars": 8116
   },
   "linear-lec4": {
     "sourceQuestions": 0,
@@ -39,7 +39,7 @@
     "sourceQuestions": 51,
     "webQuestions": 51,
     "sourceChars": 29856,
-    "webChars": 4071
+    "webChars": 4714
   },
   "linear-lec5": {
     "sourceQuestions": 0,
@@ -51,7 +51,7 @@
     "sourceQuestions": 31,
     "webQuestions": 31,
     "sourceChars": 20520,
-    "webChars": 8170
+    "webChars": 9277
   },
   "linear-appendix": {
     "sourceQuestions": 0,
@@ -69,7 +69,7 @@
     "sourceQuestions": 21,
     "webQuestions": 21,
     "sourceChars": 21402,
-    "webChars": 12685
+    "webChars": 13240
   },
   "multivariate-lec2": {
     "sourceQuestions": 0,
@@ -81,7 +81,7 @@
     "sourceQuestions": 27,
     "webQuestions": 27,
     "sourceChars": 26608,
-    "webChars": 15601
+    "webChars": 16304
   },
   "multivariate-lec3": {
     "sourceQuestions": 0,
@@ -93,7 +93,7 @@
     "sourceQuestions": 17,
     "webQuestions": 17,
     "sourceChars": 13834,
-    "webChars": 7990
+    "webChars": 8476
   },
   "multivariate-lec4": {
     "sourceQuestions": 0,
@@ -105,7 +105,7 @@
     "sourceQuestions": 30,
     "webQuestions": 30,
     "sourceChars": 21274,
-    "webChars": 12591
+    "webChars": 13591
   },
   "glm-lec1": {
     "sourceQuestions": 0,
@@ -117,7 +117,7 @@
     "sourceQuestions": 19,
     "webQuestions": 19,
     "sourceChars": 12872,
-    "webChars": 4836
+    "webChars": 5053
   },
   "glm-lec2": {
     "sourceQuestions": 0,
@@ -153,7 +153,7 @@
     "sourceQuestions": 30,
     "webQuestions": 30,
     "sourceChars": 20228,
-    "webChars": 9431
+    "webChars": 9489
   },
   "glm-lec6": {
     "sourceQuestions": 0,
@@ -171,7 +171,7 @@
     "sourceQuestions": 24,
     "webQuestions": 24,
     "sourceChars": 20168,
-    "webChars": 8807
+    "webChars": 8917
   },
   "glm-lec8": {
     "sourceQuestions": 0,

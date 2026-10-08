@@ -28,6 +28,8 @@ jobs:
         run: python3 scripts/verify_content.py
       - name: Verify mathematical notation
         run: node scripts/check_math.mjs
+      - name: Verify quiz grading and animated figure data
+        run: node scripts/check_interactions.mjs
       - name: Build website
         run: npm run build
       - uses: actions/configure-pages@v5
