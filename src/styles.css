@@ -35,3 +35,6 @@ a{text-decoration:none}svg{flex-shrink:0}button{color:inherit}button:disabled{op
 .hero-paused .hero-chart-stage{animation:none}
 .hero-chart-heading p{min-height:22px}.hero-chart-readout{min-height:25px}.hero-chart-caption{min-height:22px}
 @media(max-width:800px){.hero-chart-heading p{min-height:44px}.hero-chart-readout{min-height:46px}.hero-chart-caption{min-height:42px}}
+
+.intuition-start{margin-top:28px}.intuition-start .section-heading{margin:0 0 12px}.intuition-intro{font-size:14px;line-height:1.9;color:var(--muted);margin:0 0 18px}.intuition-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.intuition-card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px 22px}.intuition-card:hover{border-color:#d0b6b9}.intuition-card h3{font-size:16px;font-weight:600;line-height:1.7}.intuition-card p{font-size:14px;line-height:1.9;color:var(--muted);margin:8px 0 16px}.intuition-action{display:inline-flex;align-items:center;gap:8px;color:var(--red);font-size:14px;line-height:1.8;margin-top:auto}
+@media(max-width:800px){.intuition-grid{grid-template-columns:1fr;gap:14px}.intuition-card{padding:18px}.intuition-start{margin-top:24px}}

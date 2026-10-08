@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Search, Library, Bookmark, ChevronRight, ChevronLeft, Download, GraduationCap, Menu, X, Check, CheckCircle2, List, FileText, ClipboardList, Github, ArrowUp, RotateCcw, ChartNoAxesCombined, Network, Sigma, Minus, Plus, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { BookOpen, Search, Library, Bookmark, ChevronRight, ChevronLeft, Download, GraduationCap, Menu, X, Check, CheckCircle2, List, FileText, ClipboardList, Github, ArrowUp, RotateCcw, ChartNoAxesCombined, Network, Sigma, Minus, Plus, PanelLeftClose, PanelLeftOpen, ExternalLink } from 'lucide-react';
 import { chapterHref, enrichContent, loadChapter } from './content.js';
 import { updateQuizPanel } from './quiz.js';
 import StatisticsHero from './StatisticsHero.jsx';
@@ -68,6 +68,18 @@ function CourseCard({ course:c, manifest, learning:s }) {
 function Home({manifest:m,learning:s}) {
   const last=m.chapters.find(c=>c.id===s.last), read=m.chapters.filter(c=>c.kind==='lecture'&&s.completed.includes(c.id)).length;
   return <div className="overview"><StatisticsHero last={last}/><div className="summary-strip"><span><strong>3</strong>门课程</span><span><strong>17</strong>讲解章节</span><span><strong>{m.stats.questions}</strong>道习题</span><div className="summary-caption"><BookOpen size={17}/>讲解 · 推导 · 代码 · 练习</div></div>
+    <section className="intuition-start" aria-labelledby="intuition-heading">
+      <div className="section-heading"><h2 id="intuition-heading">先建立直觉</h2><span>互动实验</span></div>
+      <p className="intuition-intro">如果统计基础还不熟悉，可以先用这两个互动实验理解基本概念，再进入课程笔记。</p>
+      <div className="intuition-grid">
+        <a className="intuition-card" href="https://fxt-gw-pb.github.io/HypothesisLab/" target="_blank" rel="noopener noreferrer" aria-label="假设检验互动实验（在新标签页打开）">
+          <h3>假设检验</h3><p>通过互动实验理解原假设、p 值与统计显著性。</p><span className="intuition-action">打开互动实验<ExternalLink size={15} aria-hidden="true"/></span>
+        </a>
+        <a className="intuition-card" href="https://fxt-gw-pb.github.io/RegressionPlayground/" target="_blank" rel="noopener noreferrer" aria-label="线性回归基础互动实验（在新标签页打开）">
+          <h3>线性回归基础</h3><p>观察散点、拟合直线与残差，理解模型如何描述变量关系。</p><span className="intuition-action">打开互动实验<ExternalLink size={15} aria-hidden="true"/></span>
+        </a>
+      </div>
+    </section>
     {last&&<a href={chapterHref(last.id)} className="continue-card"><span className="continue-icon"><BookOpen size={22}/></span><div><span className="continue-label">继续上次阅读</span><strong>{last.title}</strong><small>{m.courses.find(c=>c.id===last.course).title} · {kindName(last.kind)}</small></div><span className="continue-right">继续阅读<ChevronRight size={18}/></span></a>}
     <div className="section-heading"><h2>我的课程</h2><span>{read?`${read} / 17 章讲解已读`:'按章节学习，随时回看'}</span></div><div className="course-grid">{m.courses.map(c=><CourseCard key={c.id} course={c} manifest={m} learning={s}/>)}</div><div className="study-path"><div className="path-heading"><span className="eyebrow">LEARNING PATH</span><h2>知识之间的联系</h2></div>{[['矩阵与线性模型','理解参数估计和模型假设'],['多变量的结构','从相关性走向降维与分类'],['不同结局的建模','根据资料类型选择模型']].map((p,i)=><div className="path-step" key={p[0]}><span>0{i+1}</span><div><strong>{p[0]}</strong><small>{p[1]}</small></div></div>)}</div><footer className="overview-footer"><span>公卫统计 · 学习总笔记</span><a href={REPO} target="_blank" rel="noreferrer"><Github size={14}/>GitHub</a><span>进度与收藏保存在当前浏览器</span></footer></div>;
 }
