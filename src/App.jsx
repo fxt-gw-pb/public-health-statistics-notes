@@ -33,7 +33,7 @@ function SearchDialog({ open, onClose, manifest }) {
     if (!open || index) return;
     let cancel = false;
     setError(false);
-    fetch(asset('data/search.json')).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => { if (!cancel) setIndex(d); }).catch(() => { if (!cancel) setError(true); });
+    fetch(asset('data/search.json'),{cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => { if (!cancel) setIndex(d); }).catch(() => { if (!cancel) setError(true); });
     return () => { cancel = true; };
   }, [open,index]);
   const results = useMemo(() => {
@@ -137,7 +137,7 @@ export default function App(){
   const timer=useRef(null);
   const toast=useCallback(t=>{setMessage(t);clearTimeout(timer.current);timer.current=setTimeout(()=>setMessage(''),2600);},[]);
   const toggle=useCallback((key,value)=>setLearning(x=>({...x,[key]:x[key].includes(value)?x[key].filter(v=>v!==value):[...x[key],value]})),[]);
-  useEffect(()=>{fetch(asset('data/index.json')).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(setManifest).catch(()=>setError(true));function hash(){const n=readRoute();setRoute(n);setMenuOpen(false);if(n.view!=='read')window.scrollTo(0,0);}function key(e){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setSearchOpen(x=>!x);}if(e.key==='Escape')setMenuOpen(false);}window.addEventListener('hashchange',hash);window.addEventListener('keydown',key);return()=>{window.removeEventListener('hashchange',hash);window.removeEventListener('keydown',key);clearTimeout(timer.current);};},[]);
+  useEffect(()=>{fetch(asset('data/index.json'),{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(setManifest).catch(()=>setError(true));function hash(){const n=readRoute();setRoute(n);setMenuOpen(false);if(n.view!=='read')window.scrollTo(0,0);}function key(e){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setSearchOpen(x=>!x);}if(e.key==='Escape')setMenuOpen(false);}window.addEventListener('hashchange',hash);window.addEventListener('keydown',key);return()=>{window.removeEventListener('hashchange',hash);window.removeEventListener('keydown',key);clearTimeout(timer.current);};},[]);
   useEffect(()=>{try{localStorage.setItem('ph-statistics-learning-v1',JSON.stringify(s));}catch{}},[s]);
   const chapter=manifest?.chapters.find(c=>c.id===route.id),course=manifest?.courses.find(c=>c.id===(chapter?.course||route.id)),title=route.view==='home'?'学习总览':route.view==='saved'?'我的收藏':route.view==='practice'?'习题练习':course?.title||'学习空间';
   useEffect(()=>{document.title=`${chapter?.title||title} · 公卫统计学习笔记`;},[chapter,title]);

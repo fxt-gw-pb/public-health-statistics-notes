@@ -40,7 +40,7 @@ export function enrichContent(root) {
 }
 const cache = new Map();
 export async function loadChapter(id) {
-  if (!cache.has(id)) cache.set(id, fetch(`${import.meta.env.BASE_URL}data/${id}.json`).then(response => {
+  if (!cache.has(id)) cache.set(id, fetch(`${import.meta.env.BASE_URL}data/${id}.json`, { cache: 'no-cache' }).then(response => {
     if (!response.ok) throw new Error('章节暂时未能加载');
     return response.json();
   }).catch(error => { cache.delete(id); throw error; }));
