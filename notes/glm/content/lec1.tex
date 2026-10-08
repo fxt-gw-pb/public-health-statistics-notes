@@ -1,0 +1,540 @@
+\chapter{广义线性模型基本概念与方法}
+\sourcepages{2}{1}
+公共卫生研究中有大量非连续的结局变量：死亡与否、是否患病为二分类变量；病情轻、中、重为有序分类变量；一年内哮喘发作次数、某地某病新发病例数为计数变量；从确诊到死亡的时间为生存时间。这些资料不满足线性回归的条件，本课程讨论其分析方法。
+
+本章介绍全课程的基本框架。后续各章的模型均由以下三个要素确定：
+\begin{enumerate}
+\item \textbf{结局变量的分布。}二分类资料采用二项分布，计数资料采用Poisson分布或负二项分布。分布决定了方差与均数之间的关系。
+\item \textbf{均数与自变量的联系方式。}模型令均数的某一函数（连接函数）等于自变量的线性组合$\beta_0+\beta_1x_1+\cdots$。logit连接下系数为对数OR，log连接下系数为对数RR或对数率比。
+\item \textbf{参数估计方法。}统一采用极大似然法，计算上采用迭代加权最小二乘算法。
+\end{enumerate}
+在这一框架下，logistic回归、Poisson回归与负二项回归是对上述三个要素的不同选择。Cox回归与对数线性模型严格而言不完全属于这一框架，但思路相通。
+\section{广义线性模型}
+\sourcepages{2}{2}
+\subsection{广义线性模型}
+\sourcepages{2}{3-5}
+经典的线性模型要求因变量是连续型的定量变量，但是我们所关心的因变量往往包括非连续的分类变量，比如 $0$--$1$ 变量。
+
+\textbf{例1（横断面研究）} 在研究医院抢救急性心肌梗塞（AMI）患者能否成功的危险因素的调查中，某医院收集了5年中该院所有的AMI患者的抢救病史（有关危险因素很多，由于篇幅有限，本例仅列出3个），共200例。
+\begin{itemize}
+\item $Y=0$ 表示抢救成功，$Y=1$ 表示死亡。
+\item $X_1=1$ 表示抢救前已发生休克，$X_1=0$ 表示抢救前未发生过休克。
+\item $X_2=1$ 表示抢救前发生心衰，$X_2=0$ 表示抢救前未发生心衰。
+\item $X_3=1$ 表示患者从开始AMI症状到抢救时已超过12小时（即未能及时把患者送往医院），$X_3=0$ 表示未超过12小时。
+\end{itemize}
+\ctable{表6\quad AMI患者的抢救危险因素资料}{
+\begin{tabular}{cccccccc}\toprule
+\multicolumn{4}{c}{$Y=0$（在医院抢救成功）}&\multicolumn{4}{c}{$Y=1$（未能抢救成功而死亡）}\\\cmidrule(lr){1-4}\cmidrule(lr){5-8}
+$X_1$&$X_2$&$X_3$&$N$&$X_1$&$X_2$&$X_3$&$N$\\\midrule
+0&0&0&35&0&0&0&4\\0&0&1&34&0&0&1&10\\0&1&0&17&0&1&0&4\\0&1&1&19&0&1&1&15\\1&0&0&17&1&0&0&6\\1&0&1&6&1&0&1&9\\1&1&0&6&1&1&0&6\\1&1&1&6&1&1&1&6\\\bottomrule
+\end{tabular}}
+\sourcepages{2}{6-9}
+\[
+\widehat Y=b_0+b_1x_1+b_2x_2+b_3x_3\qquad ?\ \times
+\]
+$Y$ 是二分类变量，服从二项分布，事件发生的概率记为 $P$。
+\begin{align*}
+\ln\left(\frac{P}{1-P}\right)&=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3,\\
+\ln\left(\frac{P}{1-P}\right)&=\logit(P)=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3.
+\end{align*}
+\cfigure{图2\quad Logistic回归中线性预测量 $\eta$（logit值）与 $P$ 的关系示意图}{
+\begin{tikzpicture}\begin{axis}[width=10cm,height=6cm,axis lines=middle,xmin=-5,xmax=5,ymin=0,ymax=1.02,xtick={-5,-4,...,5},ytick={.1,.2,...,1},xlabel={$\eta$},ylabel={$P$}]
+\addplot[PlotPrimary,line width=1pt,domain=-5:5,samples=101]{1/(1+exp(-x))};
+\end{axis}\end{tikzpicture}}
+\textbf{Logistic回归模型}
+\begin{align*}
+\ln\left(\frac P{1-P}\right)&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+\logit(P)&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+P&=\frac{e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}{1+e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}
+ =\frac{1}{1+e^{-(\beta_0+\beta_1x_1+\cdots+\beta_mx_m)}}.
+\end{align*}
+\sourcepages{2}{10-12}
+\ctable{一般线性回归模型与Logistic回归模型}{\begin{tabular}{ll}\toprule
+一般线性回归模型&$\E(Y\mid\bm x)=\beta_0+\beta_1x_1+\cdots+\beta_mx_m$\\
+Logistic回归模型&$\ln\dfrac{P}{1-P}=\beta_0+\beta_1x_1+\cdots+\beta_mx_m,\quad P=P(Y=1\mid\bm x)$\\\bottomrule\end{tabular}}
+GLM是一般线性模型的推广、普遍化（generalized），由Nelder \& Wedderburn于1972年提出。
+\ctable{广义线性模型的组成}{\begin{tabular}{lll}\toprule
+随机（因变量）部分&系统（自变量）部分&连接函数\\
+random component&systematic component&link function\\\midrule
+$Y_i\mid\bm x_i$ 相互独立，均值 $\mu_i=\E(Y_i\mid\bm x_i)$&$\eta_i=\displaystyle\sum_{j=0}^m\beta_jx_{ij}=\bm x_i^\top\bm\beta$&$g(\mu_i)=\eta_i$\\\bottomrule\end{tabular}}
+一般线性回归模型中，$\eta=g(\mu)=\mu$；Logistic回归模型中，$\eta=g(\mu)=\logit(P)$。
+\begin{sikao}[0/1结局不宜直接采用线性回归]
+将$Y=0/1$直接作为\texttt{lm()}的因变量，称为线性概率模型。以下模拟说明其问题：$x$在$-3$至$3$之间取200个值，真实发生概率为$P=1/(1+e^{-2x})$。
+\par\noindent
+\begin{coursecode}{R}
+set.seed(10)
+x <- seq(-3,3,length=200); y <- rbinom(200,1,plogis(2*x))
+f <- lm(y~x)
+range(fitted(f))                      # 拟合“概率”的范围
+mean(fitted(f)<0 | fitted(f)>1)       # 落在[0,1]之外的比例
+\end{coursecode}
+\begin{routput}
+[1] -0.2302985  1.1902985
+[1] 0.3
+\end{routput}
+30\%的拟合值超出$[0,1]$，不能作为概率解释。此外，0/1变量的方差为$P(1-P)$，随均数而变化，不满足等方差假设；残差只能取两个值，也不服从正态分布。
+
+logit变换将$(0,1)$映射至整条实轴，线性预测量$\eta$取任意值时，经反变换得到的$P$均位于0与1之间；方差随均数变化这一特点则由二项分布直接纳入模型。广义线性模型的基本思路即在于此：根据资料的性质选择相应的分布与连接函数，而不对数据本身作强制变换。
+\end{sikao}
+\begin{itemize}
+\item 经典的线性模型要求因变量是连续性的，在GLM中因变量拓展到非连续性的资料，如服从二项分布、Poisson分布、负二项分布等。
+\item 经典的线性模型中，条件均值本身就是线性预测量，$\mu_i=\eta_i$；在GLM中，条件均值经连接函数变换后才等于线性预测量，$g(\mu_i)=\eta_i$。参数估计后的拟合值为 $\widehat\mu_i=g^{-1}(\bm x_i^\top\widehat{\bm\beta})$。
+\end{itemize}
+本书区分四个量：响应 $Y_i$（随机变量，观测值记 $y_i$）；条件均值 $\mu_i=\E(Y_i\mid\bm x_i)$（总体量，未知）；线性预测量 $\eta_i=\bm x_i^\top\bm\beta$（由未知参数决定）；拟合值 $\widehat\mu_i$（由估计值 $\widehat{\bm\beta}$ 算出）。“$\mu=\widehat y$”的写法把总体条件均值与拟合值混为一谈，这里不再沿用。
+\begin{derivation}{指数族表示与条件均值、方差}
+\dpart{假设}给定 $\bm x_i$ 时 $Y_1,\ldots,Y_n$ 条件独立，$Y_i$ 的密度（或概率函数）属于指数散布族
+\[
+f(y_i;\theta_i,\phi)=\exp\left\{\frac{y_i\theta_i-b(\theta_i)}{a_i(\phi)}+c(y_i,\phi)\right\},
+\]
+其中 $\theta_i$ 为自然参数，$\phi$ 为散布参数，$a_i(\phi)=\phi/w_i$（$w_i$ 为已知权重），$b(\cdot)$ 二阶可导，且积分与求导可交换。
+\dpart{结论}
+\[
+\mu_i=\E(Y_i\mid\bm x_i)=b'(\theta_i),\qquad \Var(Y_i\mid\bm x_i)=a_i(\phi)\,b''(\theta_i)=a_i(\phi)V(\mu_i),
+\]
+$V(\mu)=b''\{(b')^{-1}(\mu)\}$ 称为方差函数。
+\dpart{推导}记对数似然贡献 $\ell_i=\{y_i\theta_i-b(\theta_i)\}/a_i(\phi)+c(y_i,\phi)$。对 $\int f\,dy=1$ 关于 $\theta_i$ 求一阶、二阶导数，得两条恒等式
+\[
+\E\!\left(\frac{\partial\ell_i}{\partial\theta_i}\right)=0,\qquad
+\E\!\left(\frac{\partial^2\ell_i}{\partial\theta_i^2}\right)+\E\!\left[\left(\frac{\partial\ell_i}{\partial\theta_i}\right)^2\right]=0 .
+\]
+而 $\partial\ell_i/\partial\theta_i=\{Y_i-b'(\theta_i)\}/a_i(\phi)$，$\partial^2\ell_i/\partial\theta_i^2=-b''(\theta_i)/a_i(\phi)$。代入第一式得 $\E(Y_i)=b'(\theta_i)$；代入第二式得 $\Var(Y_i)/a_i(\phi)^2=b''(\theta_i)/a_i(\phi)$，即 $\Var(Y_i)=a_i(\phi)b''(\theta_i)$。
+\dpart{解释}GLM的方差不是另行设定的，而是由分布族通过 $V(\mu)$ 与均值联系在一起：正态 $V(\mu)=1$，Poisson $V(\mu)=\mu$，Bernoulli $V(\mu)=\mu(1-\mu)$。这正是二分类、计数资料不满足“方差齐性”的原因，也是后文加权最小二乘与IRLS的权重来源。
+\end{derivation}
+\sourcepages{2}{13}
+\subsection{常见的广义线性模型}
+Logistic回归模型、Poisson回归、对数线性模型、负二项回归、Probit回归、Cox回归。
+\revnote{Cox回归常与GLM一起介绍，但它属于半参数生存回归模型：基线风险 $h_0(t)$ 不作参数设定，参数用部分似然估计，并不是指数族响应加连接函数的标准GLM。负二项回归在散布参数 $\alpha$ 固定时属于GLM，$\alpha$ 一并估计时是GLM的推广。}
+\section{连接函数}
+\sourcepages{2}{14-17}
+\begin{itemize}
+\item GLM关心一组自变量的线性组合预测因变量的条件均数或者条件均数的某种函数。
+\item 连接函数连接因变量的均数与自变量的线性组合。
+\item 连接函数是因变量均数的转化，转化后的变量为回归参数的一个线性函数。
+\end{itemize}
+一般线性模型，正态分布：$g(\mu)=\mu$，同一性连接、恒等连接。
+
+Logistic回归模型（响应为0/1或比例，$\mu=\pi$）：$g(\mu)=\log_e\dfrac{\mu}{1-\mu}$。
+
+典型连接（canonical link）指使线性预测量恰为自然参数的连接，即 $\eta=\theta$，亦即 $g=(b')^{-1}$。
+\ctable{表7\quad 几种常见分布的自然参数、方差函数与典型连接}{\small\begin{tabular}{lllllll}\toprule
+分布&取值集合&均数 $\mu$&方差&自然参数 $\theta$&方差函数 $V(\mu)$&典型连接 $g(\mu)$\\\midrule
+正态 $N(\mu,\sigma^2)$&$(-\infty,\infty)$&$\mu$&$\sigma^2$&$\mu$&$1$&恒等 $\mu$\\
+二项计数 $B(n,\pi)$&$\{0,1,\ldots,n\}$&$n\pi$&$n\pi(1-\pi)$&$\log\dfrac{\pi}{1-\pi}$&$\mu(1-\mu/n)$&$\log\dfrac{\mu}{n-\mu}$\\
+二项比例 $Y/n$&$\{0,\tfrac1n,\ldots,1\}$&$\pi$&$\pi(1-\pi)/n$&$\log\dfrac{\pi}{1-\pi}$&$\mu(1-\mu)$&$\logit(\pi)$\\
+Poisson $P(\lambda)$&$\{0,1,2,\ldots\}$&$\lambda$&$\lambda$&$\log\lambda$&$\mu$&$\log\mu$\\\bottomrule\end{tabular}}
+\begin{itemize}
+\item 二项计数与二项比例的线性预测量相同：$\log\{\mu/(n-\mu)\}=\log\{n\pi/(n-n\pi)\}=\logit(\pi)$，二者只是对同一参数 $\pi$ 的两种记录方式；比例形式的权重为 $n$。
+\item 二项、Poisson都是离散分布，取值包括端点0（及二项的 $n$），常写作开区间 $(0,n)$、$(0,\infty)$ 不准确；开区间描述的是均数 $\mu$ 的取值范围，即 $0<n\pi<n$、$\lambda>0$。
+\item 典型连接有计算上的便利（得分方程化为 $\bm X^\top(\bm y-\bm\mu)=\bm 0$，观测信息等于期望信息），但不是必须采用。例如二项资料也可用probit连接 $\Phi^{-1}(\pi)=\eta$ 或互补双对数连接 $\log\{-\log(1-\pi)\}=\eta$。
+\end{itemize}
+\textbf{logit与probit连接的比较}\quad 两者都把 $(0,1)$ 映射到整条实轴、关于 $\pi=0.5$ 对称。logit对应标准Logistic分布的分布函数（方差 $\pi^2/3$），probit对应标准正态分布函数，故在 $\pi$ 中段两者近似成比例：$\logit(\pi)\approx1.6\text{--}1.8\times\Phi^{-1}(\pi)$，系数也相应近似成比例。logit尾部稍重，且系数可解释为对数优势比（$\exp(\beta)$ 为OR，且在病例对照抽样下斜率不变）；probit系数没有OR解释，常对应潜在正态变量的阈值模型。拟合优度上两者通常差别很小。
+\section{常用参数估计方法}
+\sourcepages{2}{18-19}
+最小二乘估计（least squared estimation, LS）；加权最小二乘估计（weighted least squared, WLS）；极大似然估计（maximum likelihood estimation, MLE）。
+\subsection{最小二乘估计}
+\sourcepages{2}{20-21}
+简单线性回归。
+\begin{center}
+\begin{minipage}{.48\textwidth}\centering\begin{tikzpicture}\begin{axis}[width=.95\linewidth,height=5cm,xmin=30,xmax=75,ymin=2800,ymax=6000,xtick={30,40,50,60,70},ytick={2800,3800,4800,5800},xlabel={体重（kg）},ylabel={基础代谢（KJ/day）},axis lines=left]
+\addplot[PlotSecondary,line width=1pt] coordinates {(37,3400)(71,5450)};
+\addplot[only marks,PlotPrimary,mark=*,mark size=1pt] coordinates {(36.9849,3454.5455) (44.6497,3987.8788) (47.6786,3987.8788) (48.6676,3969.6970) (50.6456,4187.8788) (51.6964,4024.2424) (53.6745,4442.4242) (58.4959,5054.5455) (59.7321,4563.6364) (61.5247,5036.3636) (62.1429,4878.7879) (62.6992,4969.6970) (67.3352,5369.6970) (70.9821,5351.5152)};\end{axis}\end{tikzpicture}\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}\centering\begin{tikzpicture}\begin{axis}[width=.95\linewidth,height=5cm,xmin=30,xmax=75,ymin=2800,ymax=6000,xtick={30,40,50,60,70},ytick={2800,3800,4800,5800},xlabel={体重（kg）},ylabel={基础代谢（KJ/day）},axis lines=left]
+\addplot[PlotSecondary,line width=1pt] coordinates {(37,3400)(71,5450)};
+\draw[densely dotted] (axis cs:36.9849,3454.5455)--(axis cs:36.9849,3399.0890);
+\draw[densely dotted] (axis cs:44.6497,3987.8788)--(axis cs:44.6497,3861.2334);
+\draw[densely dotted] (axis cs:47.6786,3987.8788)--(axis cs:47.6786,4043.8550);
+\draw[densely dotted] (axis cs:48.6676,3969.6970)--(axis cs:48.6676,4103.4866);
+\draw[densely dotted] (axis cs:50.6456,4187.8788)--(axis cs:50.6456,4222.7497);
+\draw[densely dotted] (axis cs:51.6964,4024.2424)--(axis cs:51.6964,4286.1082);
+\draw[densely dotted] (axis cs:53.6745,4442.4242)--(axis cs:53.6745,4405.3713);
+\draw[densely dotted] (axis cs:58.4959,5054.5455)--(axis cs:58.4959,4696.0751);
+\draw[densely dotted] (axis cs:59.7321,4563.6364)--(axis cs:59.7321,4770.6145);
+\draw[densely dotted] (axis cs:61.5247,5036.3636)--(axis cs:61.5247,4878.6967);
+\draw[densely dotted] (axis cs:62.1429,4878.7879)--(axis cs:62.1429,4915.9664);
+\draw[densely dotted] (axis cs:62.6992,4969.6970)--(axis cs:62.6992,4949.5091);
+\draw[densely dotted] (axis cs:67.3352,5369.6970)--(axis cs:67.3352,5229.0320);
+\draw[densely dotted] (axis cs:70.9821,5351.5152)--(axis cs:70.9821,5448.9233);
+\node[anchor=east,font=\footnotesize] at (axis cs:58,4900) {$Y_i-\widehat Y_i$};
+\addplot[only marks,PlotPrimary,mark=*,mark size=1pt] coordinates {(36.9849,3454.5455) (44.6497,3987.8788) (47.6786,3987.8788) (48.6676,3969.6970) (50.6456,4187.8788) (51.6964,4024.2424) (53.6745,4442.4242) (58.4959,5054.5455) (59.7321,4563.6364) (61.5247,5036.3636) (62.1429,4878.7879) (62.6992,4969.6970) (67.3352,5369.6970) (70.9821,5351.5152)};\end{axis}\end{tikzpicture}\end{minipage}
+\par\medskip
+\resizebox{.8\textwidth}{!}{\begin{tikzpicture}[x=.9cm,y=.9cm]
+\draw[InkSoft,line width=.5pt] (0,0)--(6.6,0);\draw[InkSoft,line width=.5pt] (0,0)--(0,5.1);\draw[PlotPrimary,line width=.9pt] (.6,.8)--(5.9,3.85);
+\draw[PlotSecondary,line width=.55pt] (0.700,-0.492)--(0.700,2.208);
+\draw[PlotSecondary,line width=.55pt] plot[domain=-0.49245:2.20755,samples=71] ({0.7+.7*exp(-(\x-0.8575471698113208)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (0.700,0.858)--(1.400,0.858);
+\draw[PlotSecondary,line width=.55pt] (1.700,0.083)--(1.700,2.783);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.08302:2.78302,samples=71] ({1.7+.7*exp(-(\x-1.4330188679245284)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (1.700,1.433)--(2.400,1.433);
+\draw[PlotSecondary,line width=.55pt] (2.700,0.658)--(2.700,3.358);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.65849:3.35849,samples=71] ({2.7+.7*exp(-(\x-2.008490566037736)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (2.700,2.008)--(3.400,2.008);
+\draw[PlotSecondary,line width=.55pt] (3.700,1.234)--(3.700,3.934);
+\draw[PlotSecondary,line width=.55pt] plot[domain=1.23396:3.93396,samples=71] ({3.7+.7*exp(-(\x-2.5839622641509434)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (3.700,2.584)--(4.400,2.584);
+\draw[PlotSecondary,line width=.55pt] (4.700,1.809)--(4.700,4.509);
+\draw[PlotSecondary,line width=.55pt] plot[domain=1.80943:4.50943,samples=71] ({4.7+.7*exp(-(\x-3.159433962264151)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (4.700,3.159)--(5.400,3.159);
+\draw[dashed] (2.7,0)--(2.7,2.008)--(0,2.008);
+\node[below] at (2.7,0) {$X_i$};\node[left] at (0,2.01) {$\mu_{Y\mid X_i}$};\node[right] at (5.8,3.9) {$\mu_{Y\mid X}=\alpha+\beta X$};\node at (5.2,.7) {$Y_i\sim N(\alpha+\beta X_i,\sigma^2)$};\node[right] at (6.6,0) {$X$};\node[above] at (0,5.1) {$Y$};
+\end{tikzpicture}}
+\captionof*{figure}{图8\quad 基础代谢与体重间回归直线的散点图、条件、最小二乘原则的直观表达}
+\end{center}
+
+\[
+\sum_{i=1}^n(y_i-\widehat y_i)^2
+\quad\longrightarrow\quad
+\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^m\beta_jX_{ij}\right)^2.
+\]
+\begin{itemize}
+\item 满足一般线性模型的条件（LINE）的资料，可以用最小二乘法估计参数。
+\item 对于线性模型，LS估计是方差最小线性无偏估计（best linear unbiased estimate），且是唯一的。\hfill Gauss--Markov定理
+\end{itemize}
+\begin{derivation}{OLS的矩阵解与Gauss--Markov定理}
+\dpart{假设}$\bm y=\bm X\bm\beta+\bm\varepsilon$，$\bm X$ 为 $n\times p$ 已知设计矩阵（$p$ 含截距），且列满秩 $\operatorname{rank}(\bm X)=p$；$\E(\bm\varepsilon\mid\bm X)=\bm 0$；$\Cov(\bm\varepsilon\mid\bm X)=\sigma^2\bm I_n$（同方差且不相关）。此处不要求正态。
+\dpart{关键等式}最小化 $Q(\bm\beta)=(\bm y-\bm X\bm\beta)^\top(\bm y-\bm X\bm\beta)$，令 $\partial Q/\partial\bm\beta=-2\bm X^\top(\bm y-\bm X\bm\beta)=\bm 0$，得正规方程 $\bm X^\top\bm X\bm\beta=\bm X^\top\bm y$。满秩时 $\bm X^\top\bm X$ 可逆，
+\[
+\widehat{\bm\beta}_{\mathrm{OLS}}=(\bm X^\top\bm X)^{-1}\bm X^\top\bm y,\qquad
+\E(\widehat{\bm\beta}\mid\bm X)=\bm\beta,\qquad
+\Cov(\widehat{\bm\beta}\mid\bm X)=\sigma^2(\bm X^\top\bm X)^{-1}.
+\]
+设 $\widetilde{\bm\beta}=\bm C\bm y$ 是任一线性无偏估计，则 $\bm C\bm X=\bm I$。记 $\bm D=\bm C-(\bm X^\top\bm X)^{-1}\bm X^\top$，有 $\bm D\bm X=\bm 0$，于是
+\[
+\Cov(\widetilde{\bm\beta})=\sigma^2\bm C\bm C^\top=\sigma^2(\bm X^\top\bm X)^{-1}+\sigma^2\bm D\bm D^\top .
+\]
+\dpart{结论}$\Cov(\widetilde{\bm\beta})-\Cov(\widehat{\bm\beta})=\sigma^2\bm D\bm D^\top$ 半正定，故对任意 $\bm c$，$\Var(\bm c^\top\widehat{\bm\beta})\le\Var(\bm c^\top\widetilde{\bm\beta})$。“最优”只在\emph{线性}且\emph{无偏}的估计量中比较；有偏估计（如岭回归）或非线性估计可能有更小的均方误差。
+\dpart{解释}不满秩（完全共线性）时正规方程有无穷多解，单个系数不可识别，但拟合值 $\bm X\widehat{\bm\beta}$ 唯一。正态性不是Gauss--Markov定理的条件，它只用于得到 $t$、$F$ 统计量的精确分布。
+\end{derivation}
+\subsection{加权最小二乘估计}
+\sourcepages{2}{22-26}
+如果资料不满足“方差齐性”的条件，则LS不适宜。
+\begin{itemize}
+\item \textbf{对无偏性}：只要均值结构 $\E(\bm y\mid\bm X)=\bm X\bm\beta$ 设定正确，异方差时OLS仍然无偏、一致。
+\item \textbf{对效率}：OLS不再是方差最小的线性无偏估计，按方差倒数加权的WLS才是。
+\item \textbf{对标准误}：常规公式 $s^2(\bm X^\top\bm X)^{-1}$ 不再正确，基于它的 $t$ 检验、置信区间可能偏于宽松或保守；可改用WLS，或保留OLS点估计而采用稳健（夹心）标准误。
+\item \textbf{对精确推断}：即使用对了权重，$t$、$F$ 的精确分布仍依赖误差正态；非正态时只有大样本下的近似。
+\end{itemize}
+\begin{center}
+\begin{minipage}{.48\textwidth}\centering\resizebox{\linewidth}{!}{\begin{tikzpicture}[x=.9cm,y=.9cm]
+\draw[InkSoft,line width=.5pt] (0,0)--(6.6,0);\draw[InkSoft,line width=.5pt] (0,0)--(0,5.1);\draw[PlotPrimary,line width=.9pt] (.6,.8)--(5.9,3.85);
+\draw[PlotSecondary,line width=.55pt] (0.700,-0.492)--(0.700,2.208);
+\draw[PlotSecondary,line width=.55pt] plot[domain=-0.49245:2.20755,samples=71] ({0.7+.7*exp(-(\x-0.8575471698113208)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (0.700,0.858)--(1.400,0.858);
+\draw[PlotSecondary,line width=.55pt] (1.700,0.083)--(1.700,2.783);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.08302:2.78302,samples=71] ({1.7+.7*exp(-(\x-1.4330188679245284)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (1.700,1.433)--(2.400,1.433);
+\draw[PlotSecondary,line width=.55pt] (2.700,0.658)--(2.700,3.358);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.65849:3.35849,samples=71] ({2.7+.7*exp(-(\x-2.008490566037736)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (2.700,2.008)--(3.400,2.008);
+\draw[PlotSecondary,line width=.55pt] (3.700,1.234)--(3.700,3.934);
+\draw[PlotSecondary,line width=.55pt] plot[domain=1.23396:3.93396,samples=71] ({3.7+.7*exp(-(\x-2.5839622641509434)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (3.700,2.584)--(4.400,2.584);
+\draw[PlotSecondary,line width=.55pt] (4.700,1.809)--(4.700,4.509);
+\draw[PlotSecondary,line width=.55pt] plot[domain=1.80943:4.50943,samples=71] ({4.7+.7*exp(-(\x-3.159433962264151)^2/(2*0.5^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (4.700,3.159)--(5.400,3.159);
+\end{tikzpicture}}\captionof*{figure}{给定 $X$ 时，$Y$ 是正态分布、等方差示意图}\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}\centering\resizebox{\linewidth}{!}{\begin{tikzpicture}[x=.9cm,y=.9cm]
+\draw[InkSoft,line width=.5pt] (0,0)--(6.6,0);\draw[InkSoft,line width=.5pt] (0,0)--(0,5.1);\draw[PlotPrimary,line width=.9pt] (.6,.8)--(5.9,3.85);
+\draw[PlotSecondary,line width=.55pt] (0.700,-0.087)--(0.700,1.803);
+\draw[PlotSecondary,line width=.55pt] plot[domain=-0.08745:1.80255,samples=71] ({0.7+.7*exp(-(\x-0.8575471698113208)^2/(2*0.35^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (0.700,0.858)--(1.400,0.858);
+\draw[PlotSecondary,line width=.55pt] (1.700,0.191)--(1.700,2.675);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.19102:2.67502,samples=71] ({1.7+.7*exp(-(\x-1.4330188679245284)^2/(2*0.46^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (1.700,1.433)--(2.400,1.433);
+\draw[PlotSecondary,line width=.55pt] (2.700,0.577)--(2.700,3.439);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.57749:3.43949,samples=71] ({2.7+.7*exp(-(\x-2.008490566037736)^2/(2*0.53^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (2.700,2.008)--(3.400,2.008);
+\draw[PlotSecondary,line width=.55pt] (3.700,0.802)--(3.700,4.366);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.80196:4.36596,samples=71] ({3.7+.7*exp(-(\x-2.5839622641509434)^2/(2*0.66^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (3.700,2.584)--(4.400,2.584);
+\draw[PlotSecondary,line width=.55pt] (4.700,0.945)--(4.700,5.373);
+\draw[PlotSecondary,line width=.55pt] plot[domain=0.94543:5.37343,samples=71] ({4.7+.7*exp(-(\x-3.159433962264151)^2/(2*0.82^2))},\x);
+\draw[PlotSecondary,line width=.55pt] (4.700,3.159)--(5.400,3.159);
+\end{tikzpicture}}\captionof*{figure}{给定 $X$ 时，$Y$ 是正态分布、不等方差示意图}\end{minipage}
+\end{center}
+\cfigure{男性年龄与血糖的关系（方差随自变量的增加而增加）}{
+\begin{tikzpicture}\begin{axis}[width=10cm,height=6.5cm,xmin=19,xmax=82,ymin=2.7,ymax=12.3,xtick={20,30,...,80},ytick={3,6,9,12},xlabel={年龄},ylabel={血糖},axis lines=left]
+\addplot[only marks,mark=*,mark size=.85pt,PlotPrimary] coordinates {(36.00735,4.24000) (44.98931,4.49479) (22.98930,3.61020) (36.00735,4.23020) (40.99599,4.25200) (55.00802,3.85110) (38.96524,4.03875) (52.98596,4.13353) (59.99599,4.17097) (36.00735,4.05645) (55.99398,4.16307) (57.98262,6.08230) (22.98930,4.46714) (55.99398,3.93008) (45.98396,4.08614) (46.98663,4.77517) (25.00268,4.25200) (34.97126,3.62805) (48.99198,4.68039) (55.00802,3.96957) (44.98931,4.61120) (45.98396,4.56192) (28.01070,3.98726) (46.98663,4.09594) (24.01738,4.14522) (44.00401,3.62805) (36.00735,4.11363) (57.98262,4.14522) (52.98596,4.21441) (30.98530,3.86294) (56.99666,4.77517) (45.98396,3.95772) (49.97794,4.85415) (48.00602,4.70014) (43.01738,4.27159) (32.01337,4.50474) (55.00802,4.78702) (48.00602,4.29734) (59.01069,4.44740) (28.99732,4.44740) (63.00401,4.22230) (48.00602,3.81161) (36.99332,3.62805) (44.00401,3.94982) (49.97794,4.38816) (37.97928,3.77401) (57.98262,4.59351) (44.00401,4.44740) (55.99398,4.32103) (45.98396,3.78396) (21.98663,4.42765) (53.97192,3.96957) (43.01738,4.44740) (30.98530,3.91823) (59.01069,4.48484) (29.98262,5.30434) (52.98596,4.30918) (33.98529,4.43555) (49.97794,3.91238) (33.98529,4.47315) (38.96524,4.04460) (22.98930,3.95772) (26.98329,4.44740) (52.98596,3.68524) (59.01069,4.37837) (52.00000,4.68829) (48.99198,5.41886) (46.98663,5.37937) (48.99198,6.12969) (48.99198,4.15312) (45.98396,4.93313) (28.99732,4.25990) (45.98396,3.10078) (43.01738,6.48115) (53.97192,3.69708) (25.98930,4.03875) (45.98396,4.08614) (38.96524,4.50474) (36.99332,4.84436) (37.97928,4.25200) (48.00602,4.81655) (45.98396,4.51453) (59.01069,4.04460) (30.98530,4.01695) (57.98262,4.41581) (25.00268,4.49479) (49.97794,4.23020) (45.98396,4.88385) (38.96524,3.96957) (33.98529,4.46714) (25.00268,4.42765) (45.98396,4.08614) (44.00401,4.05645) (36.99332,4.28154) (28.99732,3.99721) (25.00268,3.71683) (49.97794,4.70014) (34.97126,5.21556) (36.00735,6.14153) (28.99732,3.66754) (34.97126,4.30918) (37.97928,7.21962) (25.98930,4.89364) (40.00134,4.19071) (45.98396,4.93313) (44.98931,8.37068) (53.97192,5.26485) (22.98930,4.50474) (36.99332,4.06434) (28.01070,4.23020) (49.97794,4.00716) (51.01404,3.98726) (46.98663,5.07924) (53.97192,4.44740) (46.98663,4.44740) (45.98396,5.05160) (43.01738,4.19071) (34.97126,4.12358) (43.01738,4.14522) (48.00602,4.91338) (44.98931,3.96957) (55.00802,11.42929) (40.99599,4.62116) (32.01337,3.85110) (45.98396,4.49479) (38.96524,4.09594) (30.98530,4.60141) (28.99732,4.32893) (30.98530,4.86394) (48.99198,4.38816) (75.00267,5.10878) (37.97928,4.84436) (64.98462,7.16228) (44.00401,4.71009) (51.01404,4.29734) (36.00735,4.05645) (49.97794,5.19772) (59.01069,5.61426) (41.98997,4.70014) (72.97259,4.09594) (71.00067,4.54218) (60.99064,4.40396) (25.98930,4.37837) (28.01070,3.50958) (25.00268,4.11363) (28.01070,3.93008) (28.99732,4.62116) (22.98930,4.35847) (61.97660,7.06750) (33.98529,4.19071) (32.99933,3.96957) (25.98930,4.18281) (21.98663,4.04460) (43.01738,4.06434) (48.00602,4.44740) (26.98329,4.47315) (44.00401,3.63595) (38.96524,4.68039) (26.98329,4.13353) (32.01337,4.09594) (78.01069,5.56892) (44.98931,4.32103) (59.99599,5.20356) (25.00268,3.88079) (46.98663,4.28944) (40.99599,5.85910) (59.01069,5.02001) (67.00668,7.74879) (25.98930,3.91238) (36.00735,4.42765) (44.98931,4.11363) (36.99332,4.06434) (64.98462,4.18281) (32.99933,4.60141) (52.00000,4.25990) (24.01738,3.71683) (29.98262,4.14522) (68.97861,4.24000) (60.99064,4.28154) (63.00401,4.48484) (28.99732,4.36637) (40.99599,4.85415) (48.00602,4.43555) (64.98462,3.93797) (24.01738,4.18281) (36.00735,5.23515) (45.98396,4.45530) (29.98262,4.34867) (36.00735,5.07135) (59.01069,4.79491) (30.98530,4.18281) (28.01070,4.49479) (44.00401,4.68039) (36.00735,4.51453) (28.99732,3.76422) (36.99332,4.73757) (30.98530,4.28944) (25.00268,4.64280) (28.01070,4.32103) (28.99732,4.16307) (37.97928,4.73757) (34.97126,4.71009) (33.98529,4.32893) (44.98931,4.52433) (61.97660,4.49479) (75.98930,5.63606) (28.99732,4.10778) (38.96524,4.59351) (28.99732,5.07135) (26.98329,4.60141) (26.98329,4.07619) (26.98329,4.40396) (59.99599,5.47810) (21.98663,3.93797) (28.01070,4.46714) (25.98930,3.99721) (44.98931,4.44740) (53.97192,4.73757) (26.98329,4.15312) (28.01070,4.08614) (26.98329,3.79391) (30.98530,4.60141) (57.98262,7.50395) (25.00268,3.81161) (63.10428,8.50305) (25.00268,4.16307) (41.98997,4.61120) (71.44385,7.61057) (26.98329,4.52433) (34.97126,6.04281) (67.00668,5.25506) (56.99666,5.63211) (37.97928,4.43555) (53.97192,4.80676) (53.97192,4.99031) (32.99933,5.32408) (45.98396,4.89364) (59.99599,5.07135) (63.00401,6.32508) (34.97126,5.19772) (63.99064,5.32408) (52.98596,9.69566) (36.99332,4.59351) (55.99398,4.66065) (52.00000,5.44050) (44.00401,5.10878) (36.99332,4.73757) (63.00401,6.53249) (55.00802,4.57377) (29.98262,5.26485) (19.96457,4.63111) (56.99666,8.14164) (32.01337,5.21556) (38.96524,5.69134) (25.98930,4.93313) (55.00802,5.18587) (61.97660,5.47810) (45.98396,4.50474) (29.98262,4.83835) (46.98663,5.23515) (57.98262,5.17797) (52.00000,4.40396) (64.98462,5.19772) (33.98529,4.85415) (25.00268,4.71799) (55.00802,4.96077) (37.97928,4.46714) (46.98663,5.28459) (53.97192,4.11363) (44.98931,5.12869) (53.97192,5.32408) (61.97660,5.99542) (59.31150,6.71019) (59.01069,5.90854) (28.99732,4.22230) (61.97660,5.49990) (46.98663,4.77517) (64.98462,4.87595) (32.01337,5.24510) (38.96524,4.68829) (38.96524,4.21441) (52.00000,5.18587) (44.00401,4.37837) (63.00401,5.10878) (59.01069,5.52548) (52.98596,5.00232) (29.98262,4.55402) (25.98930,4.88385) (59.01069,4.41581) (46.98663,5.39122) (53.97192,4.10778) (43.01738,4.10778) (53.97192,5.51759) (49.97794,4.23020) (60.08021,6.35289) (21.98663,3.86294) (25.98930,4.21441) (55.54278,6.71019) (32.01337,5.53733) (24.01738,5.00232) (52.52674,6.52854) (24.01738,4.83835) (52.98596,4.98241) (59.01069,4.38816) (44.98931,5.63606) (26.98329,5.14638) (29.98262,4.66065) (29.98262,4.37837) (66.14572,10.11821) (36.99332,4.72778) (34.97126,5.01211) (52.98596,5.47810) (36.99332,5.64396) (55.99398,5.24510) (24.01738,4.91338) (32.99933,4.51453) (36.99332,5.21556) (48.00602,6.36268) (25.98930,4.34078) (26.98329,4.85415) (22.98930,4.81655) (24.01738,5.67555) (25.98930,4.71009) (40.39438,3.66944) (36.00735,4.64880) (61.97660,5.18587) (26.98329,5.05950) (44.98931,3.90038) (53.27807,7.78623) (25.98930,4.79491) (32.99933,5.00232) (36.99332,4.64280) (32.01337,4.34078) (39.60829,6.52664) (33.98529,4.59351) (30.98530,5.39912) (36.00735,5.25506) (41.98997,5.09709) (37.97928,5.13453) (32.01337,5.51759) (46.98663,4.23020) (61.97660,4.00716) (43.01738,4.86394) (47.22059,5.98957) (30.98530,3.65759) (46.98663,4.22230) (36.99332,4.27159) (64.98462,5.95593)};
+\addplot[PlotSecondary,line width=1pt] coordinates {(20,4.0)(80,6.1)};
+\end{axis}\end{tikzpicture}}
+
+加权最小二乘估计（weighted least squared, WLS），其权重是方差的倒数，方差越大权重越小，方差越小权重越大。
+\[
+\sum_{i=1}^n\frac{1}{V_i}(y_i-\widehat y_i)^2.
+\]
+写成矩阵形式：若 $\Cov(\bm\varepsilon\mid\bm X)=\sigma^2\bm V$，$\bm V=\diag(V_1,\ldots,V_n)$ 已知，令权重阵 $\bm W=\bm V^{-1}$，最小化 $(\bm y-\bm X\bm\beta)^\top\bm W(\bm y-\bm X\bm\beta)$，得
+\[
+\widehat{\bm\beta}_{\mathrm{WLS}}=(\bm X^\top\bm W\bm X)^{-1}\bm X^\top\bm W\bm y,\qquad
+\Cov(\widehat{\bm\beta}_{\mathrm{WLS}}\mid\bm X)=\sigma^2(\bm X^\top\bm W\bm X)^{-1}.
+\]
+这等价于对变换后的资料 $\bm W^{1/2}\bm y=\bm W^{1/2}\bm X\bm\beta+\bm W^{1/2}\bm\varepsilon$ 作OLS，后者误差同方差，故Gauss--Markov定理保证WLS在 $\bm V$ 已知时是BLUE。实际中 $V_i$ 往往依赖未知参数（如二项方差 $n_iP_i(1-P_i)$），只能用估计值代入或反复迭代。
+\sourcepages{2}{27-30}
+\textbf{例题} 请采用WLS方法建立下面四格表资料的Logistic回归模型，并估计OR。
+\ctable{表8\quad 四格表资料的一般格式}{\begin{tabular}{lccc}\toprule
+&暴露，$x=1$&非暴露，$x=0$&合计\\\midrule
+发病，$y=1$&$a$&$b$&$a+b$\\
+不发病，$y=0$&$c$&$d$&$c+d$\\
+合计&$a+c$&$b+d$&$a+b+c+d$\\\bottomrule\end{tabular}}
+\[
+\OR=\frac{ad}{bc}.
+\]
+以 $P_1$ 表示暴露者中病例的比例，$P_0$ 表示非暴露者中病例的比例。
+\[
+P_1=\frac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}},\qquad
+P_0=\frac{e^\alpha}{1+e^\alpha}.
+\]
+\begin{align*}
+\sum\frac1{V_i}(y_i-\widehat y_i)^2
+={}&\frac{[a-(a+c)P_1]^2}{(a+c)P_1(1-P_1)}
++\frac{[c-(a+c)(1-P_1)]^2}{(a+c)P_1(1-P_1)}\\
+&+\frac{[b-(b+d)P_0]^2}{(b+d)P_0(1-P_0)}
++\frac{[d-(b+d)(1-P_0)]^2}{(b+d)P_0(1-P_0)}.
+\end{align*}
+\begin{align*}
+&(b+d)[a^2-2ace^{\alpha+\beta}+c^2e^{2\alpha+2\beta}]\\
+&\qquad +(a+c)[b^2e^\beta-2bde^{\alpha+\beta}+d^2e^{2\alpha+\beta}]
+\longrightarrow\text{最小}.
+\end{align*}
+分别对 $\alpha,\beta$ 取导数，并令其等于0，得：
+\begin{align*}
+&(b+d)[-2ace^{\alpha+\beta}+2c^2e^{2\alpha+2\beta}]\\
+&\qquad +(a+c)[-2bde^{\alpha+\beta}+2d^2e^{2\alpha+\beta}]=0,\\
+&(b+d)[-2ace^{\alpha+\beta}+2c^2e^{2\alpha+2\beta}]\\
+&\qquad +(a+c)[b^2e^\beta-2bde^{\alpha+\beta}+d^2e^{2\alpha+\beta}]=0.
+\end{align*}
+解得：
+\[
+\widehat\alpha=\ln\frac bd,\qquad
+\widehat\beta=\ln\frac{ad}{bc}=\ln(\OR).
+\]
+\revnote{本例的加权平方和中权重 $1/\{(a+c)P_1(1-P_1)\}$ 等含待估参数，严格说是“最小 $\chi^2$”估计。本例只有两组（暴露、非暴露）、两个参数，模型是\emph{饱和}的：参数恰好可以使 $\widehat P_1=a/(a+c)$、$\widehat P_0=b/(b+d)$，各项残差全为0，因此无论权重取什么正值，最小值都在同一点达到，结果与下面的MLE完全一致。这种一致性不能推广：模型不饱和（如多个协变量、连续协变量）时，固定权重的WLS一般不等于MLE；只有在每一步用当前估计更新权重、迭代至收敛（IRLS，见第2章）时，所得才是MLE。}
+\subsection{极大似然估计}
+\sourcepages{2}{31}
+\begin{itemize}
+\item 根据样本数据，极大似然估计会找到最有可能产生样本观察值的参数值。
+\item 极大似然估计需要指明假设被用来描绘样本数据的一个概率密度函数。
+\end{itemize}
+\begin{annotation}关键是如何写出这个似然函数。\end{annotation}
+\subsubsection{基于正态分布的极大似然估计}
+\sourcepages{2}{32-39}
+\begin{align*}
+f(y\mid\mu,\sigma^2)&=\frac1{\sqrt{2\pi\sigma^2}}
+ e^{-\frac12\frac{(y-\mu)^2}{\sigma^2}},\\
+f(y_i\mid\mu_i,\sigma^2)&=\frac1{\sqrt{2\pi\sigma^2}}
+ e^{-\frac12\frac{(y_i-\mu_i)^2}{\sigma^2}},\qquad
+\mu_i=\beta_0+\sum_{j=1}^m\beta_jX_{ij},\\
+f(y_i\mid\beta_0,\ldots,\beta_m,\sigma^2)&=\frac1{\sqrt{2\pi\sigma^2}}
+ e^{-\frac12\frac{(y_i-(\beta_0+\sum_{j=1}^m\beta_jX_{ij}))^2}{\sigma^2}}.
+\end{align*}
+$y_i$ 被假设为相互独立的，样本观察值的联合分布可以表示为：
+\begin{align*}
+f(y_1,\ldots,y_n\mid\bm\beta,\sigma^2)
+&=f(y_1\mid\bm\beta,\sigma^2)\cdots f(y_n\mid\bm\beta,\sigma^2)\\
+&=\prod_{i=1}^n\frac1{\sqrt{2\pi\sigma^2}}
+ e^{-\frac12\frac{(y_i-(\beta_0+\sum_{j=1}^m\beta_jX_{ij}))^2}{\sigma^2}}\\
+&=\frac1{(2\pi\sigma^2)^{n/2}}
+ e^{-\frac12\sum_{i=1}^n\frac{(y_i-(\beta_0+\sum_{j=1}^m\beta_jX_{ij}))^2}{\sigma^2}},\\
+f(\bm y\mid\bm\beta,\sigma^2)&=\frac1{(2\pi\sigma^2)^{n/2}}
+ e^{-\frac{(\bm y-\bm X\bm\beta)^\top(\bm y-\bm X\bm\beta)}{2\sigma^2}}.
+\end{align*}
+$\bm X$ 是 $n\times(m+1)$ 的设计矩阵：$n$ 行对应观察对象，第1列为截距列（全为1），其余 $m$ 列为自变量取值；回归参数个数 $p=m+1$。
+\ctable{概率密度函数与似然函数}{\begin{tabular}{ll}\toprule
+$f(\bm y\mid\bm\beta,\sigma^2)$&参数固定时，作为 $\bm y$ 的函数，是样本的联合密度\\
+$L(\bm\beta,\sigma^2\mid\bm y)$&样本 $\bm y$ 固定时，同一表达式作为参数的函数，称似然函数\\\bottomrule\end{tabular}}
+\[
+L(\bm\beta,\sigma^2\mid\bm y)=f(\bm y\mid\bm\beta,\sigma^2).
+\]
+似然函数不是参数的概率密度：它对参数积分一般不等于1，参数在频率学派框架下也不是随机变量。有的表格中“$f(\bm\beta,\sigma^2\mid\bm y)$：给定样本 $\bm y$，参数 $\bm\beta$ 的一个函数”的写法易被误读为参数的条件密度（那是贝叶斯后验，需另设先验），故删去。
+
+我们可以估计最大化似然函数 $L(\bm\beta,\sigma^2\mid\bm y)$ 的回归参数 $\bm\beta$，以 $\widehat{\bm\beta}$ 表示。这些估计值被称为极大似然估计（MLE）；它们是使观测到的样本 $\bm y=(y_1,y_2,\ldots,y_n)^\top$ 出现的可能性（似然）最大的参数值。
+\begin{annotation}由样本的联合密度写出似然函数，是极大似然估计的第一步。\end{annotation}
+\textbf{对数似然函数}
+\begin{align*}
+l(\bm\beta,\sigma^2)=\log_eL(\bm\beta,\sigma^2\mid\bm y)
+&=-\frac n2\log_e(2\pi\sigma^2)
+ -\frac12\sum_{i=1}^n\frac{(y_i-(\beta_0+\sum_{j=1}^m\beta_jX_{ij}))^2}{\sigma^2}\\
+&=-\frac n2\log_e(2\pi\sigma^2)
+ -\frac{(\bm y-\bm X\bm\beta)^\top(\bm y-\bm X\bm\beta)}{2\sigma^2}.
+\end{align*}
+$l(\beta_0,\beta_1,\ldots,\beta_m,\sigma^2)$ 为对数似然函数。对任意固定的 $\sigma^2$，最大化 $l$ 等价于最小化残差平方和，故 $\bm\beta$ 的MLE与最小二乘估计相同：
+\[
+\frac{\partial l}{\partial\bm\beta}=\frac{\bm X^\top(\bm y-\bm X\bm\beta)}{\sigma^2}=\bm 0,\qquad
+(\bm X^\top\bm X)\bm\beta-\bm X^\top\bm y=\bm 0,\qquad
+\widehat{\bm\beta}=(\bm X^\top\bm X)^{-1}\bm X^\top\bm y.
+\]
+再对 $\sigma^2$ 求导：$\partial l/\partial\sigma^2=-n/(2\sigma^2)+\mathrm{SSE}/(2\sigma^4)=0$，其中 $\mathrm{SSE}=(\bm y-\bm X\widehat{\bm\beta})^\top(\bm y-\bm X\widehat{\bm\beta})$，得
+\[
+\widehat\sigma^2_{\mathrm{MLE}}=\frac{\mathrm{SSE}}{n},\qquad
+s^2=\frac{\mathrm{SSE}}{n-p},\qquad p=m+1\ (\text{含截距}).
+\]
+由 $\E(\mathrm{SSE})=(n-p)\sigma^2$（残差落在 $n-p$ 维空间中），$s^2$ 是 $\sigma^2$ 的无偏估计，而 $\widehat\sigma^2_{\mathrm{MLE}}$ 偏小，其期望为 $(n-p)\sigma^2/n$；$n$ 远大于 $p$ 时两者几乎相同。回归输出中的“均方误差”和系数标准误用的都是 $s^2$。
+\subsubsection{四格表资料Logistic回归的MLE}
+\sourcepages{2}{40-45}
+\ctable{表9\quad 四格表资料的一般格式}{\begin{tabular}{lccc}\toprule
+&暴露，$x=1$&非暴露，$x=0$&合计\\\midrule
+发病，$y=1$&$a$&$b$&$a+b$\\不发病，$y=0$&$c$&$d$&$c+d$\\合计&$a+c$&$b+d$&$a+b+c+d$\\\bottomrule\end{tabular}}
+\[
+\OR=\frac{ad}{bc},\qquad P_1=\frac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}},\qquad P_0=\frac{e^\alpha}{1+e^\alpha}.
+\]
+$P_1$ 表示暴露者中病例的比例，$P_0$ 表示非暴露者中病例的比例。
+\ctable{表10\quad 暴露者与非暴露者发病与不发病的概率}{\renewcommand{\arraystretch}{1.8}\begin{tabular}{lcc}\toprule
+&暴露，$x=1$&非暴露，$x=0$\\\midrule
+发病，$y=1$&$P_1=\dfrac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}$&$P_0=\dfrac{e^\alpha}{1+e^\alpha}$\\
+不发病，$y=0$&$1-P_1=\dfrac1{1+e^{\alpha+\beta}}$&$1-P_0=\dfrac1{1+e^\alpha}$\\\bottomrule\end{tabular}}
+\begin{align*}
+L&=\left(\frac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}\right)^a
+\left(\frac{e^\alpha}{1+e^\alpha}\right)^b
+\left(\frac1{1+e^{\alpha+\beta}}\right)^c
+\left(\frac1{1+e^\alpha}\right)^d,\\
+\ln L&=a(\alpha+\beta)-a\ln(1+e^{\alpha+\beta})+b\alpha-b\ln(1+e^\alpha)\\
+&\qquad-c\ln(1+e^{\alpha+\beta})-d\ln(1+e^\alpha)\\
+&=a(\alpha+\beta)+b\alpha-(a+c)\ln(1+e^{\alpha+\beta})-(b+d)\ln(1+e^\alpha),\\
+\frac{\partial\ln L}{\partial\alpha}&=a+b-\frac{(a+c)e^{\alpha+\beta}}{1+e^{\alpha+\beta}}-\frac{(b+d)e^\alpha}{1+e^\alpha},\\
+\frac{\partial\ln L}{\partial\beta}&=a-\frac{(a+c)e^{\alpha+\beta}}{1+e^{\alpha+\beta}}.
+\end{align*}
+令 $\partial\ln L/\partial\alpha=0$，$\partial\ln L/\partial\beta=0$，得：
+\[
+\widehat\alpha=\ln\frac bd,\qquad \widehat\beta=\ln\frac{ad}{bc},\qquad
+\logit(P)=\alpha+\beta x=\ln\frac bd+\ln\frac{ad}{bc}\,x.
+\]
+以表6的数据验证。仅考虑休克$X_1$，将8行合并为四格表：休克者死亡27例、存活35例，未休克者死亡33例、存活105例。
+\par\noindent
+\begin{coursecode}{R}
+ami <- data.frame(x1=rep(c(0,1),each=4), x2=rep(rep(c(0,1),each=2),2), x3=rep(c(0,1),4),
+                  alive=c(35,34,17,19,17,6,6,6), dead=c(4,10,4,15,6,9,6,6))
+tab <- aggregate(cbind(dead,alive)~x1, data=ami, sum)   # 按休克合并
+a <- 27; c <- 35; b <- 33; d <- 105
+c(log(b/d), log(a*d/(b*c)))                              # 公式
+coef(glm(cbind(dead,alive)~x1, family=binomial, data=tab))   # 软件
+\end{coursecode}
+\begin{routput}
+[1] -1.1574528  0.8979416
+(Intercept)          x1 
+ -1.1574528   0.8979416 
+\end{routput}
+公式与软件结果完全一致，$\OR=e^{0.898}=2.45$。第2章在模型中同时纳入$X_1$、$X_2$、$X_3$后，休克的OR为3.03。两个数值的含义不同：2.45为不考虑其他因素时休克者与未休克者死亡优势之比；3.03为心衰状况及抢救是否及时均相同条件下的比较。由单因素到多因素分析时系数的变化，表明其他因素在两组间分布不均衡，多因素模型的作用即在于处理这一问题。
+\section{软件实现}
+\sourcepages{2}{46-50}
+\subsection{SPSS实现}
+\begin{itemize}
+\item Compare means：方差分析。
+\item General linear model。
+\item Regression：线性回归、Logistic回归。
+\item Survival：Cox回归。
+\end{itemize}
+\Needspace{10\baselineskip}
+\subsection{SAS实现}
+PROC ANOVA、PROC REG、PROC LOGISTIC、PROC GLM、PROC GENMOD、PROC PHREG。
+\par\noindent
+\begin{coursecode}{SAS}
+PROC GENMOD data = 数据名称;
+  CLASS 分类变量的名称;
+  MODEL 因变量 = 自变量 /
+    dist = normal (binomial, poisson)
+    link = identity (logit, log);
+Run;
+\end{coursecode}
+\par
+\subsection{STATA实现}
+\begin{enumerate}
+\item 导入数据。
+\item Statistics、Generalized Linear models（GLM）。
+\item Dependent Variables、Independent Variables。
+\item family和link：线性回归（family: Gaussian; link: Identity）、Logistic（family: binomial; link: logit）、泊松回归（family: poisson; link: log）。
+\item 提交。
+\end{enumerate}
+\subsection{R实现}
+\texttt{glm()} 函数。
+\Needspace{8\baselineskip}
+\par\noindent
+\begin{coursecode}{R}
+glm(formula, family=familyname(link=function), data= )
+glm(Y ~ X1+X2+X3, family=gaussian(link='identity'), data=mydata)
+glm(Y ~ X1+X2+X3, family=binomial(link='logit'), data=mydata)
+glm(Y ~ X1+X2+X3, family=poisson(link='log'), data=mydata)
+\end{coursecode}
+\par
+以表6的全部三个因素为例，\texttt{summary()}的输出如下，各部分的含义见后续各章。
+\par\noindent
+\begin{coursecode}{R}
+fit <- glm(cbind(dead,alive)~x1+x2+x3, family=binomial, data=ami)
+summary(fit)
+exp(cbind(OR=coef(fit), confint.default(fit)))   # OR及其Wald 95%CI
+\end{coursecode}
+\begin{routput}
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -2.0858     0.3513  -5.938 2.88e-09 ***
+x1            1.1098     0.3485   3.185  0.00145 ** 
+x2            0.7028     0.3292   2.135  0.03275 *  
+x3            0.9751     0.3440   2.835  0.00458 ** 
+(Dispersion parameter for binomial family taken to be 1)
+    Null deviance: 24.4117  on 7  degrees of freedom
+Residual deviance:  2.6821  on 4  degrees of freedom
+AIC: 37.244
+Number of Fisher Scoring iterations: 3
+
+               OR 2.5 % 97.5 %
+(Intercept) 0.124 0.062  0.247
+x1          3.034 1.532  6.006
+x2          2.019 1.059  3.850
+x3          2.651 1.351  5.203
+\end{routput}
+与线性回归的输出相比，有以下不同：检验统计量为$z$（Wald检验，基于大样本近似）；不报告$R^2$，而报告偏差（deviance）；\texttt{Dispersion parameter ... taken to be 1}表示二项分布的方差完全由均数决定，不另行估计；最后一行表明参数由迭代求得，本例迭代3次收敛。
+
+R公式用“\texttt{\textasciitilde}”连接响应与自变量（“\texttt{=}”是参数赋值，写成 \texttt{Y=X1+X2+X3} 会报错）；分布族名为 \texttt{gaussian}。二项资料可以是0/1向量，也可以用 \texttt{cbind(事件数, 非事件数)} 作响应。
+\section{思考与练习}
+\sourcepages{2}{51-54}
+为了研究有关糖尿病患者体内脂联素水平的影响因素，某医师测定了30名患者的体重指数BMI（$\mathrm{kg/m^2}$）、病程DY（年）、瘦素LEP（$\mathrm{ng/mL}$）、空腹血糖FPG（$\mathrm{mmol/L}$）及脂联素ADI（$\mathrm{ng/mL}$）水平，数据如表11所示（数据文件：glmdata1）。
+\ctable{表11\quad 脂联素水平与相关因素的测量数据}{\begin{tabular}{rrrrr@{\qquad}rrrrr}\toprule
+\multicolumn{1}{c}{体重指数}&\multicolumn{1}{c}{病程}&\multicolumn{1}{c}{瘦素}&\multicolumn{1}{c}{空腹血糖}&\multicolumn{1}{c}{脂联素}&\multicolumn{1}{c}{体重指数}&\multicolumn{1}{c}{病程}&\multicolumn{1}{c}{瘦素}&\multicolumn{1}{c}{空腹血糖}&\multicolumn{1}{c}{脂联素}\\
+$X_1$&$X_2$&$X_3$&$X_4$&$Y$&$X_1$&$X_2$&$X_3$&$X_4$&$Y$\\\midrule
+24.22&10.0&5.75&13.6&29.36&24.14&5.0&10.21&7.4&16.01\\
+24.22&3.0&9.32&6.2&14.31&26.45&4.0&19.31&5.1&19.03\\
+19.03&15.0&2.50&11.1&26.08&25.22&2.3&8.65&7.6&17.46\\
+23.39&3.0&5.66&9.7&19.62&27.22&3.0&8.54&8.6&20.36\\
+19.49&4.0&2.83&7.3&42.82&25.93&6.0&7.21&8.9&15.92\\
+24.38&6.0&6.86&7.3&22.76&26.99&12.0&8.75&7.0&15.34\\
+19.03&2.9&3.22&7.7&31.00&25.71&7.0&13.07&13.5&8.05\\
+21.11&9.0&4.90&6.0&17.28&28.41&4.0&8.90&13.5&12.31\\
+23.32&5.0&3.54&6.7&30.25&26.39&4.0&23.26&8.2&5.59\\
+24.34&2.0&4.51&7.2&24.28&28.73&10.0&19.05&6.9&8.59\\
+23.82&8.0&8.47&9.1&18.94&27.46&16.0&19.44&6.5&8.89\\
+22.86&20.0&9.92&8.1&16.08&27.99&10.0&17.33&6.1&14.10\\
+24.49&12.0&6.01&7.0&29.50&28.41&2.0&14.59&6.8&11.74\\
+23.37&6.0&4.31&6.3&25.64&30.69&1.5&22.06&8.1&5.18\\
+20.81&7.0&3.46&7.1&32.26&29.39&3.0&20.56&7.5&6.12\\\bottomrule\end{tabular}}
+\begin{enumerate}
+\item 如何定量描述脂联素与各个影响因素之间的关系？
+\item 哪些因素对脂联素的影响具有统计学意义？
+\item 对脂联素影响最大的因素是谁？
+\item 如何评价模型拟合效果？
+\item 采用广义线性模型分析时，如何定义其因变量的分布和连接函数？
+\item 可以采用哪些方法进行参数估计？
+\end{enumerate}
+\sourcepages{2}{55}
+阅读文献：Dekkers IA, Jansen PR, Lamb HJ. \textit{Obesity, Brain Volume, and White Matter Microstructure at MRI: A Cross-sectional UK Biobank Study}. Radiology. 2019 Jun;291(3):763--771。并回答以下问题：
+\begin{enumerate}
+\item 请阐述该研究的研究设计及分析思路。
+\item 总脑容量、皮质下灰质体积分别与Total body fat（TBF）有何关系（Table 3/4）？
+\end{enumerate}
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（推导题）}
+\question{设 $Y\sim\text{Poisson}(\lambda)$。(1) 把概率函数写成指数族形式，指出 $\theta$、$b(\theta)$、$a(\phi)$；(2) 由 $b(\theta)$ 求均值、方差和典型连接；(3) 若实际资料的方差约为均值的2倍，Poisson GLM的点估计和标准误各受什么影响？}
+\answer{(1) $P(Y=y)=\exp\{y\log\lambda-\lambda-\log y!\}$，故 $\theta=\log\lambda$，$b(\theta)=e^\theta$，$a(\phi)=1$。(2) $\E(Y)=b'(\theta)=e^\theta=\lambda$，$\Var(Y)=b''(\theta)=\lambda$，典型连接 $g(\mu)=\log\mu$。(3) 只要均值结构 $\log\mu=\bm x^\top\bm\beta$ 正确，$\widehat{\bm\beta}$ 仍一致（得分方程只依赖均值）；但模型方差低估了真实方差，常规标准误约偏小 $\sqrt2$ 倍，检验偏于宽松。可用准Poisson（以 $\widehat\phi$ 放大标准误）、稳健标准误或负二项模型（第7章）处理。}
+\section*{小结}
+\sourcepages{2}{56-57}
+广义线性模型的基本概念；常用的连接函数；常用的参数估计方法。
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 写出广义线性模型的三个组成部分，并分别写出logistic回归与Poisson回归中的相应内容。\\
+\textit{答：随机部分（二项／Poisson分布）、系统部分$\eta=\bm x^\top\bm\beta$、连接函数（logit／log）。}
+\item 写出Poisson分布的方差函数，并说明其对方差齐性的意义。\\
+\textit{答：$V(\mu)=\mu$，方差随均数增大而增大，计数资料一般不满足方差齐性。}
+\item 四格表中$a=27$、$b=33$、$c=35$、$d=105$，计算logistic回归的$\widehat\beta$与截距。\\
+\textit{答：$\widehat\beta=\ln(ad/bc)=0.898$，$\widehat\alpha=\ln(b/d)=-1.157$。}
+\item 比较正态线性模型中$\sigma^2$的极大似然估计与$s^2$。\\
+\textit{答：前者分母为$n$，有偏（偏小）；后者分母为$n-p$，无偏。}
+\item 说明Cox回归不属于标准广义线性模型的原因。\\
+\textit{答：其基线风险不作参数设定，采用部分似然估计，不具有“指数族分布加连接函数”的形式。}
+\end{enumerate}
+\end{fuxi}

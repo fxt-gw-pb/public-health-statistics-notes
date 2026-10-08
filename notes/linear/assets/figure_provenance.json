@@ -1,0 +1,50 @@
+[
+  {
+    "name": "ridge_iq",
+    "source": "智商_岭迹.csv",
+    "description": "Standardized coefficient path for all grid points; horizontal zero and requested k shown.",
+    "width_inches": 5.9,
+    "height_inches": 3.3,
+    "dpi": 300
+  },
+  {
+    "name": "ridge_height",
+    "source": "身高_岭迹.csv",
+    "description": "Standardized coefficient path for all grid points; horizontal zero and requested k shown.",
+    "width_inches": 5.9,
+    "height_inches": 3.3,
+    "dpi": 300
+  },
+  {
+    "name": "rabbit_means",
+    "source": "家兔_均数.csv",
+    "description": "Group arithmetic means only; connected lines are visual guides, no confidence intervals. Subject is the independent unit.",
+    "width_inches": 5.9,
+    "height_inches": 3.4,
+    "dpi": 300
+  },
+  {
+    "name": "attention_means",
+    "source": "Attention2021还原_均数.csv",
+    "description": "Group arithmetic means only; connected lines are visual guides, no confidence intervals. Subject is the independent unit.",
+    "width_inches": 5.9,
+    "height_inches": 3.4,
+    "dpi": 300
+  },
+  {
+    "name": "hospital_partial_recomputed",
+    "source": "住院_偏回归_x1.csv; 住院_偏回归_x4.csv",
+    "description": "Final-model added-variable plots, 14 annual observations; displayed fitted lines are descriptive linear fits.",
+    "width_inches": 6.3,
+    "height_inches": 3.2,
+    "dpi": 300
+  },
+  {
+    "name": "funnel_schematic",
+    "source": "Mathematical illustration: envelope +/- (0.15+0.8x), 0<=x<=1",
+    "description": "Schematic widening residual spread. No empirical observations are represented.",
+    "width_inches": 5.4,
+    "height_inches": 2.8,
+    "dpi": 300
+  }
+]

@@ -1,0 +1,609 @@
+\chapter{Logistic回归模型（一）}
+\sourcepages{3}{1-3}
+\subsection*{主要内容}
+\begin{enumerate}
+\item Logistic回归的基本概念、非条件Logistic回归。
+\item 配比设计资料的条件Logistic回归分析。
+\item 多分类结局资料的Logistic回归分析。
+\item 有序分类结局资料的Logistic回归分析。
+\item Logistic回归模型的正确应用及软件实现。
+\end{enumerate}
+\section{Logistic回归的基本概念}
+\sourcepages{3}{4}
+Logistic回归是医学研究中最常用的多因素分析方法之一。理解该模型的关键在于对数优势尺度：模型在logit尺度上是线性、可加的，系数为对数OR；换算到概率尺度后，同一OR对应的概率差随基线水平而变化。将OR等同于RR、将OR为3表述为死亡率增加3倍等常见错误，均源于两种尺度的混淆。
+
+本章另一重点是统计推断。参数由迭代求得，检验与区间估计依赖大样本近似，Wald检验、似然比检验与比分检验三者并存，了解其来源有助于在小样本或稀疏数据时作出选择。最后一节的条件logistic回归用于配对设计，其基本思想是通过条件化消去对子参数，这一思想在第5章的Cox回归中再次出现。
+\subsection{Logistic回归模型}
+\sourcepages{3}{5-12}
+\textbf{例1（横断面研究）} 在研究医院抢救急性心肌梗塞（AMI）患者能否成功的危险因素的调查中，某医院收集了5年中该院所有的AMI患者的抢救病史（有关危险因素很多，由于篇幅有限，本例仅列出3个），共200例。
+\begin{itemize}
+\item $Y=0$ 表示抢救成功，$Y=1$ 表示死亡。
+\item $X_1=1$ 表示抢救前已发生休克，$X_1=0$ 表示抢救前未发生过休克。
+\item $X_2=1$ 表示抢救前发生心衰，$X_2=0$ 表示抢救前未发生心衰。
+\item $X_3=1$ 表示患者从开始AMI症状到抢救时已超过12小时（即未能及时把患者送往医院），$X_3=0$ 表示未超过12小时。
+\end{itemize}
+\ctable{表1\quad AMI患者的抢救危险因素资料}{
+\begin{tabular}{cccccccc}\toprule
+\multicolumn{4}{c}{$Y=0$（在医院抢救成功）}&\multicolumn{4}{c}{$Y=1$（未能抢救成功而死亡）}\\\cmidrule(lr){1-4}\cmidrule(lr){5-8}
+$X_1$&$X_2$&$X_3$&$N$&$X_1$&$X_2$&$X_3$&$N$\\\midrule
+0&0&0&35&0&0&0&4\\0&0&1&34&0&0&1&10\\0&1&0&17&0&1&0&4\\0&1&1&19&0&1&1&15\\1&0&0&17&1&0&0&6\\1&0&1&6&1&0&1&9\\1&1&0&6&1&1&0&6\\1&1&1&6&1&1&1&6\\\bottomrule
+\end{tabular}}
+
+$Y$ 是二分类变量，服从二项分布，事件发生的概率记为 $P$。
+\begin{align*}
+\ln\left(\frac{P}{1-P}\right)&=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3,\\
+\ln\left(\frac{P}{1-P}\right)&=\logit(P)=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3.
+\end{align*}
+\cfigure{图1\quad Logistic回归中线性预测量 $\eta$（logit值）与 $P$ 的关系示意图}{
+\begin{tikzpicture}\begin{axis}[width=10cm,height=6cm,axis lines=middle,xmin=-5,xmax=5,ymin=0,ymax=1.02,xtick={-5,-4,...,5},ytick={.1,.2,...,1},xlabel={$\eta$},ylabel={$P$}]
+\addplot[PlotPrimary,line width=1pt,domain=-5:5,samples=101]{1/(1+exp(-x))};
+\end{axis}\end{tikzpicture}}
+\textbf{Logistic回归模型}
+\begin{align*}
+\ln\left(\frac P{1-P}\right)&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+\logit(P)&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+P&=\frac{e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}{1+e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}
+ =\frac{1}{1+e^{-(\beta_0+\beta_1x_1+\cdots+\beta_mx_m)}}.
+\end{align*}
+
+\begin{annotation}
+$P/(1-P)$ 称为优势（odds）；$\eta=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3$ 为线性预测量。图1横轴是 $\eta=\logit(P)$，取值 $(-\infty,\infty)$；纵轴是概率 $P\in(0,1)$，二者由单调的Logistic曲线一一对应。
+
+logit形式与概率形式是同一模型的两种写法：前者在logit尺度上是线性的，系数直接对应对数优势比，便于解释影响因素；后者把 $\eta$ 反变换回概率，便于给出个体的预测概率。选用哪种写法取决于报告目的，不改变模型本身。
+\end{annotation}
+\textbf{Logistic回归模型的连接函数}
+\begin{itemize}
+\item 分布族family：二项分布binomial。
+\item 连接函数link：logit。
+\end{itemize}
+\[
+\eta=g(\mu)=\logit(P),\qquad \logit(P)=\ln\left(\frac{P}{1-P}\right).
+\]
+\begin{annotation}这种变换称为logit变换。\end{annotation}
+\subsection{参数的估计方法}
+\sourcepages{3}{13-19}
+\begin{itemize}
+\item 因为资料不满足“方差齐性”的条件，故LSE不适宜。
+\item 加权最小二乘估计（weighted least squared, WLS），其权重是方差的倒数，方差越大权重越小，方差越小权重越大。
+\item 极大似然估计（maximum likelihood estimation, MLE），构建似然函数，根据样本数据，找到最有可能产生样本观察值的参数值。
+\end{itemize}
+\begin{annotation}$\beta$ 的估计值可写作 $\widehat\beta$ 或英文字母 $b$。\end{annotation}
+\begin{align*}
+L(\theta\mid y_1,y_2,\ldots,y_n)
+&=f(y_1,y_2,\ldots,y_n\mid\theta)\\
+&=f(y_1\mid\theta)f(y_2\mid\theta)\cdots f(y_n\mid\theta)
+=\prod_{i=1}^nf(y_i\mid\theta).
+\end{align*}
+\[
+\text{对数似然函数：}\quad \ln L(\theta\mid y_1,y_2,\ldots,y_n),
+\]
+\[
+\max L(\theta\mid y_1,y_2,\ldots,y_n),\qquad
+\frac{\partial\ln L(\theta\mid y_1,y_2,\ldots,y_n)}{\partial\theta}=0.
+\]
+\begin{annotation}
+$\theta$ 是参数，$y_i$ 是第 $i$ 个观测值。似然函数与联合概率函数是同一表达式，区别在于把谁看作变量：固定参数看 $\bm y$ 是概率，固定 $\bm y$ 看参数是似然。独立观测的似然是连乘，取对数后变为连加；令一阶导数（得分）为0求驻点，再由二阶导数判断是否为最大值。
+\end{annotation}
+\begin{derivation}{一般Logistic回归的得分、信息阵与IRLS}
+\dpart{假设}$Y_i\mid\bm x_i\sim\text{Bernoulli}(\pi_i)$，$i=1,\ldots,n$ 条件独立，$\logit(\pi_i)=\eta_i=\bm x_i^\top\bm\beta$，$\bm X$ 为 $n\times p$ 列满秩设计矩阵。
+\dpart{关键等式}对数似然
+\[
+\ell(\bm\beta)=\sum_{i=1}^n\{y_i\log\pi_i+(1-y_i)\log(1-\pi_i)\}
+=\sum_{i=1}^n\{y_i\eta_i-\log(1+e^{\eta_i})\}.
+\]
+由 $\partial\log(1+e^{\eta})/\partial\eta=\pi$、$\partial\pi/\partial\eta=\pi(1-\pi)$，得
+\begin{gather*}
+\bm U(\bm\beta)=\frac{\partial\ell}{\partial\bm\beta}=\sum_i(y_i-\pi_i)\bm x_i=\bm X^\top(\bm y-\bm\pi),\\
+\frac{\partial^2\ell}{\partial\bm\beta\,\partial\bm\beta^\top}=-\sum_i\pi_i(1-\pi_i)\bm x_i\bm x_i^\top=-\bm X^\top\bm W\bm X,
+\end{gather*}
+其中 $\bm W=\diag\{\pi_i(1-\pi_i)\}$。Hessian不含 $y_i$，故观测信息等于期望（Fisher）信息 $\bm I(\bm\beta)=\bm X^\top\bm W\bm X$。
+\dpart{结论}(1) 当 $0<\pi_i<1$、$\bm X$ 列满秩时 $\bm X^\top\bm W\bm X$ 正定，$\ell$ 是严格凹函数，若有限的最大值点存在则唯一。(2) MLE满足 $\bm X^\top(\bm y-\widehat{\bm\pi})=\bm 0$；含截距时 $\sum_iy_i=\sum_i\widehat\pi_i$。(3) 大样本下 $\widehat{\bm\beta}\approx N\{\bm\beta,\bm I(\bm\beta)^{-1}\}$，用 $\widehat{\Cov}(\widehat{\bm\beta})=(\bm X^\top\widehat{\bm W}\bm X)^{-1}$，其对角元开方即软件输出的标准误。
+\dpart{迭代算法}Fisher scoring（对典型连接即Newton--Raphson）：
+\[
+\bm\beta^{(t+1)}=\bm\beta^{(t)}+(\bm X^\top\bm W^{(t)}\bm X)^{-1}\bm X^\top(\bm y-\bm\pi^{(t)}).
+\]
+定义工作响应 $z_i^{(t)}=\eta_i^{(t)}+\dfrac{y_i-\pi_i^{(t)}}{\pi_i^{(t)}(1-\pi_i^{(t)})}$，上式可改写为
+\[
+\bm\beta^{(t+1)}=(\bm X^\top\bm W^{(t)}\bm X)^{-1}\bm X^\top\bm W^{(t)}\bm z^{(t)},
+\]
+即以 $\bm W^{(t)}$ 为权重、$\bm z^{(t)}$ 为响应的一次加权最小二乘；权重随 $\bm\pi$ 更新、反复迭代，故称迭代加权最小二乘（IRLS）。分组资料（第 $i$ 组 $n_i$ 例、$y_i$ 例发生）只需把 $\pi_i$ 换成 $n_i\pi_i$、权重换成 $n_i\pi_i(1-\pi_i)$。
+\dpart{解释}以例1的8个协变量组合为分组资料，从 $\bm\beta^{(0)}=\bm 0$ 起迭代，数步即收敛到表2的估计值（$-2.0858$, $1.1098$, $0.7028$, $0.9751$），标准误取自 $(\bm X^\top\widehat{\bm W}\bm X)^{-1}$。
+\end{derivation}
+将上述迭代公式写成R代码，对例1的分组资料自$\bm\beta^{(0)}=\bm0$开始迭代：
+\par\noindent
+\begin{coursecode}{R}
+ami <- data.frame(x1=rep(c(0,1),each=4), x2=rep(rep(c(0,1),each=2),2), x3=rep(c(0,1),4),
+                  alive=c(35,34,17,19,17,6,6,6), dead=c(4,10,4,15,6,9,6,6))
+X <- cbind(1, as.matrix(ami[,1:3])); y <- ami$dead; n <- ami$dead+ami$alive
+beta <- rep(0,4)
+for(t in 1:5){
+  p <- plogis(drop(X%*%beta)); W <- n*p*(1-p)           # 当前的概率和权重
+  beta <- beta + solve(t(X)%*%(W*X), t(X)%*%(y-n*p))    # Fisher scoring一步
+  cat("第",t,"次:",sprintf("%9.5f",beta),"\n")
+}
+sqrt(diag(solve(t(X)%*%(W*X))))                          # 标准误
+\end{coursecode}
+\begin{routput}
+第 1 次:  -1.67585   0.88648   0.55088   0.73037 
+第 2 次:  -2.04856   1.08991   0.68962   0.95113 
+第 3 次:  -2.08550   1.10964   0.70273   0.97486 
+第 4 次:  -2.08584   1.10982   0.70285   0.97509 
+第 5 次:  -2.08584   1.10982   0.70285   0.97509 
+                 x1        x2        x3 
+0.3512559 0.3484879 0.3291858 0.3439633 
+\end{routput}
+第4次迭代后，估计值小数点后5位不再变化，结果与\texttt{glm()}相同（\texttt{glm()}报告迭代3次，是因为其收敛判据为偏差的相对变化）。标准误为信息阵逆矩阵对角元的平方根。该算法的每一步依次为：由当前估计计算概率与权重，求解一次加权最小二乘，重复直至收敛。
+
+\textbf{有限MLE的存在性}\quad 上面的严格凹性只保证“若有最大值点则唯一”，并不保证最大值点有限。
+\begin{itemize}
+\item \textbf{完全分离}：存在 $\bm b$ 使 $y_i=1$ 时 $\bm x_i^\top\bm b>0$、$y_i=0$ 时 $\bm x_i^\top\bm b<0$。沿 $\bm b$ 方向放大系数，似然单调增至1，MLE不存在（某些系数趋于 $\pm\infty$）。
+\item \textbf{准完全分离}：上述不等式中允许等号，且至少一侧有等号成立。似然仍有上确界而达不到，相应系数发散。
+\item \textbf{四格表的情形}：$\widehat\beta=\ln\{ad/(bc)\}$ 要求四个格子都为正。任一格为0（如暴露组无病例），$\widehat\beta=\pm\infty$，正是准完全分离。
+\item \textbf{识别与处理}：软件常给出“拟合概率为0或1”的警告，系数和标准误异常大、迭代不收敛。可合并稀疏类别、检查编码，或改用Firth惩罚似然、精确Logistic回归。不能简单删去引起分离的变量后照常解释。
+\end{itemize}
+\subsubsection{四格表资料的极大似然估计}
+\ctable{表10\quad 暴露者与非暴露者发病与不发病的概率}{\renewcommand{\arraystretch}{1.8}\begin{tabular}{lcc}\toprule
+&暴露，$x=1$&非暴露，$x=0$\\\midrule
+发病，$y=1$&$P_1=\dfrac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}$&$P_0=\dfrac{e^\alpha}{1+e^\alpha}$\\
+不发病，$y=0$&$1-P_1=\dfrac1{1+e^{\alpha+\beta}}$&$1-P_0=\dfrac1{1+e^\alpha}$\\\bottomrule\end{tabular}}
+\begin{align*}
+L&=\left(\frac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}\right)^a
+\left(\frac{e^\alpha}{1+e^\alpha}\right)^b
+\left(\frac1{1+e^{\alpha+\beta}}\right)^c
+\left(\frac1{1+e^\alpha}\right)^d,\\
+\ln L&=a(\alpha+\beta)-a\ln(1+e^{\alpha+\beta})+b\alpha-b\ln(1+e^\alpha)\\
+&\qquad-c\ln(1+e^{\alpha+\beta})-d\ln(1+e^\alpha)\\
+&=a(\alpha+\beta)+b\alpha-(a+c)\ln(1+e^{\alpha+\beta})-(b+d)\ln(1+e^\alpha),\\
+\frac{\partial\ln L}{\partial\alpha}&=a+b-\frac{(a+c)e^{\alpha+\beta}}{1+e^{\alpha+\beta}}-\frac{(b+d)e^\alpha}{1+e^\alpha},\\
+\frac{\partial\ln L}{\partial\beta}&=a-\frac{(a+c)e^{\alpha+\beta}}{1+e^{\alpha+\beta}}.
+\end{align*}
+令 $\partial\ln L/\partial\alpha=0$，$\partial\ln L/\partial\beta=0$，得：
+\[
+\widehat\alpha=\ln\frac bd,\qquad \widehat\beta=\ln\frac{ad}{bc},\qquad
+\logit(P)=\alpha+\beta x=\ln\frac bd+\ln\frac{ad}{bc}\,x.
+\]
+
+\begin{annotation}由样本资料和极大似然估计得到回归方程。四格表是饱和模型，MLE等于观察比例对应的logit：$\widehat\alpha$ 为非暴露组的对数优势，$\widehat\beta$ 为对数OR。\end{annotation}
+\sourcepages{3}{20}
+\ctable{表2\quad 例1的参数估计与Wald检验结果}{\begin{tabular}{lrrrrr}\toprule
+变量名&$\widehat\beta$&$\SE(\widehat\beta)$&Wald $\chi^2$&$P$值&OR\\\midrule
+常数项&$-2.0858$&0.3513&35.2632&0.0001&---\\
+$X_1$&1.1098&0.3485&10.1422&0.0014&3.034\\
+$X_2$&0.7028&0.3292&4.5587&0.0328&2.019\\
+$X_3$&0.9751&0.3440&8.0365&0.0046&2.651\\\bottomrule\end{tabular}}
+\[
+\logit(P)=-2.0858+1.1098X_1+0.7028X_2+0.9751X_3.
+\]
+\subsection{回归系数的意义}
+\sourcepages{3}{21-29}
+如何正确理解回归系数 $\beta(b)$ 的意义？
+\begin{annotation}
+$\beta$ 是总体参数，$b$（或 $\widehat\beta$）是它的估计值。线性回归中，$\beta_j$ 是其他变量固定时 $x_j$ 每增加1个单位 $\E(Y)$ 的改变量，在概率尺度上是常数；Logistic回归中 $\beta_j$ 是logit（对数优势）尺度上的改变量，换算到概率尺度后不再是常数（见下文）。
+\end{annotation}
+\begin{align*}
+\text{发生休克：}\quad \ln\frac{P^*}{1-P^*}&=-2.0858+1.1098\times1+0.7028X_2+0.9751X_3,\\
+\text{无休克：}\quad \ln\frac{P}{1-P}&=-2.0858+1.1098\times0+0.7028X_2+0.9751X_3,\\
+\text{两式相减：}\quad \ln\left(\frac{P^*}{1-P^*}\Big/\frac{P}{1-P}\right)&=\ln(\OR)=1.1098,\\
+\OR&=e^{1.1098}=3.034.
+\end{align*}
+\begin{annotation}
+优势（odds）是同一组内事件发生概率与不发生概率之比 $P/(1-P)$；优势比（OR）是两组优势之比。在心衰、抢救是否及时相同的条件下，发生休克者死亡的优势是未休克者的3.034倍。
+\end{annotation}
+\textbf{常数项的含义}
+\begin{itemize}
+\item 常数项 $\widehat\beta_0=-2.0858$，表示在其它自变量均为零时死亡与不死亡优势的自然对数值。
+\item $\exp(\widehat\beta_0)=0.1242$ 是无休克、无心衰和抢救及时组死亡与不死亡的比值。当死亡概率很低时，不死亡的概率接近1，该值近似等于死亡率。
+\end{itemize}
+\begin{annotation}当 $P$ 很小时，$P/(1-P)\approx P$。本例该组的模型死亡概率为 $\exp(\widehat\beta_0)/\{1+\exp(\widehat\beta_0)\}=0.1105$，与0.1242已有差别，故“优势近似概率”只适用于罕见结局。截距的这种解释还要求研究设计能估计绝对风险（横断面或队列资料）；病例对照资料的截距受抽样比例影响，不能这样解释。\end{annotation}
+$\beta_i$ 表示当其它因素被控制后，$X$ 每改变一个单位，优势比（比值比，OR）的对数值（LnOR）。
+\[
+\beta=\ln\left[\frac{P(D=1\mid X^*)/P(D=0\mid X^*)}{P(D=1\mid X)/P(D=0\mid X)}\right]=\ln\OR,
+\qquad e^\beta=\OR.
+\]
+当结局变量赋值为1表示死亡等危险事件时：
+\begin{itemize}
+\item 如果回归系数为正值，$\exp(\widehat\beta)>1$，该因素是危险因素。
+\item 如果回归系数为负值，$\exp(\widehat\beta)<1$，该因素是保护因素。
+\item 本例中3个因素的回归系数均为正值，说明休克、心衰和未能及时抢救都是增加死亡优势的危险因素。
+\end{itemize}
+\begin{sikao}[OR与RR的区别]
+“休克者死亡的优势是未休克者的3.03倍”不能表述为“休克者的死亡风险是未休克者的3倍”。以第1章合并后的四格表为例（未调整其他因素）：
+\begin{center}\small
+\begin{tabular}{lcc}\toprule
+&死亡率&优势$P/(1-P)$\\\midrule
+休克（62例）&$27/62=0.435$&$0.771$\\
+无休克（138例）&$33/138=0.239$&$0.314$\\\midrule
+比值&RR$=1.82$&OR$=2.45$\\\bottomrule
+\end{tabular}
+\end{center}
+死亡率之比为1.82，而OR为2.45。由$\OR=\RR\times\dfrac{1-P_0}{1-P_1}$可知，结局越常见，二者差别越大；仅当两组发生率均很低（一般低于10\%）时，$\OR\approx\RR$。本例死亡率在20\%--45\%之间，OR明显夸大了相对风险。
+
+OR的广泛使用有两方面原因：logit连接保证概率位于$(0,1)$内，具有良好的数学性质；病例对照研究只能估计OR，且OR在病例对照抽样下保持不变，条件logistic回归即以此为基础。报告时应表述为“优势是……倍”；结局常见且需要RR时，可采用log连接的二项回归或稳健Poisson回归另行估计。
+\end{sikao}
+自变量可以是连续型的定量变量、两分类或多分类的定性变量。
+\begin{enumerate}
+\item 对于连续型的定量变量，$\beta_i$ 表示当其它因素被控制后，$X$ 每改变一个单位，优势比的对数值（LnOR）。
+\item 对于两分类的定性变量，类别间互相的比较。
+\item 对于多分类的定性变量，采用哑变量变换，与参照组的比较。
+\end{enumerate}
+\begin{annotation}例如母乳喂养知识得分的OR为1.10：其他因素不变时，得分每增加1分，长时间母乳喂养的\emph{优势}乘以1.10（增加10\%），并不是概率增加10\%或10个百分点。\end{annotation}
+\begin{derivation}{OR与概率尺度上的效应}
+\dpart{假设}$\logit\pi(\bm x)=\beta_0+\beta_jx_j+\sum_{k\ne j}\beta_kx_k$，$x_j$ 以线性项进入模型，且不与其他变量构成交互项。
+\dpart{关键等式}其他变量固定，$x_j$ 由 $x$ 变为 $x+\Delta x$，两优势之比
+\[
+\OR(\Delta x)=\frac{\pi(x+\Delta x)/\{1-\pi(x+\Delta x)\}}{\pi(x)/\{1-\pi(x)\}}=\exp(\beta_j\Delta x),
+\]
+与 $x$ 和其他变量的取值无关。而在概率尺度上，
+\[
+\frac{\partial\pi}{\partial x_j}=\beta_j\,\pi(1-\pi).
+\]
+\dpart{结论}OR对所有个体相同（这是模型假设），但概率的改变量随基线概率而变：$\pi=0.5$ 时最大（$\beta_j/4$），$\pi$ 接近0或1时很小。以休克为例（OR=3.034），无心衰、抢救及时者死亡概率由0.110升至0.274，增加16.4个百分点；已有心衰且抢救不及时者由0.399升至0.669，增加26.9个百分点。
+\dpart{解释}若 $x_j$ 有交互项或非线性项（如 $x_j^2$、样条），$\exp(\beta_j)$ 本身不再是“$x_j$ 每增加1单位的OR”，需按完整的线性预测量计算指定比较的OR。
+\end{derivation}
+\textbf{条件OR与边际OR}\quad 模型中的OR是\emph{调整其他协变量后}的条件OR。即使没有混杂，条件OR与边际（总体平均）OR也可以不同，这称为OR的不可折叠性（第6章）。例：$Z$ 取0、1各半且与 $X$ 独立，$\logit\pi=-1.5+\ln4\cdot x+3z$。$Z=0$ 层 $\pi(1)=0.472$、$\pi(0)=0.182$，$Z=1$ 层 $\pi(1)=0.947$、$\pi(0)=0.818$，两层OR都是4；合并后 $\pi(1)=0.709$、$\pi(0)=0.500$，边际OR为2.44。因此不同模型（调整变量不同）的OR不能简单比较大小，比较前要说明各自的调整集合。例1中休克的粗OR为2.455，调整心衰、抢救是否及时后为3.034，这一差别同时包含混杂与不可折叠性。
+
+\textbf{病例对照抽样}\quad 若病例与对照的抽样比例分别为 $s_1$、$s_0$，且抽样只依赖结局 $Y$、不依赖 $\bm x$，则样本中
+\[
+\logit P(Y=1\mid\bm x,\text{被抽中})=\underbrace{\beta_0+\ln(s_1/s_0)}_{\text{截距改变}}+\bm x^\top\bm\beta .
+\]
+斜率 $\bm\beta$（从而OR）不变，可以照常估计；截距被抽样比例平移，故病例对照资料不能由模型直接得到绝对风险或预测概率，除非另有外部信息（如人群发病率）校正截距。若抽样还依赖 $\bm x$（如按暴露选对照），斜率也会有偏。
+\subsection{回归系数的假设检验}
+\sourcepages{3}{30-31}
+检验模型中一个或者几个总体回归系数是否等于0。
+\[
+H_0:\beta_i=0\quad(\text{或联合地 }H_0:\beta_{j_1}=\cdots=\beta_{j_q}=0).
+\]
+假设是对未知的总体参数作出的约束；$\widehat\beta_i$ 是由样本算出的估计值，检验的正是它与0的差别能否用抽样误差解释，故 $H_0$ 中不应写 $\widehat\beta_i$。
+有三种检验方法：Wald检验、似然比检验、比分检验。
+\subsubsection{Wald检验}
+\sourcepages{3}{32-33}
+\[
+z=\frac{\widehat\beta-0}{\SE(\widehat\beta)},\qquad
+\text{Wald }\chi^2=z^2=\frac{(\widehat\beta-0)^2}{\Var(\widehat\beta)}.
+\]
+回归系数估计值的95\%CI：
+\[
+\widehat\beta-1.96\SE(\widehat\beta)\ \sim\ \widehat\beta+1.96\SE(\widehat\beta).
+\]
+OR值的95\%CI：
+\[
+e^{\widehat\beta-1.96\SE(\widehat\beta)}\ \sim\ e^{\widehat\beta+1.96\SE(\widehat\beta)}.
+\]
+\begin{annotation}依据是MLE的大样本正态性：$H_0:\beta=0$ 成立时 $z$ 近似服从标准正态分布，$z^2$ 近似服从 $\chi^2_1$，临界值 $1.96^2=3.84$。这是渐近结论，小样本或系数很大（接近分离）时Wald检验可能不可靠。OR的置信区间由系数区间取指数得到，因此关于OR不对称。报告时应同时给出OR、95\%置信区间和 $P$ 值。\end{annotation}
+\ctable{休克变量的Wald检验与区间估计}{\begin{tabular}{lrrrrr}\toprule
+变量&回归系数&标准误&系数下限&系数上限&Wald统计量\\\midrule
+休克&1.110&0.349&0.427&1.793&10.142\\\bottomrule
+\end{tabular}\par\smallskip\begin{tabular}{lrrrrr}\toprule
+变量&自由度&$P$值&OR&OR下限&OR上限\\\midrule
+休克&1&0.001&3.034&1.532&6.007\\\bottomrule\end{tabular}}
+\subsubsection{似然比检验}
+\sourcepages{3}{34-36}
+通过比较两个相嵌套模型的对数似然函数值进行，统计量 $G$ 等于两模型偏差（deviance）之差。
+\begin{align*}
+G&=D_P-D_K\\
+&=-2\bigl(\text{模型 $P$ 的对数似然函数}-\text{模型 $K$ 的对数似然函数}\bigr).
+\end{align*}
+其中，模型 $P$ 中的变量是模型 $K$ 中的一部分，模型 $K$ 中剩余的就是我们要检验的变量。$H_0$ 成立时 $G$ 近似服从自由度为 $K-P$ 的 $\chi^2$ 分布。
+\begin{annotation}模型 $P$ 含 $P$ 个参数，模型 $K$ 含 $K$ 个参数，$K>P$。自由度 $K-P$ 等于 $H_0$ 施加的独立约束个数，即被检验的参数个数（一个多分类变量的 $c-1$ 个哑变量要合起来检验时，自由度为 $c-1$）。\end{annotation}
+\ctable{表3\quad 拟合的Logistic回归模型的对数似然函数值}{\begin{tabular}{clrr}\toprule
+编号&模型中的变量&对数似然函数值&参数个数\\\midrule
+1&常数项&$-122.172$&1\\
+2&常数项+休克&$-118.367$&2\\
+3&常数项+心衰&$-119.549$&2\\
+4&常数项+及时&$-118.667$&2\\
+5&常数项+休克+心衰&$-115.557$&3\\
+6&常数项+休克+及时&$-113.599$&3\\
+7&常数项+心衰+及时&$-116.491$&3\\
+8&常数项+休克+心衰+及时&$-111.308$&4\\\bottomrule\end{tabular}}
+\begin{annotation}
+模型5嵌套于模型8，两者只差变量“及时”。$H_0$：调整休克与心衰后，“及时”的系数为0。若加入该变量后对数似然增加较多，$G$ 就大；$G>\chi^2_{0.05,1}=3.84$ 对应 $P<0.05$，拒绝 $H_0$。
+\end{annotation}
+\[
+G=-2\times[-115.557-(-111.308)]=8.49,\qquad
+\chi^2_{0.05,1}=3.84,\qquad P<0.05.
+\]
+抢救是否及时：$\checkmark$。
+
+R中用\texttt{anova()}比较两个嵌套模型，\texttt{test="LRT"}给出似然比检验，\texttt{test="Rao"}给出比分检验：
+\par\noindent
+\begin{coursecode}{R}
+f5 <- glm(cbind(dead,alive)~x1+x2,    binomial, ami)    # 模型5
+f8 <- glm(cbind(dead,alive)~x1+x2+x3, binomial, ami)    # 模型8
+anova(f5, f8, test="LRT")
+anova(f5, f8, test="Rao")
+\end{coursecode}
+\begin{routput}
+  Resid. Df Resid. Dev Df Deviance Pr(>Chi)   
+1         5    11.1811                        
+2         4     2.6821  1    8.499 0.003553 **
+
+  Resid. Df Resid. Dev Df Deviance    Rao Pr(>Chi)   
+1         5    11.1811                               
+2         4     2.6821  1    8.499 8.3041 0.003955 **
+\end{routput}
+偏差之差$11.1811-2.6821=8.499$即$G$。以分组资料拟合时，偏差与对数似然的数值与个体资料相差一个常数，但两模型之差不变，检验结果完全相同。
+\subsubsection{比分（score）检验}
+\sourcepages{3}{37}
+\[
+H_0:\theta=\theta_0,\qquad
+U(\theta)=\frac{\partial\log L(\theta\mid y)}{\partial\theta},
+\]
+\[
+I(\theta)=-E\left(\left.\frac{\partial^2}{\partial\theta^2}\log f(Y;\theta)\right|\theta\right),\qquad
+S(\theta_0)=\frac{U(\theta_0)^2}{I(\theta_0)},\qquad S(\theta_0)\sim\chi_1^2.
+\]
+\begin{annotation}
+$U(\theta)$ 是得分函数，即对数似然对参数的一阶导数（不是“均数”或对数似然本身）；$I(\theta)$ 是Fisher信息，等于负的二阶导数的期望。在 $H_0:\theta=\theta_0$ 下，$\E\{U(\theta_0)\}=0$，$\Var\{U(\theta_0)\}=I(\theta_0)$，大样本下 $U(\theta_0)/\sqrt{I(\theta_0)}$ 近似标准正态，平方后近似 $\chi^2_1$。比分检验只需拟合 $H_0$ 下的约束模型，在约束点处求导，不必拟合含被检验参数的模型。
+\end{annotation}
+以例1检验“及时”（调整休克、心衰）为例：比分检验 $\chi^2=8.30$，Wald检验 $\chi^2=8.04$，似然比检验 $G=8.50$，均为 $\mathrm{df}=1$、$P<0.005$，三者接近。
+\subsubsection{三个检验的比较}
+\sourcepages{3}{38}
+\begin{itemize}
+\item 三个检验在大样本下渐近等价；小样本或估计值靠近参数空间边界、接近分离时，似然比检验通常更可靠。
+\item Wald检验只用无约束模型，比分检验只用约束模型，似然比检验两个模型都要拟合。
+\item 三者检验的是同一个 $H_0$，调整的协变量也相同。“Wald检验未考虑各因素间的综合作用”的说法不成立：多变量模型中的Wald检验同样是在其他变量已在模型中的条件下进行的。
+\end{itemize}
+\begin{derivation}{三种检验的渐近联系}
+\dpart{假设}正则条件成立：模型可识别，真值 $\theta_0$ 是参数空间的内点（不在边界上），对数似然在 $\theta_0$ 附近三阶可导且可交换求导与积分，信息量 $I(\theta)$ 随 $n$ 增大而增大。下面以一维参数说明。
+\dpart{关键等式}在MLE $\widehat\theta$ 处作二阶Taylor展开，注意 $\ell'(\widehat\theta)=0$：
+\[
+\ell(\theta_0)\approx\ell(\widehat\theta)-\tfrac12\,I(\widehat\theta)\,(\widehat\theta-\theta_0)^2 .
+\]
+又在 $\theta_0$ 处展开得分函数：$0=U(\widehat\theta)\approx U(\theta_0)-I(\theta_0)(\widehat\theta-\theta_0)$，即 $\widehat\theta-\theta_0\approx U(\theta_0)/I(\theta_0)$。
+\dpart{结论}
+\[
+\underbrace{2\{\ell(\widehat\theta)-\ell(\theta_0)\}}_{\text{似然比}}\approx
+\underbrace{(\widehat\theta-\theta_0)^2I(\widehat\theta)}_{\text{Wald}}\approx
+\underbrace{U(\theta_0)^2/I(\theta_0)}_{\text{比分}},
+\]
+在 $H_0$ 下三者都渐近服从 $\chi^2_1$。多维时，若 $\bm\theta=(\bm\psi,\bm\lambda)$，检验 $H_0:\bm\psi=\bm\psi_0$（$q$ 维），干扰参数 $\bm\lambda$ 在似然比检验中分别在两个模型里取各自的MLE，在比分检验中取约束MLE，在Wald检验中用信息阵逆的 $\bm\psi$ 子块 $[\bm I^{-1}]_{\psi\psi}$（它已扣除估计 $\bm\lambda$ 带来的不确定性）。三者渐近服从 $\chi^2_q$，$q$ 为 $H_0$ 中独立约束的个数。
+\dpart{解释}三者的差别来自对数似然偏离二次型的程度，样本量越大差别越小。这些都是渐近结论，$P$ 值是近似的；若需要精确推断（如很小的样本、稀疏格子），应改用精确条件检验或置换方法。
+\end{derivation}
+\subsection{拟合优度检验}
+\sourcepages{3}{39}
+模型拟合结果与实际数据的比较分析（goodness of fit）。
+\begin{itemize}
+\item 零模型（null model）：只包含一个参数（常数项）的模型，对应于 $y$ 的均数。
+\item 饱和模型（saturated model；也有称“全模型”的）：每个观察单位（个体或协变量组合）对应一个参数，拟合值与观察值完全相等。注意它不是“包含全部候选自变量的模型”，后者在本书中称完整模型。
+\item 好的模型应该是用尽量少的参数达到最大的拟合。
+\end{itemize}
+三类指标回答不同的问题，不能互相替代：(1) 相对零模型的改进（似然比 $\chi^2$、Pseudo $R^2$）——自变量整体上是否有作用；(2) 整体拟合（偏差、Pearson $\chi^2$、Hosmer--Lemeshow）——模型与资料是否有系统偏离；(3) 预测表现（区分度如ROC曲线下面积/C统计量，校准度如校准曲线）——模型能否准确预测新个体。
+\subsubsection{$\lambda$ 统计量}
+\sourcepages{3}{40}
+饱和模型的似然函数：$L(b_{\max};y)$。候选模型的似然函数：$L(b;y)$。
+\[
+\lambda=\frac{L(b_{\max};y)}{L(b;y)}\ \ge1.
+\]
+$\lambda$ 越接近1，候选模型与饱和模型越接近，拟合越好。
+\subsubsection{Deviance偏差统计量}
+\sourcepages{3}{41}
+\[
+D=2\ln\lambda=2\bigl(\ln L(b_{\max};y)-\ln L(b;y)\bigr).
+\]
+$D$ 值越大，说明模型拟合值与实际观察值差别越大，拟合效果越差。
+\begin{annotation}以饱和模型为基准：候选模型的似然越接近饱和模型，$D$ 越小；$D=0$ 即候选模型本身就是饱和模型。\end{annotation}
+\textbf{$\chi^2$ 近似的条件}\quad 对\emph{分组}二项资料（共 $G$ 个协变量组合，第 $g$ 组 $n_g$ 例、$y_g$ 例发生、拟合概率 $\widehat\pi_g$），
+\[
+D=2\sum_{g=1}^G\left\{y_g\ln\frac{y_g}{n_g\widehat\pi_g}+(n_g-y_g)\ln\frac{n_g-y_g}{n_g(1-\widehat\pi_g)}\right\},\qquad \mathrm{df}=G-p,
+\]
+在 $G$ 固定、各组 $n_g$ 足够大（期望频数 $n_g\widehat\pi_g$、$n_g(1-\widehat\pi_g)$ 大多不小于5）时，$D$ 在模型正确的前提下近似服从 $\chi^2_{G-p}$。个体Bernoulli资料（每个协变量组合只有1例，如含连续自变量）中，饱和模型参数个数随 $n$ 增长，$D$ 只依赖拟合概率，不再近似 $\chi^2_{n-p}$，不能用它作拟合优度检验；此时可用Hosmer--Lemeshow检验（按预测概率分组，第3章软件附录中的SAS选项 \texttt{lackfit}）或残差、校准图。例1只有8个协变量组合、每组例数较多：$D=2.68$，$\mathrm{df}=8-4=4$，$P=0.61$，未发现模型与资料有系统偏离。
+\subsubsection{广义的 $\chi^2$ 统计量}
+\sourcepages{3}{42}
+\[
+\chi_G^2=\sum_{g=1}^G\frac{(y_g-n_g\widehat\pi_g)^2}{n_g\widehat\pi_g(1-\widehat\pi_g)}.
+\]
+分母是模型给出的响应方差 $\widehat{\Var}(Y_g)=n_g\widehat\pi_g(1-\widehat\pi_g)$，而不是拟合值的抽样方差 $\Var(\widehat y)$。$\chi_G^2$ 即Pearson $\chi^2$，自由度与适用条件同偏差。$\chi_G^2$ 值越大，说明模型估计值与实际观察值差别大，拟合效果差。例1中 $\chi_G^2=2.77$，$\mathrm{df}=4$，$P=0.60$。
+\begin{annotation}每一项是Pearson残差的平方，相当于把“观察值减期望值”按模型标准差标准化后再平方。\end{annotation}
+\subsubsection{似然比 $\chi^2$ 统计量}
+\sourcepages{3}{43}
+Likelihood ratio chi-square statistics。
+\[
+C=2\bigl(\ln L(b;y)-\ln L(b_{\min};y)\bigr).
+\]
+$C$ 值越大，说明所选模型比零模型改进程度越大。它检验的是“全部自变量的系数同时为0”，$\mathrm{df}=p-1$；$C$ 大只说明自变量整体有作用，不说明模型拟合良好。例1：$C=2\times(-111.308+122.173)=21.73$，$\mathrm{df}=3$，$P<0.001$。
+\subsubsection{Pseudo $R^2$}
+\sourcepages{3}{44}
+\[
+\text{Pseudo }R^2_{\text{McFadden}}=\frac{\ln L(b_{\min};y)-\ln L(b;y)}{\ln L(b_{\min};y)}=1-\frac{\ln L(b;y)}{\ln L(b_{\min};y)}.
+\]
+这是McFadden定义；软件中还有Cox--Snell、Nagelkerke等定义，数值不同，报告时要注明。它取值于 $[0,1)$，越大表示相对零模型改进越多，但不是“解释的方差比例”，数值通常远小于线性回归的 $R^2$。例1：$1-(-111.308)/(-122.173)=0.089$。
+\subsubsection{AIC与BIC}
+\sourcepages{3}{45}
+赤池信息准则（Akaike information criterion, AIC）；贝叶斯信息准则（Bayesian information criterion, BIC）。综合考虑对数似然和参数个数，数值小表示在拟合与简约之间权衡得更好：
+\[
+\mathrm{AIC}=-2\ln L(b;y)+2k,\qquad \mathrm{BIC}=-2\ln L(b;y)+k\ln n,
+\]
+$k$ 为估计的参数个数（含截距），$n$ 为样本量（个体数）。例1完整模型 $\mathrm{AIC}=230.62$，$\mathrm{BIC}=243.81$（$n=200$，$k=4$）。
+\begin{annotation}可比条件：只有用\emph{同一批观察}、\emph{同一响应}（及同一响应变换和同一种似然写法，如个体资料与分组资料的似然相差常数）拟合的模型，AIC、BIC才能相互比较；不要求模型嵌套。AIC、BIC的单个数值没有绝对意义。BIC对参数的惩罚更重，倾向于选择更简单的模型。线性回归中的 $R^2$ 不惩罚变量个数，加变量只增不减。\end{annotation}
+\subsection{建模策略}
+\sourcepages{3}{46}
+\begin{enumerate}
+\item 从单因素分析开始：统计描述、统计推断。
+\item 部分多因素分析：变量的类型、变量的变换。
+\item 多因素分析：自变量的筛选、模型的选择（通过对比、嵌套）。
+\item 深入思考：交互作用项、共线性、条件的检验、拟合优度。
+\end{enumerate}
+统计学意义与专业意义。最优模型：不同的角度、不同的目的、不同的条件。
+
+\textbf{补充：按研究目的确定建模方案}
+\begin{enumerate}
+\item \textbf{先定问题，再定模型。}明确结局（定义、测量时点）、分析单位（个体、配对、家庭、地区）和研究目的。病因推断关注某一暴露的调整效应；预测关注整体预测准确性；二者的变量选择原则不同。
+\item \textbf{调整变量依据专业知识确定。}病因研究中，混杂因素（同时影响暴露与结局、且不在因果通路上）应事先根据文献或因果图列出并纳入模型；中介变量、暴露的结果和碰撞变量不应调整。
+\item \textbf{单因素 $P$ 值筛选的局限。}单因素无统计学意义的混杂因素仍可能造成明显的混杂偏倚；单因素有意义的变量可能只是暴露的替身。逐步筛选会使最终模型的标准误偏小、系数偏大（选择偏倚），且结果对样本波动敏感。筛选可以辅助探索，但不应替代事先设定的调整集合。
+\item \textbf{区分三个概念。}混杂：第三变量使暴露与结局的粗关联偏离真实效应，处理方法是调整；交互作用（效应修饰）：暴露的效应随第三变量的水平而不同，应在模型中加交互项并分层报告，不能当作混杂“调整掉”；共线性：自变量之间高度相关，使单个系数的标准误增大、估计不稳定，但不影响整体预测。
+\item \textbf{连续变量的函数形式。}模型假定的是\emph{logit尺度}上的线性：$\logit\pi$ 随 $x$ 线性变化，而不是 $\pi$ 随 $x$ 线性变化。可用分组后的经验logit作图、加二次项或限制性立方样条（第5章）检查；随意把连续变量二分会损失信息。
+\item \textbf{信息量与参数个数。}有效样本量取决于较少一类结局的例数（事件数），而不是总例数。需要估计的参数个数要按实际参数计：一个 $c$ 类分类变量占 $c-1$ 个，样条占结点数减1个，交互项另计。常用经验是每个参数至少10--20个事件（第3章“20倍”同理，按参数而非变量计）；稀疏类别（某类事件很少或为0）会导致系数不稳定甚至分离，可考虑合并类别或惩罚估计。
+\item \textbf{预测模型的评价。}区分度（ROC曲线下面积/C统计量）、校准度（预测概率与观察比例是否一致，用校准曲线、校准斜率）；在建模样本上评价会过于乐观，至少应做内部验证（Bootstrap或交叉验证），有条件时做外部验证。
+\end{enumerate}
+\section{配对设计资料的条件Logistic回归模型}
+\sourcepages{3}{47-49}
+\subsection{配对设计}
+从统计学的角度看，控制混杂因素的主要方法有两种。
+\begin{itemize}
+\item 在设计阶段：采取配对或匹配（match）的设计，$1:1$ 配对、$1:m$ 匹配。
+\item 在数据分析阶段：采用多因素分析方法（前提条件是收集到混杂因素的信息）。
+\end{itemize}
+匹配资料的分析：配对资料比较的 $t$ 检验；配伍组设计资料的方差分析；配对设计和配伍组设计资料的秩和检验；配对设计四格表资料的卡方检验；……。
+\subsection{条件Logistic回归的基本思想}
+\sourcepages{3}{50-55}
+\textbf{例2} 研究某注射剂的不良反应的影响因素。重点探讨药物剂量、用药时间和合并用药种类是否为不良反应的影响因素。采用 $1:1$ 配对设计，配对因素为注射剂的相同批次、患者的性别、年龄和病情轻重。收集过去两年某综合性医院发生不良反应的40例患者为病例，选择该院同期符合匹配条件的患者为对照。部分数据见表4。
+\ctable{表4\quad 注射剂不良反应影响因素的 $1:1$ 配对病例对照资料}{\begin{tabular}{ccrrr}\toprule
+配对号&病例对照&药物剂量&用药天数&合并药物\\
+$i$&$j$&$X_1$&$X_2$&$X_3$\\\midrule
+1&1&0.9&3&4\\1&0&0.6&6&7\\
+2&1&0.5&1&5\\2&0&0.6&4&2\\
+3&1&0.6&4&3\\3&0&1.2&3&4\\
+4&1&0.9&4&13\\4&0&0.6&4&5\\
+5&1&1.5&3&6\\5&0&1.2&6&3\\
+$\cdots$&$\cdots$&$\cdots$&$\cdots$&$\cdots$\\
+40&1&0.5&2&6\\40&0&0.6&6&3\\\bottomrule\end{tabular}}
+\begin{annotation}第 $i$ 个配对（$i=1,\ldots,40$）由病例 $A_i$ 和对照 $B_i$ 组成。\end{annotation}
+\textbf{配对的模型}\quad 配对使同一对的两人在批次、性别、年龄、病情上相同，这些匹配因素对基线风险的影响用对子专有的截距 $\alpha_i$ 表示：
+\[
+\logit P(Y=1\mid\bm x,\text{第 }i\text{ 对})=\alpha_i+\sum_j\beta_jx_j,\qquad i=1,\ldots,40 .
+\]
+$\beta_j$ 对所有对子相同（见“模型假设”）。若直接用非条件Logistic回归估计40个 $\alpha_i$ 和 $\beta$，每对只有2人，参数个数随对子数增长，$\widehat\beta$ 会严重偏大（$1:1$ 配对时约为真值的2倍）。条件似然的办法是以“每对中恰有1例病例”为条件，把 $\alpha_i$ 消去。
+\begin{align*}
+& P(A_i\text{发生不良反应}\mid A_i\text{和}B_i\text{中恰有一人发生不良反应})\\
+&=\frac{P(Y=1\mid \bm x_{A_i})P(Y=0\mid \bm x_{B_i})}
+ {P(Y=1\mid \bm x_{A_i})P(Y=0\mid \bm x_{B_i})+P(Y=0\mid \bm x_{A_i})P(Y=1\mid \bm x_{B_i})}\\
+&=\frac{1}{1+\dfrac{P(Y=0\mid \bm x_{A_i})P(Y=1\mid \bm x_{B_i})}{P(Y=1\mid \bm x_{A_i})P(Y=0\mid \bm x_{B_i})}}.
+\end{align*}
+分母中的比值是两人\emph{优势}（odds）之比：
+\begin{align*}
+\frac{P(Y=0\mid \bm x_{A_i})P(Y=1\mid \bm x_{B_i})}{P(Y=1\mid \bm x_{A_i})P(Y=0\mid \bm x_{B_i})}
+&=\frac{\text{odds}_{B_i}}{\text{odds}_{A_i}}
+=\frac{\exp(\alpha_i+\sum_j\beta_jx_{jB_i})}{\exp(\alpha_i+\sum_j\beta_jx_{jA_i})}\\
+&=\exp\left[\sum_j\beta_j(x_{jB_i}-x_{jA_i})\right],
+\end{align*}
+对子截距 $\alpha_i$ 在分子分母中相消。于是
+\begin{align*}
+& P(A_i\text{发生不良反应}\mid A_i\text{和}B_i\text{中恰有一人发生不良反应})\\
+&=\frac{1}{1+\exp[-\sum_j\beta_j(x_{jA_i}-x_{jB_i})]},
+\end{align*}
+条件似然为40对的乘积 $L_c(\bm\beta)=\prod_{i=1}^{40}\{1+\exp[-\sum_j\beta_j(x_{jA_i}-x_{jB_i})]\}^{-1}$，其中不含 $\alpha_i$。一般的 $1:M$ 匹配同理，以“组内病例数等于实际病例数”为条件，各组贡献 $\exp(\bm x_{\text{病例}}^\top\bm\beta)/\sum_{l\in\text{组}}\exp(\bm x_l^\top\bm\beta)$，形式与Cox部分似然相同（故软件可用分层Cox实现，见附录）。
+\begin{annotation}
+条件Logistic回归只利用同一对内病例与对照在各因素上的差别 $\bm x_{A_i}-\bm x_{B_i}$ 来估计 $\bm\beta$，匹配因素的作用被 $\alpha_i$ 吸收而不需要估计。
+\end{annotation}
+\begin{sikao}[对子参数不能直接估计的原因]
+如前所述，采用非条件logistic回归并为每个对子设一个哑变量时，$\widehat\beta$约为真值的2倍。以下用模拟验证：设真实$\beta=1$，100个$1:1$配对，重复200次，比较两种方法的平均估计值：
+\par\noindent
+\begin{coursecode}{R}
+library(survival)
+set.seed(5)
+sim <- function(){
+  np <- 100; x <- rnorm(2*np); pair <- rep(1:np,each=2)
+  d <- x[seq(1,2*np,2)] - x[seq(2,2*np,2)]          # 对子内两人的暴露差
+  first_case <- rbinom(np,1,plogis(1*d))            # 按条件模型决定谁是病例
+  y <- as.vector(rbind(first_case,1-first_case))
+  c(uncond=coef(glm(y~x+factor(pair),family=binomial))["x"],
+    cond=coef(clogit(y~x+strata(pair))))
+}
+r <- replicate(200, sim()); rowMeans(r)
+\end{coursecode}
+\begin{routput}
+uncond.x   cond.x 
+2.123086 1.061543
+\end{routput}
+非条件估计的均数为2.12，约为真值的2倍；条件估计的均数为1.06，接近真值。原因在于每对仅2人，却需多估计1个对子参数，参数个数随样本量同步增长，极大似然估计的大样本性质不再成立。这种偏倚不随对子数增加而消失，因此配对资料必须采用条件似然。
+\end{sikao}
+\textbf{由此得到的几点性质}
+\begin{itemize}
+\item \textbf{组内恒定的变量无法估计。}对子内取值相同的变量（包括匹配因素本身）在 $\bm x_{A_i}-\bm x_{B_i}$ 中为0，其主效应不可估计；但它与暴露的交互项可以估计。
+\item \textbf{暴露一致的对子不提供信息。}若某对在全部自变量上取值相同，该对的条件概率恒为 $1/2$，与 $\bm\beta$ 无关（见下文配对四格表的 $a$、$d$ 格）；参数估计的信息来自暴露不一致的对子。
+\item \textbf{不能直接估计绝对发病概率。}$\alpha_i$ 已被消去，模型只给出OR；且病例对照抽样本身也不能提供发病率。若要预测个体的发病概率，需要额外的基线风险信息。
+\end{itemize}
+\begin{enumerate}
+\item 用途：估计并检验影响因素的OR（调整匹配因素），不能直接用于预测绝对风险。
+\item 优点：节约样本量，提高研究的效率。
+\item 缺点：若需控制的因素较多，则实施难度大。
+\end{enumerate}
+\ctable{表5\quad 3个自变量的 $1:1$ 配对资料条件Logistic回归参数估计结果}{\begin{tabular}{lrrrrrr}\toprule
+自变量&$b$&SE&Wald&df&$P$&$\exp(b)$\\\midrule
+$X_1$&$-2.079$&2.078&1.002&1&0.317&0.125\\
+$X_2$&$-0.738$&0.259&8.123&1&0.004&0.478\\
+$X_3$&0.368&0.146&6.328&1&0.012&1.444\\\bottomrule\end{tabular}}
+用药天数、合并药物的作用有统计学意义；药物剂量的作用无统计学意义（$P=0.317$），其OR的置信区间很宽（$e^{-2.079\pm1.96\times2.078}$，约0.002--7.3），说明资料对剂量效应几乎没有信息。
+\begin{itemize}
+\item \textbf{用药天数（$X_2$）}：在剂量、合并药物种数相同的条件下，用药天数每增加1天，发生不良反应的优势乘以0.478，即降低约52\%（OR $=0.478$，95\%CI $e^{-0.738\pm1.96\times0.259}=0.29$--$0.79$）。“天数越长，不良反应越多”的说法与系数符号相反。解释时还要注意：若病例的用药天数统计到发生不良反应为止，结局本身会截短病例的用药天数，这一负关联可能部分来自测量方式，而非用药时间的保护作用。
+\item \textbf{合并药物（$X_3$）}：在其他两个因素相同的条件下，合并用药每增加1种，发生不良反应的优势乘以1.444，即增加约44\%（95\%CI $1.08$--$1.92$）。0.012是 $P$ 值，不是效应大小。
+\end{itemize}
+\subsection{配对四格表资料的条件Logistic回归}
+\sourcepages{3}{56-60}
+比较由配对四格表资料直接计算的OR值和通过条件Logistic回归估计的OR值之间的关系。
+\ctable{表6\quad 配对四格表资料的一般格式}{\begin{tabular}{lcc}\toprule
+\multirow{2}{*}{对照}&\multicolumn{2}{c}{病例}\\\cmidrule(lr){2-3}
+&暴露&非暴露\\\midrule
+暴露&$a$&$b$\\非暴露&$c$&$d$\\\bottomrule\end{tabular}}
+\[
+\OR=\frac cb.
+\]
+记同一配比组中，暴露者中病例的比例为 $P_1$，非暴露者中病例的比例为 $P_0$。根据条件Logistic回归，有：
+\[
+P_1=\frac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}},\qquad
+P_0=\frac{e^\alpha}{1+e^\alpha}.
+\]
+\begin{annotation}$\alpha$ 是该配比组的截距（不同对子可以不同，下面的推导中会消去），$\beta$ 是暴露因素的回归系数。非暴露者 $X=0$，所以 $P_0$ 中不含 $\beta$。\end{annotation}
+考虑两个人中一人患病、另一人不患病的情况：
+\begin{enumerate}
+\item 两人均暴露，则一人患病、一人不患病的条件概率为 $1/2$（对应四格表的 $a$）。
+\item 两人均未暴露，则一人患病、一人不患病的条件概率亦为 $1/2$（对应四格表的 $d$）。
+\item 一人暴露、一人未暴露，则暴露者患病、非暴露者不患病的条件概率为：
+\begin{align*}
+&\frac{P_1(1-P_0)}{P_1(1-P_0)+(1-P_1)P_0}\\
+&=\frac{\dfrac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}\dfrac1{1+e^\alpha}}
+ {\dfrac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}\dfrac1{1+e^\alpha}+\dfrac1{1+e^{\alpha+\beta}}\dfrac{e^\alpha}{1+e^\alpha}}
+=\frac{e^\beta}{1+e^\beta}.
+\end{align*}
+\begin{annotation}对应四格表的 $c$ 格（病例暴露、对照未暴露）。$\alpha$ 已消去。\end{annotation}
+\item 一人暴露、一人未暴露，则暴露者不患病、非暴露者患病的条件概率为：
+\begin{align*}
+&\frac{(1-P_1)P_0}{(1-P_1)P_0+P_1(1-P_0)}\\
+&=\frac{\dfrac1{1+e^{\alpha+\beta}}\dfrac{e^\alpha}{1+e^\alpha}}
+ {\dfrac1{1+e^{\alpha+\beta}}\dfrac{e^\alpha}{1+e^\alpha}+\dfrac{e^{\alpha+\beta}}{1+e^{\alpha+\beta}}\dfrac1{1+e^\alpha}}
+=\frac1{1+e^\beta}.
+\end{align*}
+\begin{annotation}对应四格表的 $b$ 格（病例未暴露、对照暴露）。\end{annotation}
+\end{enumerate}
+配对四格表资料的条件似然函数为：
+\begin{align*}
+L&=\left(\frac12\right)^a\left(\frac12\right)^d
+\left(\frac{e^\beta}{1+e^\beta}\right)^c\left(\frac1{1+e^\beta}\right)^b,\\
+\ln L&=-a\ln2-d\ln2+c\beta-(c+b)\ln(1+e^\beta),\\
+\frac{\partial\ln L}{\partial\beta}&=c-(c+b)\frac{e^\beta}{1+e^\beta}=0,\\
+\widehat\beta&=\ln\frac cb=\ln(\OR).
+\end{align*}
+\begin{annotation}$a$ 格的 $a$ 个对子各贡献因子 $1/2$，$b$、$c$、$d$ 格类似。$a$、$d$ 格（暴露一致的对子）的贡献是与 $\beta$ 无关的常数，对估计没有作用；$\widehat\beta$ 只由不一致对子数 $b$、$c$ 决定，$\exp(\widehat\beta)=c/b$ 即配对资料的OR。其检验 $H_0:\beta=0$ 的比分检验就是McNemar检验。\end{annotation}
+\subsection{模型假设}
+\sourcepages{3}{61}
+\begin{itemize}
+\item 自变量在各个配比组对结局变量（因变量）的作用是相同的，即自变量的回归系数与匹配组无关。
+\item 模型中的常数项 $\beta_{0i}$ 与该匹配组的因素有关，是该匹配组特有的，指该匹配组的自变量均为0时的基线风险。
+\item 常数项对自变量的解释没有帮助，且不包含在似然函数中，故常不考虑。
+\end{itemize}
+\begin{annotation}
+不同对子的基线风险可以不同（例如一对是两名老年男性，另一对是两名年轻女性），由 $\beta_{0i}$ 吸收；但同一危险因素的OR被假定在所有对子中相同。若怀疑OR随匹配因素变化，可加入暴露与匹配因素的交互项来检验。
+\end{annotation}
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（诊断题）}
+\question{某病例对照研究中，暴露组40例全为病例、非暴露组有病例30例和对照50例。用Logistic回归估计暴露的OR，软件提示“fitted probabilities numerically 0 or 1 occurred”，系数为18.6、标准误为1400。请解释原因并提出处理办法。}
+\answer{暴露组中无对照，四格表中 $c=0$，$\widehat{\OR}=ad/(bc)$ 的分母为0，这是准完全分离：沿暴露系数增大的方向似然不断增大，有限的MLE不存在，软件在达到收敛标准时停在一个很大的数值上，标准误随之膨胀，Wald检验失效。处理：核对资料与编码；报告精确条件OR的置信下限或采用Firth惩罚似然；必要时合并类别。不能把18.6当作效应估计值解释。}
+\section*{小结}
+\sourcepages{3}{62-63}
+Logistic回归分析的基本思想与步骤；非条件的Logistic回归；用于配对设计资料的条件Logistic回归模型。
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item logistic回归中$\widehat\beta_1=1.1098$，写出OR及其95\%置信区间的计算式（$\SE=0.3485$）。\\
+\textit{答：$\OR=e^{1.1098}=3.03$；95\%CI为$e^{1.1098\pm1.96\times0.3485}=(1.53,\,6.01)$。}
+\item 写出OR近似等于RR的条件。\\
+\textit{答：两组发生率均很低（罕见结局）。}
+\item 模型5的对数似然为$-115.557$，模型8为$-111.308$，两者仅相差一个变量，计算似然比统计量及其自由度。\\
+\textit{答：$G=2\times(115.557-111.308)=8.50$，$\mathrm{df}=1$。}
+\item 说明个体0/1资料（含连续自变量）能否以偏差$D$对照$\chi^2_{n-p}$作拟合优度检验。\\
+\textit{答：不能。此时应采用Hosmer--Lemeshow检验、残差分析或校准图。}
+\item 配对四格表中$b=10$、$c=25$，计算条件logistic回归给出的OR，并说明$a$、$d$格对子的作用。\\
+\textit{答：$\OR=c/b=2.5$；暴露一致的对子不提供估计$\beta$的信息。}
+\item 软件提示拟合概率为0或1，系数与标准误异常大，说明可能的原因。\\
+\textit{答：存在完全分离或准完全分离，有限的极大似然估计不存在。}
+\end{enumerate}
+\end{fuxi}

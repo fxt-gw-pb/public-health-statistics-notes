@@ -1,0 +1,303 @@
+% PKU Notes, a small theme layer on the real Einfart/plain class.
+% Copyright (c) 2026 Pengbo. Distributed under the MIT license; see LICENSE.txt.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pku-notes}[2026/10/04 v2.0 Plain reports and Beida-red study notes]
+
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{longtable}
+\RequirePackage{array}
+\RequirePackage{tabularx}
+\RequirePackage{siunitx}
+\RequirePackage{fvextra}
+\RequirePackage{listings}
+\RequirePackage{needspace}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{etoolbox}
+\tcbuselibrary{breakable,skins,listings,theorems}
+
+% The PDF theme uses the official RGB field R139 G0 B18.
+% PKU's VI also lists a separate Web field, 94070A; see README.txt.
+\definecolor{PKURed}{RGB}{139,0,18}
+\definecolor{PKUInk}{HTML}{222222}
+\definecolor{PKUMuted}{HTML}{666666}
+\definecolor{PKUCodeBg}{HTML}{FAFAFA}
+\definecolor{PKUCodeBlue}{HTML}{175E91}
+\definecolor{PKUCodeGreen}{HTML}{27744C}
+\definecolor{PKUCodePurple}{HTML}{6C398F}
+\definecolor{PKUCodeString}{HTML}{A31515}
+\colorlet{PKUTint}{PKURed!3!white}
+
+\providecommand{\PKUCodePalette}{ide}
+\providecommand{\PKUDocumentType}{analysis}
+\providecommand{\PKUShortTitle}{统计分析与方法笔记}
+\providecommand{\PKUSubtitle}{}
+\providecommand{\PKUVersion}{2.0}
+
+% Choose the document type before loading this package. Reports are the plain
+% default; only study notes use red decoration. Syntax colors are independent.
+\newif\ifPKUNotes
+\ifdefstring{\PKUDocumentType}{notes}{\PKUNotestrue}{%
+  \PKUNotesfalse
+  \ifdefstring{\PKUDocumentType}{analysis}{}{%
+    \ifdefstring{\PKUDocumentType}{progress}{}{%
+      \PackageError{pku-notes}{Unknown document type: \PKUDocumentType}
+        {Use notes, analysis or progress before loading pku-notes.}%
+    }%
+  }%
+}
+\ifPKUNotes
+  \colorlet{PKUAccent}{PKURed}
+\else
+  \colorlet{PKUAccent}{black}
+\fi
+
+\geometry{a4paper,left=25mm,right=25mm,top=23mm,bottom=24mm,
+  headheight=24pt,headsep=8mm,footskip=11mm}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.18\baselineskip plus 1pt minus 1pt}
+\linespread{1.18}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% Einfart loads titlesec in explicit mode; #1 is required here. Its bfseries
+% changes the current color, so black must be selected after the font/weight.
+\titleformat{\section}
+  {\centering\sffamily\bfseries\large\color{black}}
+  {\thesection}{0.7em}{#1}
+\titleformat{\subsection}
+  {\sffamily\bfseries\normalsize\color{black}}
+  {\thesubsection}{0.6em}{#1}
+\titleformat{\subsubsection}
+  {\sffamily\bfseries\normalsize\color{black}}
+  {\thesubsubsection}{0.6em}{#1}
+\titleformat{\paragraph}[runin]
+  {\sffamily\bfseries\normalsize\color{black}}
+  {\theparagraph}{0.6em}{#1}
+\titleformat{\subparagraph}[runin]
+  {\sffamily\bfseries\normalsize\color{black}}
+  {\thesubparagraph}{0.6em}{#1}
+\titlespacing*{\section}{0pt}{1.45\baselineskip}{0.7\baselineskip}
+\titlespacing*{\subsection}{0pt}{1.0\baselineskip}{0.38\baselineskip}
+\titlespacing*{\subsubsection}{0pt}{0.75\baselineskip}{0.3\baselineskip}
+\titlespacing*{\paragraph}{0pt}{0.65\baselineskip}{0.8em}
+\titlespacing*{\subparagraph}{0pt}{0.5\baselineskip}{0.8em}
+
+% Explicitly replace the native titletoc styles. Labels, entry text, leaders
+% and page numbers all inherit the same true black, bold font at every level.
+\newcommand{\PKUTOCFont}{\normalfont\sffamily\bfseries\color{black}}
+\titlecontents{part}[0em]
+  {\addvspace{0.6\baselineskip}\PKUTOCFont}
+  {\thecontentslabel\quad}{}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{chapter}[1.5em]
+  {\addvspace{0.3\baselineskip}\PKUTOCFont}
+  {\contentslabel{1.5em}}{\hspace*{-1.5em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{section}[1.5em]
+  {\addvspace{0.12\baselineskip}\PKUTOCFont}
+  {\contentslabel{1.5em}}{\hspace*{-1.5em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{subsection}[4.5em]
+  {\PKUTOCFont}{\contentslabel{2.5em}}{\hspace*{-2.5em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{subsubsection}[8em]
+  {\PKUTOCFont}{\contentslabel{3em}}{\hspace*{-3em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{paragraph}[11.5em]
+  {\PKUTOCFont}{\contentslabel{3.5em}}{\hspace*{-3.5em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+\titlecontents{subparagraph}[15.5em]
+  {\PKUTOCFont}{\contentslabel{4em}}{\hspace*{-4em}}
+  {\titlerule*[0.7em]{.}\contentspage}
+% A local link-color override prevents notes-mode red links from recoloring
+% the TOC, while retaining clickable entries and the class's existing hooks.
+\NewCommandCopy{\PKUOriginalTableOfContents}{\tableofcontents}
+\RenewDocumentCommand{\tableofcontents}{}{%
+  \begingroup
+  \hypersetup{linkcolor=black,citecolor=black,urlcolor=black}%
+  \PKUOriginalTableOfContents
+  \endgroup
+}
+
+\newcommand{\PKUPageFurniture}{%
+  \fancyhf{}%
+  \fancyfoot[L]{\small\color{PKUMuted}\PKUShortTitle}%
+  \fancyfoot[R]{\small\color{PKUMuted}\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+\fancypagestyle{pku}{\PKUPageFurniture}
+\fancypagestyle{plain}{\PKUPageFurniture}
+\fancypagestyle{fancy}{\PKUPageFurniture}
+\fancypagestyle{pku-title}{%
+  \fancyhf{}\fancyfoot[C]{\small\color{PKUMuted}\thepage}%
+  \renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0pt}%
+}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\quad #1}}
+\AtBeginDocument{\color{PKUInk}\pagestyle{pku}}
+
+\hypersetup{colorlinks=true,linkcolor=PKUAccent,citecolor=PKUAccent,
+  urlcolor=PKUAccent,bookmarksnumbered=true,pdfdisplaydoctitle=true}
+\DeclareCaptionFont{pkublack}{\color{black}}
+\captionsetup{font={small,pkublack},labelfont={bf,pkublack},labelsep=quad,
+  justification=justified,singlelinecheck=false,skip=6pt}
+\captionsetup[table]{position=top}
+\captionsetup[subfigure]{font=small,labelfont=normalfont,
+  justification=centering,singlelinecheck=true}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\renewcommand{\contentsname}{目录}
+\setlength{\textfloatsep}{13pt plus 3pt minus 2pt}
+\setlength{\floatsep}{11pt plus 2pt minus 2pt}
+\setlength{\intextsep}{11pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.88}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.72}
+
+\setlist[itemize]{label=\textcolor{PKUAccent}{\textbullet},
+  leftmargin=2em,itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[enumerate]{label=\arabic*.,leftmargin=2em,
+  itemsep=2pt,topsep=4pt,parsep=0pt}
+\sisetup{detect-all,group-digits=false,table-number-alignment=center}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\TableNote}[1]{\par\vspace{4pt}{\footnotesize\color{PKUMuted}\raggedright\noindent 注：#1\par}}
+
+% The original uploaded main.tex used a source-note command. Here it is
+% implemented as a small in-flow note so it cannot collide with a narrow margin.
+\newcommand{\srcnote}[1]{\par\smallskip\noindent
+  {\footnotesize\color{PKUMuted}{\sffamily\bfseries\color{black}来源说明}\quad #1}\par\smallskip}
+
+% Report boxes are plain white with thin gray outlines. The notes variant
+% adds red lines and pale backgrounds, but box titles are always black/bold.
+\tcbset{
+  pkubase/.style={enhanced jigsaw,breakable,sharp corners,
+    colback=white,colframe=black!28!white,coltitle=black,
+    colbacktitle=white,fonttitle=\sffamily\bfseries\normalsize\color{black},
+    boxrule=0.35pt,titlerule=0pt,left=3mm,right=3mm,top=2mm,bottom=2mm,
+    before skip=10pt,after skip=10pt,pad at break*=1.5mm},
+  pkudef/.style={pkubase},
+  pkuresult/.style={pkubase},
+  pkunote/.style={pkubase,frame hidden,
+    borderline west={0.6pt}{0pt}{black!35!white}},
+  pkuexercise/.style={pkubase},
+  pkucode/.style={pkubase,colback=white,colbacktitle=white,
+    fonttitle=\sffamily\bfseries\small\color{black},left=2mm,right=2mm,
+    top=2mm,bottom=2mm}
+}
+\ifPKUNotes
+  \tcbset{
+    pkubase/.append style={colframe=PKURed!48!white,
+      colbacktitle=PKUTint,boxrule=0.45pt},
+    pkudef/.append style={borderline west={1.1pt}{0pt}{PKURed}},
+    pkuresult/.append style={colback=PKURed!2!white,
+      colframe=PKURed!70!white,borderline west={1.5pt}{0pt}{PKURed}},
+    pkunote/.style={pkubase,frame hidden,colback=PKURed!2!white,
+      borderline west={1.2pt}{0pt}{PKURed!80!white}},
+    pkuexercise/.append style={colbacktitle=white,colframe=PKURed!55!white},
+    pkucode/.append style={colback=PKUCodeBg,
+      colframe=PKURed!38!white,colbacktitle=PKURed!4!white}
+  }
+\fi
+\newtcbtheorem[number within=section]{definitionbox}{定义}{pkudef}{def}
+\newtcbtheorem[use counter from=definitionbox]{theorembox}{命题}{pkudef}{thm}
+\newtcbtheorem[number within=section]{examplebox}{例}{pkubase}{ex}
+\newtcbtheorem[number within=section]{exercisebox}{练习}{pkuexercise}{exercise}
+\newtcolorbox{notebox}[1][说明]{pkunote,title={#1}}
+\newtcolorbox{resultbox}[1][结果解读]{pkuresult,title={#1}}
+\newtcolorbox{derivationbox}[1][推导]{pkubase,colbacktitle=white,title={#1}}
+\newtcolorbox{solutionbox}[1][解答]{pkunote,title={#1}}
+
+\newcounter{pkucode}[section]
+\renewcommand{\thepkucode}{\thesection.\arabic{pkucode}}
+\renewcommand{\theFancyVerbLine}{\sffamily\scriptsize\color{PKUMuted}\arabic{FancyVerbLine}}
+\IfFileExists{generated/syntax-\PKUCodePalette.tex}
+  {\input{generated/syntax-\PKUCodePalette.tex}%
+   \VerbatimPygments{\PKU}{\PKU}}
+  {\PackageWarning{pku-notes}{Syntax colors missing; run python build.py}}
+\fvset{formatcom=\xeCJKVerbAddon}
+
+% Syntax files are generated from UTF-8 sources by Pygments before TeX runs.
+% No shell escape is used by the document. #1 optional label, #2 code filename,
+% #3 human-readable caption. Nested source folders are supported.
+\NewDocumentCommand{\CodeFile}{O{}mm}{%
+  \refstepcounter{pkucode}%
+  \ifstrempty{#1}{}{\label{#1}}%
+  \begin{tcolorbox}[pkucode,
+    title={代码~\thepkucode\quad #3\hfill{\ttfamily\bfseries\footnotesize\color{black}\detokenize{#2}}},
+    title after break={代码~\thepkucode\quad #3（续）}]%
+  \IfFileExists{generated/code/#2.tex}
+    {\input{generated/code/#2.tex}}
+    {\textcolor{PKURed}{缺少代码高亮文件。请运行 \texttt{python build.py}。}}%
+  \end{tcolorbox}%
+}
+
+% Inline code blocks are a convenient native-TeX alternative. The primary
+% CodeFile route uses Pygments for language-aware tokenization.
+\lstdefinestyle{pkuinlinebase}{basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{PKUCodePurple},
+  keywordstyle=[2]\color{PKUCodeBlue},
+  stringstyle=\color{PKUCodeString},commentstyle=\color{PKUCodeGreen},
+  numbers=left,numberstyle=\sffamily\scriptsize\color{PKUMuted},
+  numbersep=7pt,xleftmargin=15pt,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,breaklines=true,
+  breakatwhitespace=false,tabsize=4,upquote=true,extendedchars=false}
+\ifdefstring{\PKUCodePalette}{pku}{%
+  \lstdefinestyle{pkuinline}{style=pkuinlinebase,
+    keywordstyle=\bfseries\color{PKURed},
+    keywordstyle=[2]\color{PKURed!75!black},
+    stringstyle=\color{PKURed!70!black},
+    commentstyle=\color{PKUMuted}}%
+}{\lstdefinestyle{pkuinline}{style=pkuinlinebase}}
+\newtcblisting{PythonCode}[1][Python]{pkucode,listing only,
+  listing options={style=pkuinline,language=Python,
+    morekeywords={[2]np,pd,stats,DataFrame,array,mean,std,fit,predict}},title={#1}}
+\newtcblisting{RCode}[1][R]{pkucode,listing only,
+  listing options={style=pkuinline,language=R},title={#1}}
+\newtcblisting{SQLCode}[1][SQL]{pkucode,listing only,
+  listing options={style=pkuinline,language=SQL},title={#1}}
+
+% Title details stay compact, like a working paper; no standalone cover needed.
+\makeatletter
+% Keep native gray equation numbers, with enough contrast for small print.
+\renewcommand{\tagform@}[1]{\maketag@@@{\textcolor{PKUMuted}{(\ignorespaces#1\unskip\@@italiccorr)}}}
+% Save the literal author text for the compact notes title. The class's author
+% implementation also inserts affiliation spacing and line breaks.
+\newcommand{\PKUAuthorText}{}
+\NewCommandCopy{\PKUOriginalAuthor}{\author}
+\RenewDocumentCommand{\author}{m}{\gdef\PKUAuthorText{#1}\PKUOriginalAuthor{#1}}
+\newcommand{\MakeNotesTitle}{%
+  \thispagestyle{pku-title}%
+  \begingroup\centering\setstretch{1}\setlength{\parskip}{0pt}%
+    {\sffamily\bfseries\LARGE\color{black}\@title\par}
+    \vspace{4pt}
+    {\normalsize\color{PKUMuted}\PKUSubtitle\par}
+    \vspace{8pt}
+    {\small\renewcommand{\and}{\quad}\PKUAuthorText\quad\textcolor{PKUMuted}{\@date}\par}
+  \endgroup
+  \ifPKUNotes
+    \vspace{7pt}\noindent\textcolor{PKURed}{\rule{\textwidth}{0.55pt}}
+    \vspace{5pt}\par
+  \else
+    \vspace{10pt}\par
+  \fi
+}
+\makeatother
+\newcommand{\MakeReportTitle}{\MakeNotesTitle}
+\newenvironment{notesabstract}{%
+  \begingroup\small\setlength{\parindent}{0pt}%
+  \noindent{\sffamily\bfseries\color{black}摘要}\quad
+}{\par\endgroup\vspace{8pt}}
+
+\providecommand{\R}{\mathbb{R}}
+\providecommand{\E}{\mathbb{E}}
+\providecommand{\Var}{\operatorname{Var}}
+\providecommand{\Cov}{\operatorname{Cov}}
+\providecommand{\diag}{\operatorname{diag}}
+\providecommand{\argmin}{\operatorname*{arg\,min}}
+\providecommand{\vect}[1]{\symbf{#1}}
+\endinput

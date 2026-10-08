@@ -1,0 +1,26 @@
+% !TeX program = xelatex
+\AddToHook{package/projlib-language/before}{\RequirePackage{fvextra}}
+\documentclass[11pt,a4paper,oneside,plain,CN,colored-proof=false,
+  load-custom-latin-font-file=pku-font-latin.tex,
+  load-custom-math-font-file=pku-font-math.tex,
+  load-custom-cjk-font-file=pku-font-cjk.tex]{einfart}
+\input{settings}
+\usepackage{pku-notes}
+\input{../common/zbstyle.tex}
+\input{macros.tex}
+\renewcommand{\BookShortTitle}{应用多元分析}
+\hypersetup{pdftitle={应用多元分析·学习总笔记},pdfauthor={},pdfsubject={公共卫生统计}}
+\begin{document}
+\MakeCover{应用多元分析}{Applied Multivariate Analysis}
+\frontmatter
+\ZBTableOfContents
+\mainmatter
+\input{content/lec1.tex}
+\ExerciseNumber{1}\input{content/ex1.tex}
+\input{content/lec2.tex}
+\ExerciseNumber{2}\input{content/ex2.tex}
+\input{content/lec3.tex}
+\ExerciseNumber{3}\input{content/ex3.tex}
+\input{content/lec4.tex}
+\ExerciseNumber{4}\input{content/ex4.tex}
+\end{document}

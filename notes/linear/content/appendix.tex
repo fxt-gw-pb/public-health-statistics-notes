@@ -1,0 +1,48 @@
+\chapter*{附录\quad 易错表述与更正}
+\addcontentsline{toc}{chapter}{附录\texorpdfstring{\quad}{ }易错表述与更正}
+\markboth{附录\quad 易错表述与更正}{}
+下表汇总学习中容易出现的不准确写法、记号或数据转录错误，并给出本书采用的写法，便于复习时对照。“位置”为本书的节号。
+{\small\renewcommand{\arraystretch}{1.3}\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{3.6cm}}
+\toprule 位置&易错写法或表述&本书采用&说明\\\midrule\endfirsthead
+\toprule 位置&易错写法或表述&本书采用&说明\\\midrule\endhead
+\bottomrule\endfoot
+1.1.5&迹“表示数据包含的总信息量”&各分量方差之和&受量纲影响\\
+1.1.5&相关矩阵为单位阵“说明$p$个指标间相互独立”&两两不相关&联合正态时才等价于独立\\
+1.2.2&$AB\ne BA$，“除非$B$为单位矩阵”&一般不可交换，$B=I$只是特例&如$B=cI$、$A^{-1}$\\
+全文&转置记为$X'$或$X^T$&$X^\top$&$b_i'$另作他用，避免混淆\\
+2.2.2&最大似然法“假设残差$e\sim N(0,\sigma^2)$”&误差$\varepsilon\sim N(0,\sigma^2I)$&残差不独立、不同方差\\
+2.2.4&残差向量$E$、系数向量$B$；“各残差之和为0”&$e$、$b$；含截距时$\sum e_i=0$&避免与期望$E(\cdot)$混淆\\
+2.3.2&“若模型假设成立且$H_0$成立，$b$服从$N(\beta,\sigma^2(X'X)^{-1})$”&正态模型下该分布不以$H_0$为前提&$H_0$只用于代入$\beta_i=0$\\
+2.4&标准化系数记为$b_i'$；“体重对肺活量的作用比身高大”&记为$\widetilde b_i$；按标准差换算的条件关联&不直接代表重要性或因果\\
+2.5&$C_p$：“应选择$C_p$最接近$p$的模型”&在$C_p\lesssim p$的模型中兼顾简洁性&全模型$C_p\equiv p$\\
+3.1&$\mathrm{SRE}=e/\bigl(s\sqrt{1-h_{ii}^2}\bigr)$&$\mathrm{SRE}=e_i/\bigl(s\sqrt{1-h_{ii}}\bigr)$&与学生化残差的定义一致，$\Var(e_i)=\sigma^2(1-h_{ii})$\\
+3.1&$e_t=\rho e_{t-1}+\varepsilon_t$，$-1\le\rho\le1$&$\varepsilon_t=\rho\varepsilon_{t-1}+u_t$，$|\rho|<1$&自相关是误差的性质\\
+3.1&线性关系“不涉及检验，只作图”&以图为主，必要时检验&如加入二次项\\
+3.1.1&\code{e1 <- lm(x3~x2+x4)}；\code{plot(e1,e2)}&\code{e1 <- resid(lm(...))}&应对残差作图\\
+3.1.3&DW判断表只列三个区间&补入两个“不能确定”区&与DW分布图一致\\
+3.2&“$(X'X)^{-1}$无解”&$X^\top X$奇异，系数不唯一，拟合值唯一&\\
+3.3&岭回归“相对削弱自变量间的相关性”&改善$X^\top X$的病态&数据相关性不变\\
+3.3&“寻找符号转正、岭迹平稳且较小的$k$值”&交叉验证/GCV选$k$，岭迹作参考&按预期符号选参不客观\\
+3.4&$D_i=\dfrac{e_i^2}{(p+1)\widehat\sigma^2}\dfrac{h_{ii}}{(1-h_{ii})^2}$（$p$为自变量个数）&$D_i=\dfrac{e_i^2}{p\,s^2}\dfrac{h_{ii}}{(1-h_{ii})^2}$（$p$含截距）&记号不同，数值相同\\
+4.1&“线性回归更专注于连续变量的预测”&线性回归同样可含分类自变量与交互&与广义线性模型区分\\
+4.2.1&“此模型只能手算”；参数写作$\beta=(5.436,2.781,3.956)$&软件可处理秩亏模型；写作估计值$\widehat\beta$&\\
+4.3&“两步随机”；“全组哑变量模型无法用软件实现”&区组既有，组内一步随机化&\\
+4.4.1&交互作用图中$b=1$线为$(1,2.1)$--$(2,1.2)$，$b=2$线为$(1,1.0)$--$(2,0.8)$&$b=1$：$(1,2.1)$--$(2,1.0)$；$b=2$：$(1,1.2)$--$(2,0.8)$&与格子均数表一致\\
+4.4.2&$\widehat\alpha_1=1.7-1.3=0.4$，$\widehat\beta_1=1.6-1.3=0.3$等（按1.3代入），交互效应式中亦代入1.3&统一用总均数1.275：$\pm0.375$、$\pm0.275$、$\pm0.175$&按1.3代入时交互式应得0.2，与0.175不一致\\
+4.4.3&$SS_A=\sum(\bar Y_i-\bar Y)^2$等，误差自由度$ab(n-1)$&$SS_A=br\sum_i(\cdot)^2$，$SS_B=ar\sum_j(\cdot)^2$，$SS_{AB}=r\sum\sum(\cdot)^2$；$ab(r-1)$&补齐权重\\
+4.4.3&$H_0$：交互作用无统计学意义&$H_0:(\alpha\beta)_{ij}=0$&假设针对总体参数\\
+4.5&“消除混杂因素的影响”&对已测协变量作线性调整&\\
+4.5.1&“饱和模型”；“$P>0.05$，应用简略模型/平行”&含交互项的完整模型；未发现斜率差异的证据&\\
+4.5.4&“若要与进入顺序无关，应选三型平方和”&先明确假设，再选平方和类型&\\
+5.1.2&“$t_0-t_1,t_0-t_2,\ldots$这样比较是错的”&可配对比较，按预设范围控制多重性&\\
+5.3.2&第二个复合对称矩阵非对角元为$\sigma_1$&$\sigma_1^2$&\\
+5.3.3&$\sigma_{ij}=\frac{\sigma_{ii}+\sigma_{jj}}2-\lambda\ \longrightarrow\ \lambda=\sigma_{ii}+\sigma_{jj}-2\sigma_{ij}$&$\Var(Y_i-Y_j)=\sigma_{ii}+\sigma_{jj}-2\sigma_{ij}=2\lambda$&右侧应为$2\lambda$\\
+5.3.3&HF结构“存在正交变换矩阵$C$，使$C^T\Sigma C$满足球形假设”&$C^\top\Sigma C=\lambda I_{k-1}$，$C^\top C=I$，$C^\top\mathbf 1=0$&对任意此类$C$成立\\
+5.4.1&$\chi^2=-\Bigl[(n-1)-\dfrac{n-(2p^2+2)}{6p}\Bigr]\ln\lambda$，$\nu=\dfrac{p(p-1)}2-1$&$-\Bigl[\nu-\dfrac{2d^2+d+2}{6d}\Bigr]\ln W$，自由度$\dfrac{d(d+1)}2-1$&与正文R程序一致\\
+5.4.4&$\varepsilon=\dfrac{(\sum_{i=1}^k\lambda_i)^2}{(k-1)\sum_{i=1}^k\lambda_i^2}=\dfrac{[\tr(S)]^2}{(k-1)\tr(S^2)}$；“对$F$值校正”&用$A=C^\top SC$的$k-1$个特征值；$F$不变，校正自由度&应对$C^\top SC$计算\\
+5.5&$F_{\text{时间}}=\dfrac{\SSq{时间}/(p-1)}{\ms{误差}/[(n-1)(p-1)]}$&分母为$\SSq{误差}/[(n-1)(k-1)]$&避免两次除以自由度\\
+5.6.4&$C^\top SC$第3行第3列为$11.9966667$&$1.9966667$&与$W$、GG系数一致\\
+5.6.5&表12-20“自由度（校正）”$1,2,12$未注明方法&下界校正$\varepsilon=1/4$&非GG校正\\
+5.6.5&记号$g$（组数）、$m$（次数）&$a$、$k$&与第5章统一\\
+\end{longtable}}

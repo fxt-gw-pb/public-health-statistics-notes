@@ -1,0 +1,572 @@
+\chapter{Logistic回归模型（二）}
+\sourcepages{4}{1-3}
+\subsection*{主要内容}
+Logistic回归的基本概念、非条件Logistic回归；配比设计资料的条件Logistic回归分析；多分类结局资料的Logistic回归分析；有序分类结局资料的Logistic回归分析；Logistic回归模型的正确应用及软件实现。
+第2章讨论的结局为二分类。实际资料中结局常多于两类，此时首先需区分类别之间是否有序。各类结局对应的常用模型如下：
+\begin{center}\small
+\begin{tabular}{lll}\toprule
+结局类型&例子&常用模型\\\midrule
+二分类&死亡／存活&二分类logistic回归（第2章）\\
+无序多分类&肺癌的病理类型、出行方式&多项logit模型\\
+有序多分类&疗效（无效／好转／显效／治愈）、病情分级&累积logit（比例优势）模型\\
+配对或匹配的二分类&$1:1$配对病例对照&条件logistic回归（第2章）\\\bottomrule
+\end{tabular}
+\end{center}
+有序资料也可采用多项logit模型分析，但会损失顺序信息并增加待估参数；无序资料则不能采用有序模型。模型的选择应依据结局变量的测量尺度，而不应依据$P$值的大小。本章后半部分的案例讨论即围绕这一选择展开。
+\section{多分类结局资料的Logistic回归分析}
+\sourcepages{4}{4-5}
+\subsection{多分类结局的Logistic回归模型}
+结局变量是无序多分类的情形。例如疾病的不同类型、同一种肿瘤的不同病理分型、交通方式与影响因素（公交/地铁/出租，距离/收入/环境）。Multinomial logistic model（Daniel L. McFadden，1974年）。
+\subsubsection{模型构建}
+\sourcepages{4}{6-9}
+假设结局变量 $y$ 是无序三分类变量，类别包括A、B、C三类。把类别C作为参照（control, base category），赋值 $A=1$、$B=2$、$C=0$。分别以C作为参照，建立A与B的Logistic回归模型。
+\begin{align*}
+\logit P_{1/0}&=\ln\frac{P(y=1)}{P(y=0)}
+ =\alpha_1+\beta_{11}x_1+\beta_{12}x_2+\cdots+\beta_{1p}x_p=g_1(\bm x),\\
+\logit P_{2/0}&=\ln\frac{P(y=2)}{P(y=0)}
+ =\alpha_2+\beta_{21}x_1+\beta_{22}x_2+\cdots+\beta_{2p}x_p=g_2(\bm x),\\
+\logit P_{1/2}&=\ln\frac{P(y=1)}{P(y=2)}
+ =\ln\frac{P(y=1)}{P(y=0)}\frac{P(y=0)}{P(y=2)}\\
+&=\ln\frac{P(y=1)}{P(y=0)}-\ln\frac{P(y=2)}{P(y=0)}
+ =g_1(\bm x)-g_2(\bm x).
+\end{align*}
+\[
+P_0+P_1+P_2=1.
+\]
+\begin{align*}
+\ln\frac{P_1}{P_0}&=g_1(\bm x),&P_1&=P_0\exp(g_1),\\
+\ln\frac{P_2}{P_0}&=g_2(\bm x),&P_2&=P_0\exp(g_2),\\
+P_1+P_2&=P_0[\exp(g_1)+\exp(g_2)]=1-P_0,\\
+P_0&=\frac1{1+\exp(g_1)+\exp(g_2)},&
+P_1&=\frac{\exp(g_1)}{1+\exp(g_1)+\exp(g_2)}.
+\end{align*}
+一般地：
+\begin{align*}
+\logit P_k&=\ln\frac{P(y=k)}{P(y=0)}
+ =\alpha_k+\beta_{k1}x_1+\beta_{k2}x_2+\cdots+\beta_{kp}x_p=g_k(\bm x),\\
+P_k&=\frac{\exp(g_k)}{1+\sum_{k=1}^K\exp(g_k)}
+ =\frac{\exp(g_k)}{\sum_{k=0}^K\exp(g_k)},\qquad g_0=0.
+\end{align*}
+\begin{annotation}概率归一化 $P_0+P_1+\cdots+P_K=1$ 是推导的前提。每个非参照类别 $k$ 都有一套以 $k$ 为角标的截距和回归系数；参照类别的 $g_0\equiv0$，两种写法等价。\end{annotation}
+\textbf{联合似然与参数个数}\quad 设结局有 $K+1$ 个类别（参照类别记0），第 $i$ 个体的类别指示为 $y_{ik}=I(Y_i=k)$。个体结局服从多项分布，联合对数似然为
+\[
+\ell=\sum_{i=1}^n\sum_{k=0}^Ky_{ik}\ln P_k(\bm x_i)
+=\sum_{i=1}^n\left\{\sum_{k=1}^Ky_{ik}g_k(\bm x_i)-\ln\Bigl(1+\sum_{k=1}^K e^{g_k(\bm x_i)}\Bigr)\right\}.
+\]
+全部 $K$ 个logit方程在同一似然中同时估计，参数共 $K(p+1)$ 个（$p$ 个自变量加截距）。检验“$x_j$ 与结局无关”应检验它在所有方程中的系数同时为0，$H_0:\beta_{1j}=\cdots=\beta_{Kj}=0$，为 $K$ 个约束的联合检验（$\mathrm{df}=K$），而不是逐个看单个方程的 $P$ 值。
+
+\textbf{系数解释}\quad 由 $\ln(P_k/P_0)=g_k(\bm x)$，其他协变量固定时，$x_j$ 每增加1个单位，
+\[
+\frac{P_k(x_j+1)/P_0(x_j+1)}{P_k(x_j)/P_0(x_j)}=e^{\beta_{kj}},
+\]
+即“属于类别 $k$ 与属于参照类别的概率之比”乘以 $e^{\beta_{kj}}$。这一比值常称相对风险比（relative risk ratio, RRR），它是类别 $k$ 相对参照类别的“条件优势比”，并不是一般意义上的相对危险度 $P_k(x+1)/P_k(x)$。
+
+\textbf{更换参照类别}\quad 系数只取决于对比的两个类别：$\ln(P_k/P_l)=g_k-g_l$，故以类别 $l$ 为参照时，类别 $k$ 的系数为 $\beta_{kj}-\beta_{lj}$，原参照类别0的系数为 $-\beta_{lj}$。拟合值、似然和联合检验都不随参照类别改变。
+\subsection{例题}
+\sourcepages{4}{10-11}
+\textbf{例3} 诊断或预测恶性肿瘤的三种组织学类型。
+\ctable{表7\quad 无序多分类结局Logistic回归分析数据}{\begin{tabular}{ccrrr}\toprule
+\multirow{2}{*}{分化程度 $X_1$}&\multirow{2}{*}{染色结果 $X_2$}&\multicolumn{3}{c}{组织类型 $Y$}\\\cmidrule(lr){3-5}
+&&鳞癌1&腺癌2&泡状细胞癌3\\\midrule
+1&$+$&10&17&26\\1&$-$&5&12&50\\
+2&$+$&21&17&26\\2&$-$&16&12&26$^*$\\
+3&$+$&15&15&16\\3&$-$&12&12&20\\\bottomrule\end{tabular}\par\smallskip\begin{minipage}{.82\linewidth}\footnotesize $^*$原表为36。用26时，下表8的全部估计值、标准误和Wald $\chi^2$ 均能精确复现（$n=328$）；用36则不能，故按26更正。表8的编码为：染色结果“$+$”$=1$、“$-$”$=2$，分化程度按1、2、3作数值变量，参照类别为泡状细胞癌。\end{minipage}}
+\begin{annotation}多项Logistic回归的概率形式（softmax）也是许多机器学习多分类器的输出层。\end{annotation}
+\ctable{表8\quad 无序多分类结局Logistic回归分析结果}{\begin{tabular}{llrrrrr}\toprule
+Variable&Parameter&估计值&Standard error&Wald $\chi^2$&$P$-value&RRR $\exp(\beta)$\\\midrule
+Intercept&$\widehat\beta_0^{(1)}$&$-0.9826$&0.5707&2.96&0.0851&\\
+&$\widehat\beta_0^{(2)}$&$-0.3461$&0.5413&0.41&0.5226&\\
+$X_1$&$\widehat\beta_1^{(1)}$&0.6281&0.1799&12.19&0.0005&1.874\\
+&$\widehat\beta_1^{(2)}$&0.3454&0.1728&4.00&0.0456&1.413\\
+$X_2$&$\widehat\beta_2^{(1)}$&$-0.6494$&0.2833&5.26&0.0219&0.522\\
+&$\widehat\beta_2^{(2)}$&$-0.6352$&0.2725&5.43&0.0197&0.530\\\bottomrule\end{tabular}}
+\[
+\ln\frac{P_1}{P_3}=-0.9826+0.6281x_1-0.6494x_2,\qquad
+\ln\frac{P_2}{P_3}=-0.3461+0.3454x_1-0.6352x_2.
+\]
+\textbf{结果解释}（上标(1)为鳞癌对泡状细胞癌，(2)为腺癌对泡状细胞癌）
+\begin{itemize}
+\item 染色结果相同时，分化程度每高1级，“鳞癌与泡状细胞癌的概率之比”乘以1.874，“腺癌与泡状细胞癌的概率之比”乘以1.413。末列应理解为相对风险比（RRR），原表标作“RR”，但它不是某一类别概率本身的比值。
+\item 分化程度相同时，染色“$-$”（$x_2=2$）与“$+$”（$x_2=1$）相比，两个概率之比分别乘以0.522、0.530。
+\item 分化程度对组织类型的总体作用应作2个自由度的联合检验：似然比 $\chi^2=13.29$，$P=0.0013$；染色结果的联合检验 $\chi^2=8.03$，$P=0.018$。
+\item 改以鳞癌为参照：腺癌对鳞癌的分化程度系数为 $0.3454-0.6281=-0.2826$，泡状细胞癌对鳞癌为 $-0.6281$。
+\end{itemize}
+R中用\texttt{nnet::multinom()}拟合，频数表资料以\texttt{weights}给出各格例数：
+\par\noindent
+\begin{coursecode}{R}
+library(nnet)
+d3 <- expand.grid(y=c("鳞癌","腺癌","泡状"), x2=c(1,2), x1=1:3)
+d3$n <- c(10,17,26, 5,12,50, 21,17,26, 16,12,26, 15,15,16, 12,12,20)
+d3$y <- relevel(factor(d3$y), ref="泡状")             # 指定参照类别
+m <- multinom(y~x1+x2, weights=n, data=d3, trace=FALSE)
+round(summary(m)$coefficients,4); round(summary(m)$standard.errors,4)
+m0 <- multinom(y~x2, weights=n, data=d3, trace=FALSE)
+anova(m0, m)                                           # 分化程度的2自由度联合检验
+\end{coursecode}
+\begin{routput}
+     (Intercept)     x1      x2
+鳞癌     -0.9826 0.6281 -0.6494
+腺癌     -0.3461 0.3454 -0.6352
+     (Intercept)     x1     x2
+鳞癌      0.5707 0.1799 0.2833
+腺癌      0.5413 0.1728 0.2725
+
+    Model Resid. df Resid. Dev   Test    Df LR stat.     Pr(Chi)
+1      x2        32   672.9004                                  
+2 x1 + x2        30   659.6105 1 vs 2     2 13.28992 0.001300561
+\end{routput}
+所得系数与表8完全一致。输出中每个非参照类别各占一行，即各对应一个方程；分化程度$x_1$在两个方程中各有一个系数，检验其总体作用应采用2个自由度的似然比检验（$\chi^2=13.29$），不宜分别依据两行的$P$值下结论。
+\sourcepages{4}{12}
+\ctable{Logistic Regression Table}{\begin{tabular}{lrrrrrrr}\toprule
+Predictor&Coef&SE Coef&Z&P&Odds Ratio&\multicolumn{2}{c}{95\%CI}\\
+&&&&&&Lower&Upper\\\midrule
+\multicolumn{8}{l}{Logit 1: (Car/Walking)}\\
+Constant&$-37.9929$&20.7069&$-1.83$&0.067&&&\\
+Distance&1.69724&0.634966&2.67&0.008&5.46&1.57&18.95\\
+Income&0.215653&0.182070&1.18&0.236&1.24&0.87&1.77\\\midrule
+\multicolumn{8}{l}{Logit 2: (Bus/Walking)}\\
+Constant&2.12543&1.53808&1.38&0.167&&&\\
+Distance&0.653565&0.254944&2.56&0.010&1.92&1.17&3.17\\
+Income&$-0.138963$&0.0566681&$-2.45$&0.014&0.87&0.78&0.97\\\midrule
+\multicolumn{8}{l}{Logit 3: (Bike/Walking)}\\
+Constant&$-3.27498$&3.36553&$-0.97$&0.331&&&\\
+Distance&0.708729&0.272113&2.60&0.009&2.03&1.19&3.46\\
+Income&$-0.0736886$&0.0648364&$-1.14$&0.256&0.93&0.82&1.05\\\bottomrule\end{tabular}}
+\subsection{注意事项}
+\sourcepages{4}{13}
+不同的回归方程，自变量的偏回归系数不同。多分类结局变量的Logistic回归与分别做两类比较的回归模型存在差异。
+\begin{annotation}联合多项模型在同一似然中满足 $P_1+P_2+P_3=1$，全部样本同时参与估计。分别拟合二分类模型时，“鳞癌对泡状”只用这两类患者，模型化的是条件概率 $P(Y=1\mid Y\in\{1,3\})=P_1/(P_1+P_3)$，并非 $P_1+P_3=1$。由于 $\ln(P_1/P_3)$ 在两种做法下形式相同，分别拟合也能得到一致的系数估计，但它们只用了部分资料、彼此独立估计，效率较低，各方程的估计不能保证互相协调，也无法直接作跨方程的联合检验。本例分别拟合：鳞癌对泡状 $x_1$ 系数0.634（SE 0.183），腺癌对泡状0.319（SE 0.169），与联合拟合的0.628、0.345接近但不相同。\end{annotation}
+\section{有序分类结局资料的Logistic回归分析}
+\sourcepages{4}{14-17}
+\subsection{有序多分类结局的Logistic回归模型}
+结局变量是有序多分类的情形。例如临床疗效（无效、好转、显效、治愈）、疾病的严重程度（轻、中、重）、考试成绩的等级（A、B、C）、满意度的等级（不满意、一般满意、很满意）。Cumulative logistic regression model。
+
+设结果变量 $y$ 为 $K$ 个等级的有序变量，$K$ 个等级分别用 $1,2,\ldots,K$ 表示。记等级为 $j$（$j=1,2,\ldots,K$）的概率为 $P(y=j)$。等级小于等于 $j$ 的概率（cumulative probability）记为：
+\[
+P(y\le j)=P(y=1)+P(y=2)+\cdots+P(y=j),\qquad P(y>j)=1-P(y\le j).
+\]
+有序分类结果的Logistic回归定义为：
+\[
+\logit P_j=\logit(y>j)=\ln\frac{P(y>j)}{1-P(y>j)}
+=-\alpha_j+\sum_{i=1}^m\beta_ix_i,\qquad j=1,2,\ldots,K-1,
+\]
+\[
+P(y\le j)=\frac1{1+\exp(-\alpha_j+\sum_{i=1}^m\beta_ix_i)}.
+\]
+估计参数的个数：$(K-1)+m$。
+\begin{annotation}模型针对累积概率。$m$ 是自变量个数，$K$ 是结局等级数；截距（阈值）$\alpha_j$ 有 $K-1$ 个，斜率 $\beta_i$ 对所有分界点共用。\end{annotation}
+\begin{derivation}{阈值顺序、类别概率与似然}
+\dpart{假设}$Y\in\{1,\ldots,K\}$ 有序；各个体条件独立；对 $j=1,\ldots,K-1$，$\logit P(Y\le j\mid\bm x)=\alpha_j-\bm x^\top\bm\beta$（与上式 $\logit P(Y>j)=-\alpha_j+\bm x^\top\bm\beta$ 等价）。
+\dpart{关键等式}累积概率必须随 $j$ 单调不减，故阈值满足 $\alpha_1<\alpha_2<\cdots<\alpha_{K-1}$（记 $\alpha_0=-\infty$，$\alpha_K=+\infty$）。各类别概率由相邻累积概率相减得到：
+\[
+P(Y=j\mid\bm x)=P(Y\le j\mid\bm x)-P(Y\le j-1\mid\bm x)
+=\frac1{1+e^{-(\alpha_j-\bm x^\top\bm\beta)}}-\frac1{1+e^{-(\alpha_{j-1}-\bm x^\top\bm\beta)}} .
+\]
+对数似然 $\ell(\bm\alpha,\bm\beta)=\sum_i\sum_{j=1}^K I(y_i=j)\ln P(Y=j\mid\bm x_i)$，用Newton--Raphson等方法求极大值。
+\dpart{结论}对任一固定分界点 $j$，比较 $\bm x+\bm e_i$ 与 $\bm x$（$x_i$ 增加1单位、其余不变）：
+\[
+\frac{\text{odds}(Y>j\mid\bm x+\bm e_i)}{\text{odds}(Y>j\mid\bm x)}=e^{\beta_i},
+\]
+与 $j$ 无关。即把等级在 $j$ 处一分为二（“高于 $j$”对“不高于 $j$”）时，无论在哪一处切分，OR都相同，这就是比例优势假设。
+\dpart{解释}它可以理解为潜在连续变量模型：$Y^*=\bm x^\top\bm\beta+\varepsilon$，$\varepsilon$ 服从标准Logistic分布，$Y=j$ 当且仅当 $\alpha_{j-1}<Y^*\le\alpha_j$。$\bm x$ 使整个分布平移，各阈值处的logit改变量相同。
+\end{derivation}
+\subsection{回归系数的解释}
+\sourcepages{4}{18-20}
+\begin{itemize}
+\item $-\alpha_j$ 是自变量均为0时，$\ln\{P(Y>j)/P(Y\le j)\}$，即在分界点 $j$ 处“等级高于 $j$”对“不高于 $j$”的对数优势。
+\item $\beta_i$：其他自变量不变，$x_i$ 每增加一个单位，对任一分界点 $j$，“等级高于 $j$”相对于“不高于 $j$”的优势比的对数值，$\ln(\OR)$。
+\item $\beta_i$ 与 $j$ 无关（比例优势假设，用平行线检验考察）。
+\end{itemize}
+\begin{annotation}比例优势假设说的是：无论在哪个等级处把结局切分为“高”“低”两类，某因素的OR都相同；在logit尺度上，各累积logit随 $x$ 变化的直线互相平行。它不是说“从1级升到2级、从2级升到3级的作用相同”——后者是相邻类别logit模型的假设，比较的是相邻两级，而累积logit比较的是分界点两侧的全部等级。\end{annotation}
+\subsubsection{比例优势假定}
+比例优势假定（Proportional Odds Assumption, POA；有的资料称“等比例风险假定”，易与生存分析的比例风险假定混淆，本书统一称比例优势假设）：自变量在不同分界点上的OR相同。只有在此假定下，才能用一个OR概括自变量与“等级更高”的关联。若假定不成立，可改用部分比例优势模型（只让违背假定的变量的系数随 $j$ 变化）、广义有序logit模型（所有系数随 $j$ 变化），或不利用顺序信息的多项Logit模型。有序Probit模型同样要求各阈值处斜率相同（平行假设），只是把Logistic分布换成正态分布，不能解决不平行问题。
+\subsubsection{平行线检验（Test of Parallel Lines）}
+$H_0$：所有分界点的 $\beta$ 相同（满足假定）。$H_1$：至少一个分界点的 $\beta$ 不同（不满足假定）。比较“约束模型（强制所有 $\beta$ 相同）”与“非约束模型（允许 $\beta$ 随 $j$ 变化）”的似然比卡方（LR $\chi^2$），$\mathrm{df}=m(K-2)$。若 $P>0.05$，只能说未发现违背假设的充分证据，不等于证明了假设成立：样本小时检验效能低，样本很大时又会把无实际意义的微小差别判为显著。应同时比较各分界点分别拟合的二分类OR是否接近。
+\subsection{举例}
+\sourcepages{4}{21-22}
+\textbf{例4} 母亲文化程度与儿童智力水平的关系。
+\begin{annotation}自变量 $X$；因变量 $Y$，有序4分类。\end{annotation}
+\ctable{表9\quad 有序多分类结局Logistic回归分析数据}{\begin{tabular}{crrrrr}\toprule
+\multirow{2}{*}{智商等级 $y$}&\multicolumn{4}{c}{母亲文化程度 $x$}&\multirow{2}{*}{合计}\\\cmidrule(lr){2-5}
+&小学0&初中1&高中2&大专以上3&\\\midrule
+1&22&57&11&1&91\\2&81&236&112&4&433\\3&30&135&105&10&280\\4&3&26&17&7&53\\合计&136&454&245&22&857\\\bottomrule\end{tabular}}
+\ctable{表10\quad 儿童智力等级与母亲文化程度的累积优势Logistic回归}{\begin{tabular}{lrrrr}\toprule
+变量&回归系数&标准误&$Z$&$P$\\\midrule
+$x$&0.6373&0.0934&6.824&0.000\\
+常数项 $\alpha_1$&$-1.4578$&0.1454&&\\
+常数项 $\alpha_2$&1.2254&0.1358&&\\
+常数项 $\alpha_3$&3.5630&0.1935&&\\\bottomrule\end{tabular}}
+\[
+\logit P_j=-\alpha_j+0.6373x,\qquad \OR=e^{0.6373}=1.89.
+\]
+母亲的文化程度每提高一个等级，无论以哪个智商等级为分界，儿童智商等级高于该分界相对于不高于该分界的优势均乘以1.89（增加89\%）。注意增加的是优势而非概率。
+
+\revnote{用R的 \texttt{MASS::polr} 复算（$n=857$）：$\widehat\beta=0.6374$（SE 0.0934），阈值 $-1.4579$、$1.2254$、$3.5636$，与表10一致（$\alpha_3$ 末位差别为舍入）。平行线检验：允许三个分界点斜率不同的模型与本模型比较，LR $\chi^2=0.16$，$\mathrm{df}=2$，$P=0.92$；三个分界点分别作二分类Logistic回归的斜率为0.631、0.628、0.720，彼此接近，未见违背比例优势假设的证据。}
+相应的R代码与输出如下：
+\par\noindent
+\begin{coursecode}{R}
+library(MASS)
+d4 <- data.frame(y=factor(rep(1:4,4),ordered=TRUE), x=rep(0:3,each=4),
+                 n=c(22,81,30,3, 57,236,135,26, 11,112,105,17, 1,4,10,7))
+p <- polr(y~x, weights=n, data=d4, Hess=TRUE); summary(p)
+sapply(1:3, function(j)        # 在三个分界点分别作二分类logistic回归
+  coef(glm(I(as.integer(y)>j)~x, weights=n, family=binomial, data=d4))["x"])
+\end{coursecode}
+\begin{routput}
+Coefficients:
+   Value Std. Error t value
+x 0.6374     0.0934   6.824
+
+Intercepts:
+    Value    Std. Error t value 
+1|2  -1.4579   0.1454   -10.0279
+2|3   1.2254   0.1358     9.0232
+3|4   3.5636   0.1935    18.4175
+
+Residual Deviance: 1873.039 
+AIC: 1881.039 
+        x         x         x 
+0.6308933 0.6278775 0.7197457
+\end{routput}
+\texttt{polr()}的参数化为$\logit P(Y\le j)=\zeta_j-\beta x$，输出中的\texttt{1|2}、\texttt{2|3}、\texttt{3|4}为三个阈值$\alpha_j$。最后一行给出检查比例优势假设的简便方法：在各分界点将等级一分为二，分别拟合二分类logistic模型。三个斜率0.631、0.628、0.720相差不大，与平行线检验的结论一致。
+
+\begin{sikao}[有序模型与多项logit模型的比较]
+同一资料若采用多项logit模型（\texttt{multinom(y~x, weights=n, data=d4)}），需3个方程，每个方程含1个截距和1个斜率，共6个参数；累积logit模型仅含3个阈值与1个斜率，共4个参数。两者的AIC分别为1884.9和1881.0，有序模型较优。
+
+有序模型减少的两个参数，以一个较强的假设为代价：母亲文化程度对儿童智商等级的作用在各分界点上相同。该假设成立时，有序模型合并三个分界点的信息估计一个OR，结果更稳定，解释也更简明（母亲文化程度每提高一级，儿童智商等级较高的优势乘以1.89）。该假设明显不成立时，应改用部分比例优势模型或多项logit模型。
+\end{sikao}
+\section{案例讨论}
+\sourcepages{4}{23-31}
+\subsection{案例1}
+研究目标：糖尿病患者糖化血红蛋白（HbA1c）水平对视网膜病变严重程度的影响。
+
+结局变量：视网膜病变的严重程度（1=无病变，2=轻度，3=中度，4=重度）。
+
+影响因素：糖化血红蛋白 $X_1$（HbA1c），单位：\%，取值范围：4\%--12\%。
+
+混杂因素：病程 $X_2$（年），年龄 $X_3$（岁），性别 $X_4$（0，1）。
+\begin{enumerate}
+\item 如何开展此项研究？采用什么研究设计？
+\item 如何对数据进行统计分析？
+\end{enumerate}
+\ctable{模型参数估计结果（核心输出）}{\begin{tabular}{lrrrrrl}\toprule
+变量&系数 $\beta$&SE&$Z$&$P$&OR&95\%CI\\\midrule
+截距（$j=1$）&$-1.82$&0.35&$-5.20$&$<0.001$&---&---\\
+截距（$j=2$）&0.56&0.38&1.47&0.141&---&---\\
+截距（$j=3$）&2.91&0.45&6.47&$<0.001$&---&---\\
+HbA1c（$X_1$）&0.63&0.12&5.25&$<0.001$&1.88&(1.53, 2.31)\\
+糖尿病病程（$X_2$）&0.15&0.06&2.50&0.012&1.16&(1.03, 1.31)\\
+年龄（$X_3$）&0.02&0.01&1.98&0.048&1.02&(1.00, 1.04)\\
+性别（$X_4$，男=1）&0.21&0.18&1.17&0.242&1.23&(0.87, 1.75)\\\bottomrule\end{tabular}}
+请解读上表中的结果。
+
+\answer{在病程、年龄、性别相同的条件下，HbA1c每升高1个百分点，视网膜病变“更重一级及以上”相对于“不更重”的优势乘以1.88（95\%CI 1.53--2.31），对任一分级切点都相同（比例优势假设）。病程每增加1年OR为1.16，年龄每增加1岁OR为1.02；性别的作用无统计学意义。三个截距对应三个分界点，依次增大，本身没有专业意义。表中没有给出平行线检验，解读前应补充。}
+
+\textbf{问题} 在“糖尿病患者HbA1c水平对视网膜病变严重程度的影响”研究中，若将原本的有序因变量（视网膜病变分级：1=无病变 $\to$ 4=重度病变）视为无序多分类因变量，并采用多项Logit模型（Multinomial Logistic Model, MNL）分析，其模型设定、结果输出及医学解释会与Cumulative logistic regression model分析产生哪些差异？
+\ctable{多项Logit模型的参数估计}{\begin{tabular}{llrrrll}\toprule 对比关系&变量&系数 $\beta$&标准误&$P$值&OR&95\%CI\\\midrule
+\multicolumn{7}{l}{轻度病变（2）vs无病变（1）}\\
+&HbA1c&0.42&0.15&0.006&1.52&(1.15, 2.02)\\
+&病程&0.10&0.07&0.168&1.11&(0.97, 1.27)\\
+&年龄&0.01&0.01&0.325&1.01&(0.99, 1.03)\\
+&性别（男=1）&0.18&0.20&0.367&1.20&(0.82, 1.75)\\
+&截距&$-2.53$&0.48&$<0.001$&---&---\\
+\midrule
+\multicolumn{7}{l}{中度病变（3）vs无病变（1）}\\
+&HbA1c&0.71&0.16&$<0.001$&2.03&(1.52, 2.71)\\
+&病程&0.18&0.07&0.008&1.20&(1.04, 1.38)\\
+&年龄&0.03&0.01&0.021&1.03&(1.01, 1.05)\\
+&性别（男=1）&0.25&0.21&0.235&1.28&(0.86, 1.89)\\
+&截距&$-1.12$&0.51&0.029&---&---\\
+\midrule
+\multicolumn{7}{l}{重度病变（4）vs无病变（1）}\\
+&HbA1c&1.05&0.18&$<0.001$&2.86&(2.05, 3.99)\\
+&病程&0.22&0.08&0.005&1.25&(1.07, 1.46)\\
+&年龄&0.04&0.02&0.015&1.04&(1.01, 1.07)\\
+&性别（男=1）&0.30&0.23&0.192&1.35&(0.88, 2.08)\\
+&截距&0.85&0.55&0.124&---&---\\
+\bottomrule\end{tabular}}
+\ctable{累积Logit模型与多项Logit模型}{\begin{tabularx}{\textwidth}{p{2cm}XX}\toprule
+对比维度&累积Logit模型（比例优势模型）&多项Logit模型（MNL）\\\midrule
+因变量属性假设&视为有序分类变量（无病变 $\to$ 轻度 $\to$ 中度 $\to$ 重度是递进关系，需保留“程度高低”信息）&不利用类别顺序（把4个级别当作无序类别；这不等于假定类别“相互独立”，只是模型不使用顺序信息）\\\addlinespace
+建模对象&针对“累积概率”（如 $P(Y\le1)$、$P(Y\le2)$、$P(Y\le3)$），通过logit链接建立自变量与“有序升级风险”的关系&针对“单个类别概率”，需指定一个参照类别（如“无病变=1”），建模其他类别（2/3/4）相对于参照类别的概率比\\\addlinespace
+核心假设&比例优势假设（自变量在所有累积分界点上的OR相同，即斜率系数 $\beta$ 唯一）&无关选项独立性（IIA）：任意两类的概率之比只取决于这两类的线性预测量，不受其他类别影响\\\addlinespace
+参数个数（本例4个自变量）&$3+4=7$&$3\times(1+4)=15$\\\bottomrule\end{tabularx}}
+\ctable{累积Logit模型与多项Logit模型的评价}{\begin{tabularx}{\textwidth}{p{2cm}XX}\toprule
+评价维度&累积Logit模型&多项Logit模型\\\midrule
+贴合医学认知&高：视网膜病变是“从无到有、从轻到重”的渐进过程，模型保留有序性，结论与病理机制一致&较低：不使用等级顺序，各级别与无病变分别比较，趋势需由多个OR另行归纳\\\addlinespace
+结论简洁性&高：1组系数即可概括自变量对“有序升级风险”的整体影响，临床医生易理解&低：需解读多组系数（如3组），且结果分散，不易形成统一的核心结论\\\addlinespace
+解决核心医学问题&能用一个OR回答“HbA1c越高，病变是否越可能处于更重的分级”&分别回答“各病变级别相对无病变的概率之比”；可以描述剂量趋势，但需综合3个OR\\\addlinespace
+信息利用效率&比例优势假设成立时参数少、估计更精确，统计效能更高&参数多、效率较低；但不依赖比例优势假设，当该假设明显不成立时反而更合适\\\bottomrule\end{tabularx}}
+本例为横断面资料，分级是某一时点的病变严重程度，两种模型都只能描述严重程度与HbA1c的关联，不能回答“病变进展速度”或“延缓升级”这类纵向问题；后者需要随访资料（如重复测量的有序结局或多状态模型）。
+
+\textbf{问题：为何本案例不适合用多项Logit模型？}
+\begin{enumerate}
+\item 未利用顺序信息：多项Logit模型对有序结局仍然是有效的模型，但它不使用等级顺序，参数个数（15个）是累积Logit模型（7个）的两倍多，估计精度较低。
+\item 结论分散：需要分别解释3组对比，不能用一个OR概括“分级更重”的关联。
+\item 比较的前提：上述优势以比例优势假设成立为前提。应先作平行线检验并比较各分界点的OR；若假设明显不成立，可用部分比例优势模型，或改用多项Logit模型。
+\end{enumerate}
+因此，“有序结局不适用多项模型”的说法不准确：比例优势假设成立时首选累积Logit模型（更简约、更有效率）；不成立时，多项Logit或部分比例优势模型是合理的选择。两种模型在本例中都只描述横断面关联，因果推断还需考虑混杂与时间顺序。
+\subsection{案例2}
+\sourcepages{4}{32-36}
+\textbf{背景} 既往研究显示抑郁症会增加痴呆的风险，认知障碍是晚年抑郁症的常见表现，并且两者经常同时发生。然而，抑郁症是痴呆的危险因素还是前驱阶段仍存在争议。
+
+\textbf{目的} 本研究从生命历程的角度研究抑郁症与痴呆风险之间的关联等。
+\begin{quote}\small
+\textbf{Association of life-course depression with the risk of dementia in late life: A nationwide twin study}
+
+Wenzhe Yang, Xuerui Li, Kuan-Yu Pan, Rongrong Yang, Ruixue Song, Xiuying Qi, Nancy L Pedersen, Weili Xu.
+
+Alzheimers Dement. 2021 Aug;17(8):1383--1390. doi:10.1002/alz.12303. Epub 2021 Mar 3. PMID:33656267.
+
+\textbf{Introduction:} Whether depression is a prodromal phase or risk factor for dementia is under debate. We aimed to unveil the nature of depression-dementia association by looking into the time window of depression occurrence.
+
+\textbf{Methods:} Dementia-free twins ($n=41,727$) from the Swedish Twin Registry were followed-up for 18 years. Data were analyzed using generalized estimating equation (GEE) for all individuals and conditional logistic regression for co-twin matched pairs.
+
+\textbf{Results:} In the GEE model, multi-adjusted odds ratios (ORs; 95\% confidence intervals [CIs]) of dementia were 1.46 (1.09--1.95) for mid-life, 2.16 (1.82--2.56) for late-life, 2.24 (1.49--3.36) for mid- to late-life, and 2.65 (1.17--5.98) for lifelong depression. The ORs in conditional logistic regression and in GEE did not differ significantly ($P=0.60$). Education $\ge8$ years attenuated dementia risk associated with mid-life depression.
+
+\textbf{Discussion:} Not only late-life depression, but also mid-life depression is associated with dementia. Genetic and early-life environmental factors could not account for this association. Education $\ge8$ years might buffer the impact of mid-life depression on dementia.
+\end{quote}
+\subsubsection{研究设计}
+\begin{itemize}
+\item 研究对象：来源于瑞典双胞胎登记系统，基线无痴呆的41727名双胞胎，随访18年。
+\item 研究设计：全队列为前瞻性双生子队列（用GEE分析全部个体）；条件Logistic回归部分是在队列内选取痴呆不一致的双生子对，进行共同双生子配对分析（co-twin matched case-control analysis），形式上相当于 $1:1$ 配对病例对照研究，同对双生子共享遗传和早年环境，相当于被“匹配”。
+\item 样本量：1439对痴呆不一致的双生子，共2878人，其中1439人在随访中发生痴呆（病例），1439人为其未发生痴呆的同胞（对照）。原资料写“2848个研究对象”，与 $1439\times2=2878$ 及TABLE 3中四格表合计 $1224+140+60+15=1439$ 对不符，按2878更正。
+\item 结局：随访期间新发痴呆（依据登记系统的诊断记录判定），而不是“因痴呆死亡”。
+\item 暴露：在整个生命周期中是否确诊抑郁症。
+\end{itemize}
+\begin{annotation}配对（共同双生子）分析用条件Logistic回归；对子内一致的遗传与早年环境因素被对子截距吸收，因而得到控制。\end{annotation}
+\subsubsection{数据特点}
+暴露变量：是否患抑郁症；分类变量。
+\begin{enumerate}
+\item 终身无抑郁症。
+\item 仅有早年：最后一次抑郁发生在45岁之前。
+\item 仅有中年：第一次和最后一次抑郁发生在45至64岁之间。
+\item 仅有晚年：第一次抑郁确诊发生在65岁以后。
+\item 早年至中年：早年和中年都有抑郁症确诊。
+\item 中年至晚年：中年和晚年都有抑郁症确诊。
+\item 终身：在早、中、晚年都有抑郁确诊。
+\end{enumerate}
+结局变量：新发痴呆（$Y=1$），未发生痴呆的同胞对照（$Y=0$）。协变量：年龄、性别等……。
+\begin{annotation}暴露变量：无序多分类；结局变量：二分类。\end{annotation}
+\subsubsection{方法应用}
+统计方法：描述性分析，定量资料，均值标准差；定性资料，频数构成比。方法：Conditional logistic regression models。报告：OR，95\%CI。其他……。
+\subsubsection{结果及解释}
+\sourcepages{4}{37-38}
+\ctable{TABLE 1\quad Baseline characteristics of the study population ($N=41,727$) by incident dementia status}{\begin{tabular}{lrrr}\toprule
+\multirow{2}{*}{Characteristics}&\multicolumn{2}{c}{Dementia}&\multirow{2}{*}{$P$}\\\cmidrule(lr){2-3}
+&No ($n=38,469$)&Yes ($n=3258$)&\\\midrule
+Age (years)&$59.34\pm10.25$&$71.90\pm8.27$&$<0.001$\\
+Sex&&&$<0.001$\\
+\quad Male&18,074 (46.98)$^\S$&1309 (40.18)&\\
+\quad Female&20,395 (53.02)&1949 (59.82)&\\
+Education&&&$<0.001$\\
+\quad $<8$ years&13,146 (34.17)$^\S$&1873 (57.49)&\\
+\quad $\ge8$ years&25,323 (65.83)&1385 (42.51)&\\
+Smoking status&&&$<0.001$\\
+\quad Never&18,470 (48.01)&1983 (60.87)&\\
+\quad Former/current smoking&19,999 (51.99)&1275 (39.13)&\\
+Alcohol consumption&&&$<0.001$\\
+\quad No/mild drinking&35,579 (92.49)&3121 (95.79)&\\
+\quad Heavy drinking&2890 (7.51)&137 (4.21)&\\
+$\cdots$&&&\\\bottomrule\end{tabular}\par\smallskip\begin{minipage}{\linewidth}\footnotesize $^\S$原表分别印作“1804”“131,46”。按 $38469-20395=18074$、$38469\times0.3417\approx13145$ 更正。\end{minipage}}
+\ctable{TABLE 3\quad Odds ratios (95\% confidence intervals) for the association between depression (including mid- or/and late-life, and lifelong depression) and dementia in co-twin matched analysis in dementia-discordant twin pairs ($n=1439$ pairs): Results from conditional logistic regression}{\begin{tabular}{lcc}\toprule
+\multirow{2}{*}{Dementia-free co-twin}&\multicolumn{2}{c}{Dementia}\\\cmidrule(lr){2-3}
+&Depression-free&Depression\\\midrule
+Depression-free&1224&140\\Depression&60&15\\\midrule
+Basic-adjusted OR (95\%CI)$^*$&\multicolumn{2}{c}{2.34 (1.73--3.17)}\\
+Multi-adjusted OR (95\%CI)$^\dagger$&\multicolumn{2}{c}{2.36 (1.74--3.20)}\\\bottomrule\end{tabular}
+\par\smallskip\begin{minipage}{\textwidth}\footnotesize
+$^*$ Adjusted for sex and education.
+
+$^\dagger$ Adjusted for sex, education, smoking, alcohol consumption, marital status, body mass index, type 2 diabetes mellitus, hypertension, heart disease, stroke, and cancer.
+
+Abbreviations: CI, confidence interval; OR, odds ratio.
+\end{minipage}}
+
+定量资料：均数和标准差；分类资料：频数和构成比。组间差异：定量资料——独立样本 $t$ 检验；分类资料——卡方检验。研究对象：基于总的样本量进行描述。
+
+多因素分析：在痴呆不一致的双生子对内比较，患有抑郁症（晚年确诊、中年至晚年和终身确诊）者发生痴呆的优势是终身没有患抑郁症者的2.36倍（多因素调整OR，95\%CI 1.74--3.20）。备注：剔除早年或者中年期间确诊抑郁症的研究对象。
+\begin{annotation}TABLE 3中的四格表按对子计数。条件Logistic回归只用暴露不一致的对子：病例有抑郁、同胞无抑郁的140对，病例无抑郁、同胞有抑郁的60对，粗配对OR $=140/60=2.33$，与基本调整OR 2.34（1.73--3.17）接近；两人都无或都有抑郁的1224对、15对不提供信息。原文转述的区间“1.74--2.30”不含点估计2.36，系将上限3.20误作2.30。\end{annotation}
+\subsubsection{注意事项}
+\sourcepages{4}{39}
+病例对照研究：给出明确的匹配因素。暴露的定义和赋值：分类变量。回归系数的解释：$\OR>1$ 或 $\OR<1$，要明确暴露的参照组。统计方法的应用：Conditional logistic regression models。
+\section{Logistic回归的正确应用}
+\sourcepages{4}{40-43}
+\subsection{实际应用中的注意事项：数据}
+\begin{enumerate}
+\item 数据的来源：设计类型（横断面研究、病例对照研究、队列研究）；样本量（估算方法；经验方法：较少一类结局的例数应达到模型参数个数的10--20倍，参数按哑变量、交互项、样条项的实际个数计算，而不是按原始变量个数或总例数计算）。
+\item 数据内容：变量类型。
+\item 数据质量。
+\end{enumerate}
+\begin{annotation}队列研究中如果有时间变量，常用生存分析。\end{annotation}
+\subsection{实际应用中的注意事项：模型}
+\begin{enumerate}
+\item 模型的应用条件：连续自变量在logit尺度上的线性；有序模型的比例优势假设。
+\item 建模的基本步骤：参数估计、假设检验、拟合优度。
+\item 建模的策略：认识数据、认识模型、最优模型。
+\item 注意事项：交互作用、共线性、变量的处理。
+\end{enumerate}
+\subsection{实际应用中的注意事项：解释}
+\begin{enumerate}
+\item 建模的目的：筛选危险因素、预测、分类；根据设计类型（横断面、病例对照、队列研究）；根据模型特点。
+\item 回归系数的解释。
+\item 统计学的解释与专业的解释。
+\end{enumerate}
+\section{思考与练习}
+\sourcepages{4}{44-46}
+在食管癌与饮酒关系分析中，年龄可能是混杂因素。请采用非条件Logistic回归方法分析下表资料，了解饮酒与食管癌的关系。
+\ctable{表11\quad 按年龄分层后食管癌与饮酒关系}{\begin{tabular}{crrrrrrrrrr}\toprule
+\multirow{2}{*}{每日饮酒量（g/天）}&\multicolumn{2}{c}{25--44}&\multicolumn{2}{c}{45--54}&\multicolumn{2}{c}{55--64}&\multicolumn{2}{c}{65+}&\multicolumn{2}{c}{合计}\\\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+&病例&对照&病例&对照&病例&对照&病例&对照&病例&对照\\\midrule
+0--79&5&35&25&29&42&27&24&18&96&109\\
+80+&5&270&21&138&34&139&44&119&104&666\\\bottomrule\end{tabular}}
+\begin{annotation}结局：食管癌病例 $Y=1$，对照 $Y=0$。年龄组宜以哑变量进入模型（不宜直接用1--4的等级赋值，否则强加了logit尺度上的等距线性关系）。资料按年龄分层后汇总，可用 \texttt{cbind(病例数, 对照数)} 作为分组二项响应。\end{annotation}
+\begin{enumerate}
+\item 构建Logistic回归模型。
+\item 解释回归系数的含义。
+\item 如何检验总体回归系数是否为零？
+\item 如何评价模型的好坏？
+\end{enumerate}
+\sourcepages{4}{47}
+\textbf{案例分析} 阅读文献：Ma XQ, Jiang CQ, Xu L, Zhang WS, Zhu F, Jin YL, Thomas GN, Lam TH. \textit{Sleep quality and cognitive impairment in older Chinese: Guangzhou Biobank Cohort Study}. Age Ageing. 2019 Dec 1;49(1):119--124. doi:10.1093/ageing/afz120。并回答以下问题：
+\begin{enumerate}
+\item 请阐述本研究的研究设计。
+\item 本研究的结局变量是如何测量及定义的？
+\item 请阐述Table 2中睡眠相关因素与记忆障碍的相关关系。
+\end{enumerate}
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（推导题）}
+\question{例3以泡状细胞癌为参照得到 $\ln(P_1/P_3)=-0.9826+0.6281x_1-0.6494x_2$，$\ln(P_2/P_3)=-0.3461+0.3454x_1-0.6352x_2$。(1) 写出以鳞癌为参照时腺癌的方程；(2) 分化程度为2、染色“$+$”时，三种组织类型的预测概率各是多少？}
+\answer{(1) $\ln(P_2/P_1)=\ln(P_2/P_3)-\ln(P_1/P_3)=0.6365-0.2827x_1+0.0142x_2$。(2) $x_1=2$、$x_2=1$ 时 $g_1=-0.9826+1.2562-0.6494=-0.3758$，$g_2=-0.3461+0.6908-0.6352=-0.2905$，$P_3=1/(1+e^{-0.3758}+e^{-0.2905})=0.411$，$P_1=0.282$，$P_2=0.307$（观察比例为 $21/64=0.33$、$17/64=0.27$、$26/64=0.41$）。}
+\section*{小结}
+\sourcepages{4}{48-49}
+非条件Logistic回归；条件Logistic回归；无序多分类结局资料的Logistic回归；有序多分类结局资料的Logistic回归；Logistic回归分析的思路与策略、基本步骤、注意事项、软件实现。
+\section{附录：Logistic回归的软件实现}
+\sourcepages{4}{50-52}
+\Needspace{5\baselineskip}
+\subsection{R语言的实现}
+非条件Logistic回归：
+\par\noindent
+\begin{coursecode}{R}
+glm(Y ~ X1+X2+X3, family=binomial(link='logit'), data=mydata)
+\end{coursecode}
+\par
+\texttt{Y} 取0/1时，模型化的是 $P(Y=1)$；若 \texttt{Y} 为因子，模型化的是第二个水平的概率，应先用 \texttt{factor(Y, levels=c("未发生","发生"))} 明确顺序。分类自变量用 \texttt{factor()} 并以 \texttt{relevel(x, ref=)} 指定参照组。以例1的分组资料验证，用
+\begin{center}\texttt{glm(cbind(死亡数, 存活数) \textasciitilde{} x1+x2+x3, family=binomial)}\end{center}
+得到与表2相同的系数。
+\Needspace{6\baselineskip}
+条件Logistic回归：
+\par\noindent
+\begin{coursecode}{R}
+library(survival)
+fit.full <- clogit(y ~ x1 + x2 + x3 + strata(id), data=mydata)
+\end{coursecode}
+\par
+\begin{annotation}\texttt{y} 为1（病例）/0（对照），\texttt{strata(id)} 指定配对号，每个配对一个层；层内截距被条件似然消去，故输出中没有截距。资料为每人一行（每对两行）。例2只列出5对的记录，表5无法据此复算；可用配对四格表验证：只含一个0/1暴露时，\texttt{clogit} 的 $\exp(\widehat\beta)=c/b$。\end{annotation}
+\Needspace{7\baselineskip}
+有序分类结局的Logistic回归：
+\par\noindent
+\begin{coursecode}{R}
+library(MASS)
+mydata2$y <- factor(mydata2$y, levels=1:4, ordered=TRUE)
+m <- polr(y ~ x, data=mydata2, weights=freq, Hess=TRUE)
+summary(m)
+\end{coursecode}
+\par
+包名为 \texttt{MASS}（区分大小写，\texttt{mass} 无法加载）。响应必须是按等级顺序排列的有序因子；\texttt{weights=freq} 为频数权重。\texttt{polr} 的参数化为 $\logit P(Y\le j)=\zeta_j-\bm x^\top\bm\beta$，与本章的 $\logit P(Y>j)=-\alpha_j+\bm x^\top\bm\beta$ 一致（$\zeta_j=\alpha_j$）。以例4验证：$\widehat\beta=0.6374$，阈值 $-1.4579$、$1.2254$、$3.5636$。
+\Needspace{7\baselineskip}
+无序多分类结局的Logistic回归：
+\par\noindent
+\begin{coursecode}{R}
+library(nnet)
+mydata$y <- relevel(factor(mydata$y), ref="3")   # 指定参照类别
+model <- multinom(y ~ x1 + x2, data=mydata, weights=freq)
+summary(model)
+\end{coursecode}
+\par
+以例3（更正后的表7，染色 $+=1$、$-=2$，参照类别为泡状细胞癌）验证，可精确得到表8的系数和标准误。
+\subsection{SPSS软件实现}
+\sourcepages{4}{53-54}
+\cfigure{SPSS菜单路径}{\begin{tikzpicture}[every node/.style={font=\small},node distance=8mm and 10mm]
+\node[draw] (a) {Analyze};\node[draw,right=of a] (r) {Regression};
+\node[draw,right=of r,yshift=12mm] (b) {Binary Logistic};
+\node[draw,right=of r] (m) {Multinomial Logistic};
+\node[draw,right=of r,yshift=-12mm] (o) {Ordinal};
+\node[draw,below=15mm of a] (s) {Survival};\node[draw,right=of s] (c) {Cox regression：条件Logistic回归};
+\draw[PlotPrimary,line width=.65pt,-{Stealth}] (a)--(r);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (r.east)--(b.west);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (r)--(m);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (r.east)--(o.west);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (s)--(c);
+\end{tikzpicture}}
+\Needspace{10\baselineskip}
+条件Logistic回归：
+\par\noindent
+\begin{coursecode}{SPSS}
+COXREG time #产生新变量，病例赋值1，对照赋值2（对照的时间晚于病例）
+ /STATUS=y(1) #结局变量，病例1，对照0；y(1)表示取值1为“事件”
+ /STRATA=id #分层变量，对子号
+ /METHOD=ENTER x1 x2 x3 x4 x5
+ /PRINT=CI(95)
+ /CRITERIA=PIN(.05) POUT(.10) ITERATE(20).
+\end{coursecode}
+\par
+\Needspace{6\baselineskip}
+\subsection{SAS软件实现}
+\sourcepages{4}{55-57}
+\par\noindent
+\begin{coursecode}{SAS}
+PROC LOGISTIC data= ;
+MODEL y(event='1')=x1 x2 x3 x4 /cl rl lackfit selection=stepwise;
+\end{coursecode}
+\par
+cl：输出参数估计值的置信区间；rl：输出OR的可信区间；lackfit：输出Hosmer--Lemeshow拟合优度指标；selection：可以指定自变量选择的方法。PROC LOGISTIC默认对排序在前的取值（0/1编码时为0）建模，因此要用 \texttt{y(event='1')} 或 \texttt{descending} 指定事件，否则系数符号全部相反。
+
+\Needspace{9\baselineskip}
+有序多分类结局：
+\par\noindent
+\begin{coursecode}{SAS}
+PROC LOGISTIC data= ;
+CLASS x1 (ref=first) / param=ref;
+MODEL y(descending)=x1 x2 x3 /link=clogit;
+ODDSRATIO x1;
+RUN;
+\end{coursecode}
+\par
+有序结局用累积logit连接（\texttt{link=clogit}，有序响应时为默认），输出中的比例优势假设比分检验（Score Test for the Proportional Odds Assumption）即平行线检验。把 \texttt{link=glogit} 写在有序模型中是错误的：\texttt{glogit}（广义logit）是无序多分类的多项Logit模型。\texttt{descending} 使模型化的是较高等级的累积概率 $P(Y\ge j)$，与本章 $\logit P(Y>j)$ 的方向一致；不加时SAS对 $P(Y\le j)$ 建模，斜率符号相反。频数资料加 \texttt{FREQ freq;}。
+\Needspace{10\baselineskip}
+无序多分类结局：
+\par\noindent
+\begin{coursecode}{SAS}
+PROC SORT;
+BY descending y;
+PROC CATMOD order=data;
+DIRECT x;
+MODEL y=x;
+RUN;
+\end{coursecode}
+\par
+CATMOD以排序后的最后一个类别为参照，故需先排序以控制参照类别。也可用 \texttt{PROC LOGISTIC; MODEL y(ref='3')=x1 x2 / link=glogit;}，以 \texttt{ref=} 直接指定参照类别。
+\Needspace{8\baselineskip}
+条件Logistic回归：
+\par\noindent
+\begin{coursecode}{SAS}
+PROC PHREG;
+MODEL time*case(0)=x1-x7/ties= selection= risklimits;
+STRATA id;
+RUN;
+\end{coursecode}
+\par
+\subsection{STATA软件实现}
+\sourcepages{4}{58}
+STATA有一组命令用于Logistic回归分析：\texttt{logistic}、\texttt{logit}、\texttt{clogit}、\texttt{mlogit}、\texttt{ologit}。
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 结局为4类无序变量，模型含3个自变量，计算多项logit模型的参数个数，以及检验某一自变量总体作用的自由度。\\
+\textit{答：$3\times(3+1)=12$个；自由度为3。}
+\item 解释多项logit模型中$\exp(\beta_{kj})$的含义。\\
+\textit{答：其他变量不变时，$x_j$每增加1个单位，“属于类别$k$与属于参照类别的概率之比”乘以$\exp(\beta_{kj})$（相对风险比RRR）。}
+\item 结局为4个等级、含2个自变量的累积logit模型，计算参数个数及平行线检验的自由度。\\
+\textit{答：$3+2=5$个；$m(K-2)=2\times2=4$。}
+\item 解释比例优势假设的含义。\\
+\textit{答：在任一等级处将结局分为“高”“低”两类，某因素的OR均相同。}
+\item 平行线检验$P=0.92$，说明能否据此认为比例优势假设成立。\\
+\textit{答：只能说明未发现违背该假设的证据，还应比较各分界点分别拟合的OR是否接近。}
+\end{enumerate}
+\end{fuxi}

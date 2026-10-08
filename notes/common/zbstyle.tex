@@ -1,0 +1,193 @@
+% 公卫统计 · Einfart/plain 学习总笔记兼容层
+% 视觉设置集中于本文件和 pku-notes.sty；原章节、题号、标签保持不变。
+\usepackage{multirow,calc,tikz,pgfplots,placeins,pdflscape,microtype}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns,decorations.pathreplacing,shapes.geometric}
+\pgfplotsset{compat=1.18}
+\colorlet{PKUInk}{black}
+\colorlet{Ink}{black}
+\colorlet{Muted}{PKUMuted}
+\colorlet{Primary}{PKURed}
+\colorlet{Accent}{PKURed}
+\colorlet{Rule}{black!22}
+\colorlet{Paper}{PKUTint}
+\colorlet{CodeBackground}{PKUCodeBg}
+\colorlet{CodeRule}{black!22}
+\colorlet{NavyBlue}{PKURed}
+\colorlet{DarkRed}{PKURed}
+\colorlet{ForestGreen}{black!65}
+\colorlet{BoxGray}{black!3}
+\colorlet{DefBlue}{PKURed!4}
+\colorlet{ThmGold}{PKURed!3}
+\colorlet{ExGreen}{black!3}
+\colorlet{RemPurple}{black!3}
+% 代码语义配色独立于装饰色。
+\colorlet{CodeKeyword}{PKUCodePurple}
+\colorlet{CodeFunction}{PKUCodeBlue}
+\colorlet{CodeString}{PKUCodeString}
+\colorlet{CodeComment}{PKUCodeGreen}
+\definecolor{CodeConstant}{HTML}{805600}
+\providecommand{\bm}[1]{\symbf{#1}}
+\setlength{\emergencystretch}{3em}
+\clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000
+\allowdisplaybreaks[2]
+\setcounter{MaxMatrixCols}{14}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\heavyrulewidth}{.7pt}
+\setlength{\lightrulewidth}{.35pt}
+\setlength{\cmidrulewidth}{.3pt}
+\captionsetup{font={small,pkublack},labelfont={bf,sf,pkublack},
+  textfont={pkublack},labelsep=quad,skip=6pt,hypcap=false}
+% Einfart 原生为 article。用 titlesec 增加 chapter 层，保留书稿结构。
+\makeatletter
+\def\ttll@part{-1}
+\makeatother
+\titleclass{\chapter}{top}[\part]
+\newcounter{chapter}
+\renewcommand{\thechapter}{\arabic{chapter}}
+\counterwithin{section}{chapter}
+\counterwithin{equation}{chapter}
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+\providecommand{\theHchapter}{\arabic{chapter}}
+\renewcommand{\thesection}{\thechapter.\arabic{section}}
+\renewcommand{\chaptermark}[1]{\markboth{第\thechapter 章\quad #1}{}}
+\titleformat{\chapter}[display]
+  {\raggedright\sffamily\bfseries\color{black}}
+  {\large\bfseries\color{black}第\,\thechapter\,章}{7pt}
+  {\fontsize{23}{31}\selectfont\bfseries\color{black}#1}
+  [\vspace{8pt}{\color{PKURed}\rule{\linewidth}{.7pt}}]
+\titleformat{name=\chapter,numberless}[display]
+  {\raggedright\sffamily\bfseries\color{black}}{}{0pt}
+  {\fontsize{23}{31}\selectfont\bfseries\color{black}#1}
+  [\phantomsection\vspace{8pt}{\color{PKURed}\rule{\linewidth}{.7pt}}]
+\titlespacing*{\chapter}{0pt}{0pt}{22pt}
+\titleformat{\section}
+  {\sffamily\bfseries\Large\color{black}}{\thesection}{.7em}{#1}
+\titleformat{\subsection}
+  {\sffamily\bfseries\large\color{black}}{\thesubsection}{.65em}{#1}
+\titleformat{\subsubsection}
+  {\sffamily\bfseries\normalsize\color{black}}{\thesubsubsection}{.6em}{#1}
+\setcounter{secnumdepth}{2}\setcounter{tocdepth}{1}
+\pretocmd{\section}{\ifinner\else\Needspace{6\baselineskip}\fi}{}{}
+\pretocmd{\subsection}{\ifinner\else\Needspace{4\baselineskip}\fi}{}{}
+\newcommand{\frontmatter}{\clearpage\pagenumbering{Roman}}
+\newcommand{\mainmatter}{\clearpage\pagenumbering{arabic}\setcounter{chapter}{0}}
+\titlecontents{chapter}[3.2em]
+  {\addvspace{.55\baselineskip}\PKUTOCFont}
+  {\contentslabel[第\thecontentslabel 章]{3.2em}}{\hspace*{-3.2em}}
+  {\titlerule*[.7em]{.}\contentspage}
+\titlecontents{section}[5.4em]
+  {\addvspace{.12\baselineskip}\small\PKUTOCFont}
+  {\contentslabel{3em}}{\hspace*{-3em}}
+  {\titlerule*[.7em]{.}\contentspage}
+\makeatletter
+\providecommand{\@chapapp}{章}
+\renewcommand{\@pnumwidth}{2.5em}
+\renewcommand{\@tocrmarg}{3.5em}
+\def\toclevel@chapter{0}
+\newcommand{\ZBTableOfContents}{\clearpage\chapter*{目录}%
+  \markboth{目录}{}\begingroup\hypersetup{linkcolor=black}%
+  \setlength{\parskip}{0pt}\@starttoc{toc}\endgroup}
+\makeatother
+% 页眉页脚：低对比辅助信息，页码常规字重。
+\newcommand{\BookShortTitle}{\PKUShortTitle}
+\newcommand{\ZBPageFurniture}{\fancyhf{}%
+  \fancyhead[L]{\footnotesize\normalfont\sffamily\color{Muted}\nouppercase{\leftmark}}%
+  \fancyhead[R]{\footnotesize\normalfont\sffamily\color{Muted}\BookShortTitle}%
+  \fancyfoot[C]{\small\normalfont\sffamily\color{Muted}\thepage}%
+  \renewcommand{\headrulewidth}{.3pt}\renewcommand{\footrulewidth}{0pt}}
+\fancypagestyle{pku}{\ZBPageFurniture}
+\fancypagestyle{plain}{\ZBPageFurniture}
+\hypersetup{linkcolor=PKURed,urlcolor=PKURed,citecolor=PKURed}
+\pdfstringdefDisableCommands{\def\color#1{}\def\sffamily{}\def\bfseries{}%
+  \def\enspace{ }\def\quad{ }\def\texorpdfstring#1#2{#2}}
+% 保留原正文环境，标题均在字体选择后显式设为黑色。
+\tcbset{zbbase/.style={enhanced jigsaw,breakable,sharp corners,frame hidden,
+  boxrule=0pt,before skip=9pt plus 2pt,after skip=9pt plus 2pt,pad at break*=1.5mm}}
+\newtcolorbox{zbderive}[1]{zbbase,colback=PKURed!3,
+  borderline west={1.5pt}{0pt}{PKURed},left=11pt,right=9pt,top=7pt,bottom=7pt,
+  before upper={\setlength{\parskip}{3pt}{\sffamily\bfseries\color{black}#1}\par\smallskip}}
+\newtcolorbox{zbnote}[1][批注]{zbbase,colback=white,
+  borderline west={.8pt}{0pt}{black!35},left=9pt,right=2pt,top=2pt,bottom=2pt,
+  fontupper=\small\color{Muted},
+  before upper={{\sffamily\bfseries\color{black}#1}\enspace}}
+\newtcolorbox{zbcheck}[1][说明]{zbbase,colback=PKURed!2,
+  borderline west={1.2pt}{0pt}{PKURed},left=10pt,right=8pt,top=5pt,bottom=5pt,
+  fontupper=\small\color{black},
+  before upper={{\sffamily\bfseries\color{black}#1}\enspace}}
+\newtcolorbox{keyidea}[1][]{zbbase,colback=PKURed!2,
+  borderline west={1.3pt}{0pt}{PKURed},left=11pt,right=9pt,top=6pt,bottom=6pt,
+  before upper={\ifx\relax#1\relax\else{\sffamily\bfseries\color{black}#1}\par\smallskip\fi}}
+\newcommand{\dpart}[1]{\par\noindent{\sffamily\bfseries\color{black}#1}\quad\ignorespaces}
+\let\question\relax
+\let\answer\relax
+\newcommand{\question}[1]{\par\Needspace{3\baselineskip}\smallskip\noindent
+  {\sffamily\bfseries\color{black}问}\quad #1\par\smallskip}
+\newcommand{\answer}[1]{\par\smallskip\noindent
+  {\sffamily\bfseries\color{black}答}\quad #1\par\smallskip}
+\newlist{choices}{enumerate}{1}
+\setlist[choices]{label=\Alph*.,leftmargin=2.2em,itemsep=4pt,topsep=4pt,parsep=0pt,labelsep=.6em}
+\newcounter{zbquestion}
+\newcommand{\exsetno}{0}
+\renewcommand{\thezbquestion}{\exsetno.\arabic{zbquestion}}
+\renewcommand{\theHzbquestion}{\exsetno.\arabic{zbquestion}}
+\newcommand{\ZBQuestion}[2]{\par\addvspace{12pt}\ifinner\else\Needspace{5\baselineskip}\fi
+  \refstepcounter{zbquestion}\label{q:#1}\noindent
+  {\sffamily\bfseries\color{black}题\thezbquestion}\quad
+  {\sffamily\bfseries\color{black}#2}\par\nobreak\smallskip}
+% unicode-math 在文档开始时把 Question 定义为双问号数学符号。
+% 在所有字体/符号初始化完成后恢复原笔记的题面命令。
+\AddToHook{begindocument/end}{\let\Question\ZBQuestion}
+\newcommand{\Answer}[2]{\par\addvspace{12pt}\ifinner\else\Needspace{5\baselineskip}\fi\noindent
+  {\sffamily\bfseries\color{black}解析\enspace 题\ref*{q:#1}}\quad
+  {\sffamily\bfseries\color{black}#2}%
+  \hfill{\footnotesize\sffamily\hyperref[q:#1]{\color{Muted}返回题目}}%
+  \par\nobreak\smallskip\label{a:#1}}
+\newcommand{\worklines}[1]{\par\smallskip{\color{Rule}\vbox{\offinterlineskip
+  \foreach \n in {1,...,#1}{\vskip7.5mm\hrule height.3pt width\linewidth}}}\par\vspace{6pt}}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{breaklines,fontsize=\small,formatcom=\xeCJKVerbAddon}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\},fontsize=\small,formatcom=\xeCJKVerbAddon}
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\passthrough}[1]{#1}
+\AtBeginEnvironment{longtable}{\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.22}}
+\setlength{\LTpre}{6pt}\setlength{\LTpost}{6pt}
+\newcommand{\ExerciseNumber}[1]{\renewcommand{\exsetno}{#1}}
+\newcommand{\ExerciseChapter}[1]{\clearpage\setcounter{zbquestion}{0}%
+  \setcounter{secnumdepth}{0}\thispagestyle{plain}\phantomsection
+  \addcontentsline{toc}{section}{\protect\numberline{}习题与解析\enspace #1}%
+  \addtocontents{toc}{\protect\setcounter{tocdepth}{0}}%
+  \markboth{第\exsetno 章\quad 习题与解析}{}%
+  {\raggedright\sffamily\bfseries\color{black}%
+   {\large\bfseries\color{black}第\,\exsetno\,章\enspace 习题与解析}\par\vspace{7pt}%
+   {\fontsize{23}{31}\selectfont\bfseries\color{black}#1}\par\vspace{8pt}%
+   {\color{PKURed}\rule{\linewidth}{.7pt}}\par}\vspace{22pt}%
+  \pdfbookmark[1]{习题与解析：#1}{ex:\exsetno}}
+\newcommand{\EndExercises}{\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}\setcounter{secnumdepth}{2}}
+% 简约封面：仅课程名、英文名、居中校徽与日期。
+\newcommand{\MakeCover}[2]{%
+  \begin{titlepage}\thispagestyle{empty}\hypersetup{pageanchor=false}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[align=center,text width=.88\paperwidth]
+      at ([yshift=60mm]current page.center)
+      {{\sffamily\fontsize{32}{43}\selectfont\bfseries\color{black}#1}};
+    \node[align=center,text width=.88\paperwidth]
+      at ([yshift=42mm]current page.center)
+      {{\sffamily\fontsize{14}{20}\selectfont\color{Muted}#2}};
+    \node at (current page.center)
+      {\includegraphics[width=44mm]{../common/pku-emblem.jpg}};
+    \node at ([yshift=24mm]current page.south)
+      {{\small\color{Muted}2026年10月}};
+  \end{tikzpicture}%
+  \null\end{titlepage}\hypersetup{pageanchor=true}}
+% ---- 2026-10-06 润色补充：讲解框、运行结果、章末复习 ----
+\DefineVerbatimEnvironment{routput}{Verbatim}{breaklines,breakanywhere,
+  fontsize=\fontsize{8.6}{11.2}\selectfont,formatcom=\color{black!80}\xeCJKVerbAddon,
+  frame=leftline,framerule=.8pt,rulecolor=\color{black!28},framesep=7pt,xleftmargin=12pt}
+\newtcolorbox{sikao}[1][说明]{zbbase,colback=black!2.5,
+  borderline west={1.2pt}{0pt}{black!50},left=10pt,right=8pt,top=6pt,bottom=6pt,
+  before upper={\setlength{\parskip}{4pt}{\sffamily\bfseries\color{black}#1}\par\smallskip}}
+\newtcolorbox{fuxi}[1][本章要点]{zbbase,colback=PKURed!2,
+  borderline west={1.5pt}{0pt}{PKURed},left=11pt,right=9pt,top=7pt,bottom=7pt,
+  before upper={\setlength{\parskip}{3pt}{\sffamily\bfseries\color{black}#1}\par\smallskip}}

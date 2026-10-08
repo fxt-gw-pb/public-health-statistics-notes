@@ -1,0 +1,541 @@
+\chapter{对数线性模型}
+\sourcepages{7}{1-6}
+logistic回归与Cox回归均区分结局变量与自变量。对数线性模型分析多个分类变量交叉构成的列联表，各变量地位相同，研究目的是描述变量间的关联结构，即哪些变量之间存在关联，以及这种关联在第三个变量的不同水平上是否相同。
+
+对数线性模型将各格频数视为Poisson变量，将期望频数的对数表示为各变量主效应与交互项之和。两个变量相互独立对应于模型中不含二者的交互项，变量间关系的判断由此转化为一系列嵌套模型偏差的比较。本章要求能够将模型中的交互项转换为关联结构，例如含$u_{12}$、$u_{13}$而不含$u_{23}$，表示给定变量1时变量2与变量3条件独立。
+
+本章开头的辛普森悖论表明，将多维列联表随意合并为二维表进行$\chi^2$检验，结论可能完全相反。
+\section{问题提出}
+\textbf{例1} 宫颈癌。变量包括肤色、收入、分娩次数。
+\ctable{表1\quad 宫颈癌患病情况}{\begin{tabular}{llrrr}\toprule 肤色&家庭收入&少（0--1次）&中等（2--3次）&多（4次及以上）\\\midrule
+白人&低收入&67&143&43\\
+&中收入&36&78&16\\
+&高收入&3&9&12\\
+有色人种&低收入&77&94&25\\
+&中收入&87&70&18\\
+&高收入&14&8&14\\\bottomrule\end{tabular}}
+常见的数据整理方式：合并、压缩维度。
+\ctable{按肤色列表（合并收入后：肤色$\times$分娩次数）}{\begin{tabular}{lrrr}\toprule 肤色&少（0--1次）&中等（2--3次）&多（4次及以上）\\\midrule
+白人&106$^*$&230&71\\
+有色人种&178&172&57\\\bottomrule\end{tabular}}\ctable{按收入列表（合并肤色后：收入$\times$分娩次数）}{\begin{tabular}{lrrr}\toprule 家庭收入&少（0--1次）&中等（2--3次）&多（4次及以上）\\\midrule
+低收入&144&237&68\\
+中收入&123&148&34\\
+高收入&17&17&26\\\bottomrule\end{tabular}\par\smallskip\footnotesize $^*$原表印作160；$67+36+3=106$，白人合计 $106+230+71=407$，与有色人种合计407相同。第一个表的行变量是肤色，原表头误作“家庭收入”。}
+采用 $\chi^2$ 检验对上述 $R\times C$ 列联表分析任意两因素之间的关系，做法正确吗？混杂因素？
+\subsection{辛普森悖论（Simpson's paradox）}
+\sourcepages{7}{7-10}
+将高维列联表压缩为多个二维列联表进行分析时候，可能会出现奇怪的结果。
+\ctable{给定C的情况下，A与B之间存在正相关关系}{\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_1$&$B_1$&$B_2$\\\midrule $A_1$&60&80\\ $A_2$&60&90\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=1.13$\end{minipage}\hfill\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_2$&$B_1$&$B_2$\\\midrule $A_1$&60&220\\ $A_2$&30&120\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=1.09$\end{minipage}\par\medskip\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_3$&$B_1$&$B_2$\\\midrule $A_1$&40&170\\ $A_2$&60&270\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=1.06$\end{minipage}\hfill\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_4$&$B_1$&$B_2$\\\midrule $A_1$&40&430\\ $A_2$&30&330\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=1.02$\end{minipage}}\ctable{合并C的两个类别之后，A与B存在负相关关系}{\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_1+C_2$&$B_1$&$B_2$\\\midrule $A_1$&120&300\\ $A_2$&90&210\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=0.93$\end{minipage}\hfill\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_3+C_4$&$B_1$&$B_2$\\\midrule $A_1$&80&600\\ $A_2$&90&600\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=0.89$\end{minipage}}\ctable{合并C的所有类别之后，A与B不存在相关关系}{\begin{minipage}{.45\linewidth}\centering\begin{tabular}{lrr}\toprule $C_1+C_2+C_3+C_4$&$B_1$&$B_2$\\\midrule $A_1$&200&900\\ $A_2$&180&810\\\bottomrule\end{tabular}\par\smallskip $\widehat{\OR}=1.0$\end{minipage}}
+\begin{annotation}研究A和B的关系，C因素有4个层次，分层分析结果显示A和B正相关。研究A和B的关系，将C因素合并为仅有2个层次，分层分析结果变为A和B负相关。\end{annotation}
+\sourcepages{7}{11-13}
+\textbf{例2：癌症数据} 生存状态（A）：$A_1=$死亡，$A_2=$存活；治疗方案（B）：$B_1=$常规疗法，$B_2=$新疗法。
+\ctable{重症 $C_1$}{\begin{tabular}{lrrr}\toprule $C_1$&$B_1$&$B_2$&合计\\\midrule
+$A_1$&950&9000&9950\\
+$A_2$&50&1000&1050\\
+合计&1000&10000&11000\\\bottomrule\end{tabular}}\[P(A_2\mid B_1)=0.05,\qquad P(A_2\mid B_2)=0.10.\]\ctable{非重症 $C_2$}{\begin{tabular}{lrrr}\toprule $C_2$&$B_1$&$B_2$&合计\\\midrule
+$A_1$&5000&5&5005\\
+$A_2$&5000&95&5095\\
+合计&10000&100&10100\\\bottomrule\end{tabular}}\[P(A_2\mid B_1)=0.50,\qquad P(A_2\mid B_2)=0.95.\]\ctable{合并重症与非重症}{\begin{tabular}{lrrr}\toprule $C_1+C_2$&$B_1$&$B_2$&合计\\\midrule
+$A_1$&5950&9005$^*$&14955$^*$\\
+$A_2$&5050&1095&6145\\
+合计&11000&10100&21100\\\bottomrule\end{tabular}}\[P(A_2\mid B_1)=0.46,\qquad P(A_2\mid B_2)=0.11.\]
+{\footnotesize $^*$原表印作9050、14995；按 $9000+5=9005$、$5950+9005=14955$ 更正（列合计10100、总计21100不变）。}
+新的治疗方案和普通治疗方案均更适合“非重症”的癌症病人。
+\begin{annotation}以及无论对重症还是非重症都是新疗法好。分布不均！主要是重症患者用新疗法，即便新疗法好，本身重症就风险更大。\end{annotation}
+合并后，似乎新的治疗方案效果较普通治疗方案更差。为什么？
+\[
+\text{对 }B_1\text{ 而言，重症:非重症}=1000:10000,
+\]
+\[
+\text{对 }B_2\text{ 而言，重症:非重症}=10000:100.
+\]
+两变量间相关关系的大小和方向可能取决于它们与第三个变量间的相关关系——第三个变量为混杂因素。
+\begin{sikao}[辛普森悖论的模型分析]
+将癌症数据整理为$2\times2\times2$频数表，分别估计未调整与调整病情时新疗法的存活OR：
+\par\noindent
+\begin{coursecode}{R}
+ca <- expand.grid(A=c("死亡","存活"), B=c("常规","新"), C=c("重症","非重症"))
+ca$n <- c(950,50,9000,1000, 5000,5000,5,95)
+w  <- reshape(ca, idvar=c("B","C"), timevar="A", direction="wide")   # 改成宽格式
+lc <- glm(cbind(n.存活,n.死亡)~B,   binomial, w)    # 不调整病情
+lg <- glm(cbind(n.存活,n.死亡)~B+C, binomial, w)    # 调整病情
+exp(coef(lc)["B新"]); exp(coef(lg)["B新"])
+ll <- glm(n~A*B + A*C + B*C, poisson, ca)          # 无三阶交互的对数线性模型
+coef(ll)[c("A存活:B新","A存活:C非重症")]; coef(lg)[c("B新","C非重症")]
+\end{coursecode}
+\begin{routput}
+      B新 
+0.1432702 
+    B新 
+3.38963
+    A存活:B新 A存活:C非重症 
+     1.220721      3.405542 
+     B新  C非重症 
+1.220721 3.405542 
+\end{routput}
+未调整病情时，新疗法存活的OR仅为0.14；调整病情后OR为3.39，即在病情相同的患者中新疗法的效果明显较好。其原因在于新疗法主要用于重症患者（10000:100），而重症患者本身存活率较低。
+
+输出的后两行表明：以生存状态A为结局的logistic回归\texttt{A\textasciitilde B+C}，与含$AB$、$AC$、$BC$三个交互项的对数线性模型给出相同的系数。对数线性模型中$A$与$B$的交互项即logistic回归中$B$的对数OR，$BC$项相当于对自变量间的关联不加限制。因此，列联表中有一个变量为结局时，对数线性模型与logistic回归等价，后者更为直接；各变量地位相同、关注整体关联结构时，宜采用对数线性模型。
+\end{sikao}
+\subsection{学习要点}
+\sourcepages{7}{14}
+\begin{enumerate}
+\item 什么是高维列联表。
+\item 将一个高维列联表转换为多个二维列联表，并对每个二维列联表采用 $\chi^2$ 检验进行分析的做法并不总是合适的。
+\item 什么是对数线性模型，如何解释模型结果。
+\item 分类变量何时可以合并处理，何时不能。
+\end{enumerate}
+\section{对数线性模型}
+\sourcepages{7}{15}
+对数线性模型（Log-linear model）通常用于分析高维列联表数据。
+\begin{enumerate}
+\item 描述和确定高维列联表中分类变量间的相关关系。
+\item 可在不歪曲变量间相关关系的情况下探讨合并列表数据的可能性。
+\end{enumerate}
+\subsection{四格表资料的对数线性模型}
+\sourcepages{7}{16-19}
+\ctable{四格表的频数与概率}{\begin{tabular}{lccc}\toprule
+&$B_1$&$B_2$&合计\\\midrule
+$A_1$&$n_{11}$&$n_{12}$&$n_{1\cdot}$\\
+$A_2$&$n_{21}$&$n_{22}$&$n_{2\cdot}$\\
+合计&$n_{\cdot1}$&$n_{\cdot2}$&$n_{\cdot\cdot}$\\\bottomrule\end{tabular}\qquad
+\begin{tabular}{lccc}\toprule
+&$B_1$&$B_2$&合计\\\midrule
+$A_1$&$p_{11}$&$p_{12}$&$p_{1\cdot}$\\
+$A_2$&$p_{21}$&$p_{22}$&$p_{2\cdot}$\\
+合计&$p_{\cdot1}$&$p_{\cdot2}$&1\\\bottomrule\end{tabular}}
+\begin{annotation}$n_{ij}$ 为观察频数，$p_{ij}$ 为格子概率；下标中的“$\cdot$”表示对该下标求和，$n_{i\cdot}$、$p_{i\cdot}$ 为行合计，$n_{\cdot j}$、$p_{\cdot j}$ 为列合计。$i$ 是第一个变量（A）的第 $i$ 个水平，$j$ 是第二个变量（B）的第 $j$ 个水平。\end{annotation}
+\textbf{三种抽样方式}\quad 同一张四格表可以来自不同的抽样：
+\begin{itemize}
+\item \textbf{独立Poisson抽样}：观察一段时间，各格频数 $n_{ij}\sim\text{Poisson}(\mu_{ij})$ 相互独立，总数不固定；
+\item \textbf{多项抽样}：固定总样本量 $n$，每人独立落入4个格子之一，各格频数服从多项分布 $\text{Multinomial}(n;\,p_{11},\ldots,p_{22})$；
+\item \textbf{乘积多项抽样}：固定行合计（如按暴露分组抽样）或列合计（如病例对照），每行（列）内部是独立的多项（二项）分布。
+\end{itemize}
+\begin{derivation}{独立Poisson频数给定总数后服从多项分布}
+\dpart{假设}$N_c\sim\text{Poisson}(\mu_c)$，$c=1,\ldots,C$ 相互独立，$\mu=\sum_c\mu_c$。
+\dpart{关键等式}独立Poisson变量之和仍服从Poisson分布，$N=\sum_cN_c\sim\text{Poisson}(\mu)$。对 $\sum_cn_c=n$，
+\[
+P(N_1=n_1,\ldots,N_C=n_C\mid N=n)
+=\frac{\prod_c e^{-\mu_c}\mu_c^{n_c}/n_c!}{e^{-\mu}\mu^n/n!}
+=\frac{n!}{\prod_cn_c!}\prod_c\Bigl(\frac{\mu_c}{\mu}\Bigr)^{n_c}.
+\]
+\dpart{结论}给定总数后，频数服从多项分布，格子概率 $p_c=\mu_c/\mu$。
+\dpart{解释}Poisson似然可分解为“总数 $N$ 的Poisson似然”乘“给定 $N$ 的多项似然”，且只要模型含常数项 $u$，前者只与 $\mu$ 有关。因此用Poisson对数线性模型（含常数项）得到的关联参数估计和拟合优度统计量，与多项抽样下完全相同；乘积多项抽样下，只要模型包含被固定边际对应的项（如固定行合计时含 $u_1$），结论也相同。这是可以统一用Poisson GLM拟合列联表的理由。
+\end{derivation}
+\textbf{对数线性模型的分解}\quad 记期望频数 $F_{ij}=np_{ij}$。常见的写法是
+\begin{align*}
+F_{ij}&=np_{ij}=n\frac{p_{i\cdot}p_{\cdot j}}{p_{i\cdot}p_{\cdot j}}p_{ij}
+=np_{i\cdot}p_{\cdot j}\frac{p_{ij}}{p_{i\cdot}p_{\cdot j}},\\
+\ln F_{ij}&=\ln n+\ln p_{i\cdot}+\ln p_{\cdot j}
++\ln\frac{p_{ij}}{p_{i\cdot}p_{\cdot j}}.
+\end{align*}
+这个恒等式说明了 $\ln F_{ij}$ 可分为“样本量、A的边际、B的边际、A与B的关联”四部分，但不能直接令 $u_1(i)=\ln p_{i\cdot}$ 等，因为 $\ln p_{i\cdot}$ 之和不为0（各项都为负），不满足下面的零和约束；$\ln\{p_{ij}/(p_{i\cdot}p_{\cdot j})\}$ 对 $i$ 或 $j$ 求和一般也不为0。正确的定义是对 $\ln F_{ij}$ 作“均值分解”（类似两因素方差分析）：
+\begin{align*}
+\ln F_{ij}&=u+u_1(i)+u_2(j)+u_{12}(ij),\\
+u&=\overline{\ln F}_{\cdot\cdot},\quad
+u_1(i)=\overline{\ln F}_{i\cdot}-\overline{\ln F}_{\cdot\cdot},\quad
+u_2(j)=\overline{\ln F}_{\cdot j}-\overline{\ln F}_{\cdot\cdot},\\
+u_{12}(ij)&=\ln F_{ij}-\overline{\ln F}_{i\cdot}-\overline{\ln F}_{\cdot j}+\overline{\ln F}_{\cdot\cdot},
+\end{align*}
+其中 $\overline{\ln F}_{i\cdot}$ 为第 $i$ 行 $\ln F_{ij}$ 的算术均数，其余类推。$2\times2$ 表中 $u_{12}(11)=\tfrac14\ln\dfrac{F_{11}F_{22}}{F_{12}F_{21}}=\tfrac14\ln\OR$，$u_{12}=0$ 当且仅当 $\OR=1$，即A与B独立。
+\begin{annotation}理论频数由样本量（常数项）、A变量、B变量、A和B交互作用决定。\end{annotation}
+\[
+\sum_i u_1(i)=\sum_j u_2(j)=0,\qquad
+\sum_i u_{12}(i,j)=\sum_j u_{12}(i,j)=0.
+\]
+\textbf{约束与可识别性}\quad 不加约束时，$u$、$u_1(1),u_1(2)$、$u_2(1),u_2(2)$、$u_{12}(11),\ldots,u_{12}(22)$ 共9个参数只对应4个格子，可以互相加减常数而不改变 $F_{ij}$，参数不可识别。零和约束（或“参照水平取0”的约束，软件中更常用）使 $u_1$、$u_2$、$u_{12}$ 各只剩1个自由参数，加上 $u$ 共4个，与4个格子一一对应，即饱和模型。约束只是选定一种参数化，不影响拟合值和检验；但参数的数值与约束有关，解释参数时必须先说明用的是哪种约束。在多项抽样下总数 $n$ 固定，$u$ 由 $\sum F_{ij}=n$ 决定，固定总数的四格表只有3个自由的概率参数（如 $p_{11},p_{12},p_{21}$），分别对应 $u_1$、$u_2$、$u_{12}$。
+\subsection{三维列联表的对数线性模型}
+\sourcepages{7}{20-24}
+$F_{ijk}$：格子 $(i,j,k)$ 的期望频数，其中 $i=1,\ldots,r$；$j=1,\ldots,c$；$k=1,\ldots,l$。（列合计）$\times$（行合计）/总数。
+\subsubsection{饱和模型（Saturated model）}
+\begin{align*}
+\ln F_{ijk}={}&u+u_1(i)+u_2(j)+u_3(k)\\
+&+\underbrace{u_{12}(i,j)+u_{13}(i,k)+u_{23}(j,k)}_{\text{一阶交互作用}}
++\underbrace{u_{123}(i,j,k)}_{\text{二阶交互作用}}.
+\end{align*}
+\begin{itemize}
+\item $u$：$\ln F_{ijk}$ 的总体均值。
+\item $u_1(i)$：变量1第 $i$ 级的主效应。
+\item $u_2(j)$：变量2第 $j$ 级的主效应。
+\item $u_3(k)$：变量3第 $k$ 级的主效应。
+\end{itemize}
+\[
+\sum_i u_1(i)=\sum_j u_2(j)=\sum_k u_3(k)=0.
+\]
+$u_{12}(i,j)$：变量1第 $i$ 级与变量2第 $j$ 级的一阶交互效应。类似地，$u_{13}(i,k)$：变量1第 $i$ 级与变量3第 $k$ 级的一阶交互效应；$u_{23}(j,k)$：变量2第 $j$ 级与变量3第 $k$ 级的一阶交互效应。
+\[
+\sum_i u_{12}(i,j)=\sum_j u_{12}(i,j)=0.
+\]
+$u_{123}(i,j,k)$：变量1第 $i$ 级与变量2第 $j$ 级以及变量3第 $k$ 级的二阶交互效应。
+\[
+\sum_i u_{123}(i,j,k)=\sum_j u_{123}(i,j,k)=\sum_k u_{123}(i,j,k)=0.
+\]
+\begin{annotation}饱和模型包含所有主效应和各阶交互项，独立参数个数等于列联表的格子数。零和约束：任一交互项对它的任何一个下标求和都等于0。\end{annotation}
+\textbf{注意} 对一个三维列联表拟合一个“饱和模型”会产生一系列的理论频数估计值。这些理论频数将会与观测频数完全一致。尽管此时模型完美拟合数据，也毫无意义。
+\begin{annotation}这并非我们的目的。我们的目的是用最少的参数完成模型拟合，有些交互项可能可以删去。\end{annotation}
+\subsubsection{层次模型（Hierarchical models）}
+\sourcepages{7}{25-28}
+\begin{annotation}嵌套：从饱和模型扣除最高阶交互，进行模型简化。条件独立模型、部分独立模型、互相独立模型。\end{annotation}
+\textbf{1. 两两关联模型} 如果 $u_{123}=0$，则提示不存在二阶交互效应。
+\[
+\ln F_{ijk}=u+u_1(i)+u_2(j)+u_3(k)+u_{12}(i,j)+u_{23}(j,k)+u_{13}(i,k).
+\]
+其表明每一对变量均存在相关关系（两两关联模型，homogeneous association model）。
+
+\textbf{2. 条件独立} 如果 $u_{123}=0$、$u_{12}=0$、$u_{23}\ne0$、$u_{13}\ne0$：
+\[
+\ln F_{ijk}=u+u_1(i)+u_2(j)+u_3(k)+u_{23}(j,k)+u_{13}(i,k).
+\]
+则表明变量1和变量2条件独立（Conditional Independence）。类似地，$u_{123}=0,u_{23}=0$，或 $u_{123}=0,u_{13}=0$，均为条件独立。
+\begin{annotation}变量1与3、变量2与3都可以有关联，但在变量3的每一层内，变量1与2独立，故称“给定变量3时条件独立”，记作 $1\perp2\mid3$。此时把变量3合并后，1与2在边际表中一般仍会表现出关联（由它们共同与3相关所致）。\end{annotation}
+\begin{derivation}{层次模型的约束与条件独立、同质关联}
+\dpart{假设}三维表的格子概率 $p_{ijk}>0$，$F_{ijk}=np_{ijk}$。
+\dpart{结论1}$u_{12}=u_{123}=0\iff$ 变量1与2在给定变量3时条件独立，即 $p_{ijk}=p_{i\cdot k}\,p_{\cdot jk}/p_{\cdot\cdot k}$。
+\dpart{推导}($\Leftarrow$) 若条件独立，取对数 $\ln F_{ijk}=\ln n+\ln p_{i\cdot k}+\ln p_{\cdot jk}-\ln p_{\cdot\cdot k}$，右边是一个只含 $(i,k)$ 的函数加一个只含 $(j,k)$ 的函数，按均值分解后只会产生 $u,u_1,u_2,u_3,u_{13},u_{23}$ 项，不含 $u_{12}$、$u_{123}$。($\Rightarrow$) 若 $\ln F_{ijk}=a(i,k)+b(j,k)$，则 $F_{ijk}=A_{ik}B_{jk}$，于是在第 $k$ 层
+\[
+P(1=i,2=j\mid3=k)=\frac{A_{ik}B_{jk}}{\sum_{i'}A_{i'k}\sum_{j'}B_{j'k}}
+=\frac{A_{ik}}{\sum_{i'}A_{i'k}}\cdot\frac{B_{jk}}{\sum_{j'}B_{j'k}},
+\]
+层内联合概率可分解为两个边际概率之积，即条件独立。
+\dpart{结论2}$u_{123}=0\iff$ 各层的条件OR相同（同质关联）。以 $2\times2\times K$ 表为例，第 $k$ 层的条件对数OR
+\[
+\ln\OR_{12(k)}=\ln\frac{F_{11k}F_{22k}}{F_{12k}F_{21k}}=4u_{12}(11)+4u_{123}(11k),
+\]
+主效应和 $u_{13}$、$u_{23}$ 在这个交叉比中全部相消。故 $\OR_{12(k)}$ 不随 $k$ 变化 $\iff u_{123}(11k)$ 对所有 $k$ 相同；又 $\sum_ku_{123}=0$，即 $u_{123}\equiv0$。
+\dpart{解释}两两关联模型（$u_{123}=0$）\emph{允许}每一对变量都有关联，只要求任一对变量的条件OR在第三个变量各层相同；它不强制关联存在，某个 $u_{12}$ 是否为0要由数据检验。模型从高阶交互项开始逐步删除，并保持层次性：含有某交互项时，必须同时含有它的所有低阶项。
+\end{derivation}
+
+\textbf{3. 部分独立} 如果 $u_{123}=0$、$u_{12}=u_{13}=0$、$u_{23}\ne0$：
+\[
+\ln F_{ijk}=u+u_1(i)+u_2(j)+u_3(k)+u_{23}(j,k).
+\]
+部分独立（Partial independence）。类似地，$u_{123}=0,u_{12}=u_{23}=0,u_{13}\ne0$；$u_{123}=0,u_{13}=u_{23}=0,u_{12}\ne0$。
+
+\textbf{4. 相互独立} 如果 $u_{123}=u_{12}=u_{13}=u_{23}=0$：
+\[
+\ln F_{ijk}=u+u_1(i)+u_2(j)+u_3(k).
+\]
+相互独立（Mutual independence），或完全独立（Complete independence）。
+\begin{annotation}只有主效应和常数项，没有任何交互作用。\end{annotation}
+\cfigure{条件独立、部分独立与相互独立}{\begin{tikzpicture}[every node/.style={font=\small}]
+\begin{scope}\draw[dashed] (0,0) ellipse (1.5 and 1);\node (c) at (-.7,0) {3};\node (a) at (.65,.5) {1};\node (b) at (.65,-.5) {2};\draw[PlotPrimary,line width=.65pt,-{Stealth}] (c)--(a);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (c)--(b);\node at (0,-1.35) {条件独立};\end{scope}
+\begin{scope}[xshift=4.5cm]\draw[dashed] (0,0) ellipse (1.5 and 1);\node at (0,.5) {1};\node (a) at (-.7,-.3) {2};\node (b) at (.7,-.3) {3};\draw[PlotPrimary,line width=.65pt,{Stealth}-{Stealth}] (a)--(b);\node at (0,-1.35) {部分独立};\end{scope}
+\begin{scope}[xshift=9cm]\draw[dashed] (0,0) ellipse (1.5 and 1);\node at (0,.5) {1};\node at (-.7,-.3) {2};\node at (.7,-.3) {3};\node at (0,-1.35) {相互独立};\end{scope}
+\end{tikzpicture}}
+\sourcepages{7}{29-31}
+\ctable{表2、表3\quad 对宫颈癌数据拟合所有层次模型的结果}{\begin{tabular}{llrrrrr}\toprule 模型&包含效应&df&LR卡方&$P$&Pearson卡方&$P$\\\midrule
+完全独立&$u_1,u_2,u_3$&12&81.95&$<0.001$&91.31&$<0.001$\\
+部分独立&$u_1,u_{23}$&8&46.01&$<0.001$&44.62&$<0.001$\\
+&$u_2,u_{13}$&10&53.57&$<0.001$&62.19&$<0.001$\\
+&$u_3,u_{12}$&10&65.62&$<0.001$&73.45&$<0.001$\\
+条件独立&$u_{12},u_{13}$&8&37.24&$<0.001$&45.75&$<0.001$\\
+&$u_{12},u_{23}$&6&29.67&$<0.001$&29.02&$<0.001$\\
+&$u_{23},u_{13}$&6&17.62&0.007&17.29&0.008\\
+两两关联模型&$u_{12},u_{13},u_{23}$&4&3.22&0.522&3.15&0.534\\
+饱和模型&$u_{123}$&0&0&---&0&---\\\bottomrule\end{tabular}}
+变量1为肤色，变量2为家庭收入，变量3为分娩次数。
+\begin{itemize}
+\item 模型 $u_{123}$：该模型包含 $u_{123}$ 及其所有下级效应。
+\item 模型 $u_{23},u_{12}$：该模型包含 $u_{23},u_{12}$ 及其所有下级效应。
+\item 模型 $u_3,u_{12}$：该模型包含 $u_3,u_{12}$ 及其所有下级效应。
+\item 模型 $u_1,u_2,u_3$：该模型仅包含 $u_1,u_2,u_3$。
+\end{itemize}
+\begin{annotation}
+LR卡方是候选模型相对饱和模型的偏差 $G^2$。饱和模型的独立参数个数等于格子数，所以自由度为0。$G^2$ 小、$P>0.05$ 只说明未发现模型与资料有显著偏离，并不证明模型正确。本例只有两两关联模型的 $P>0.05$（$G^2=3.22$，$\mathrm{df}=4$，$P=0.52$），删去任何一个两因素交互项后拟合都明显变差（如删去 $u_{12}$ 后 $G^2$ 增至17.62，$\Delta G^2=14.40$，$\Delta\mathrm{df}=2$），因此选择两两关联模型：肤色、家庭收入、分娩次数两两之间都有关联，且每一对的关联强度不随第三个变量的水平改变。（以上LR和Pearson统计量已用R复算，与表一致。）
+\end{annotation}
+\[
+\text{自由度}=\text{总格子数}-\text{估计值个数}.
+\]
+\ctable{估计值个数}{\begin{tabular}{clll}\toprule 本例&项（Term）&估计值个数&包含\\\midrule
+1&$u$&1&$u$\\
+1&$u_1$&$I-1$&$u_1(1)$\\
+2&$u_2$&$J-1$&$u_2(1),u_2(2)$\\
+2&$u_3$&$K-1$&$u_3(1),u_3(2)$\\
+2&$u_{12}$&$(I-1)(J-1)$&$u_{12}(1,1),u_{12}(1,2)$\\
+2&$u_{13}$&$(I-1)(K-1)$&$u_{13}(1,1),u_{13}(1,2)$\\
+4&$u_{23}$&$(J-1)(K-1)$&$u_{23}(1,1),\ldots,u_{23}(2,2)$\\
+4&$u_{123}$&$(I-1)(J-1)(K-1)$&$u_{123}(1,1,1),\ldots,u_{123}(1,2,2)$\\
+18&合计&$IJK$&\\\bottomrule\end{tabular}}
+$i=1,2$；$j=1,\ldots,3$；$k=1,\ldots,3$ $\Rightarrow$ $I=2,J=3,K=3$；总格子数为18。
+\begin{annotation}$i$：肤色；$j$：家庭收入；$k$：分娩次数（与表2、表3中变量1、2、3的编号一致）。\end{annotation}
+饱和模型：估计参数的个数等于列联表的格子数。不饱和模型：估计参数的个数小于列联表的格子数，又称为退化模型（reduced model）。
+\begin{annotation}自由度=0，卡方=0。\end{annotation}
+上表结果可用Poisson GLM复算，\texttt{drop1()}给出由两两关联模型中逐一删除交互项的$\Delta G^2$检验：
+\par\noindent
+\begin{coursecode}{R}
+cc <- expand.grid(分娩=c("少","中","多"), 收入=c("低","中","高"), 肤色=c("白人","有色"))
+cc$n <- c(67,143,43, 36,78,16, 3,9,12, 77,94,25, 87,70,18, 14,8,14)
+m0 <- glm(n~肤色+收入+分娩, poisson, cc)          # 完全独立
+m2 <- glm(n~(肤色+收入+分娩)^2, poisson, cc)      # 两两关联
+c(deviance(m0), df.residual(m0)); c(deviance(m2), df.residual(m2))
+drop1(m2, test="LRT")
+\end{coursecode}
+\begin{routput}
+[1] 81.9585 12.0000
+[1] 3.218893 4.000000
+
+          Df Deviance    AIC    LRT  Pr(>Chi)    
+<none>          3.219 124.97                     
+肤色:收入  2   17.620 135.37 14.401 0.0007463 ***
+肤色:分娩  2   29.670 147.42 26.451 1.804e-06 ***
+收入:分娩  4   37.237 150.99 34.018 7.389e-07 ***
+\end{routput}
+删除任一交互项后偏差均显著增大，三对变量之间的关联均不能省略。模型的剩余偏差（3.22）即表中的LR卡方。采用glm拟合可同时得到参数估计、标准误与残差。
+
+\subsection{参数估计方法}
+\sourcepages{7}{32-33}
+迭代加权最小二乘法（Iteratively Reweighted Least Squares, IRLS）。基本思想：找到一组参数使得观测值与预测值的差异最小。极大似然估计。
+\begin{annotation}把各格频数看作独立Poisson变量写出似然，用IRLS求极大似然估计（与第2章Logistic回归的算法相同，只是分布和连接不同）。每个变量的每个非参照水平都有一个估计值。\end{annotation}
+\ctable{两两关联模型的参数估计值（参照水平：白人、中收入、分娩少）}{\begin{tabular}{llrrrr}\toprule 效应&含义&估计值&标准误&$Z$&$P$\\\midrule
+$u$&参照格的 $\ln F$&3.660&0.138&26.57&$<0.001$\\
+$u_1$&有色人种&0.773&0.152&5.075&$<0.001$\\
+$u_2$&低收入&0.475&0.157&3.025&0.002\\
+$u_2$&高收入&$-2.121$&0.337&$-6.292$&$<0.001$\\
+$u_3$&分娩中等&0.647&0.158&4.103&$<0.001$\\
+$u_3$&分娩多&$-0.829$&0.231&$-3.589$&$<0.001$\\
+$u_{12}$&有色$\times$低收入&$-0.507$&0.153&$-3.320$&0.001\\
+$u_{12}$&有色$\times$高收入&0.201&0.300&0.670&0.503\\
+$u_{13}$&有色$\times$分娩中等&$-0.777$&0.160&$-4.852$&$<0.001$\\
+$u_{13}$&有色$\times$分娩多&$-0.768$&0.223&$-3.444$&0.001\\
+$u_{23}$&低收入$\times$分娩中等&0.217&0.165&1.315&0.189\\
+$u_{23}$&高收入$\times$分娩中等&$-0.149$&0.368&$-0.404$&0.686\\
+$u_{23}$&低收入$\times$分娩多&0.440&0.246&1.788&0.074\\
+$u_{23}$&高收入$\times$分娩多&1.747&0.371&4.703&$<0.001$\\\bottomrule\end{tabular}}
+\revnote{用R复算（\texttt{glm(n \textasciitilde{} (肤色+收入+分娩)\^{}2, family=poisson)}，收入以中收入为参照）后，估计值、标准误与原表一致，但原表有三处需更正：(1) 有色$\times$低收入、有色$\times$高收入两行的 $P$ 值互换了（$Z=-3.32$ 对应 $P=0.001$，$Z=0.67$ 对应 $P=0.503$）；(2) 原表标为“$u_2(2)u_3(3)$”的 $-0.149$ 实为高收入$\times$分娩中等，标为“$u_2(3)u_3(2)$”的0.44实为低收入$\times$分娩多；(3) 这里采用参照水平约束（参照水平的参数取0），$u=3.660$ 是参照格（白人、中收入、分娩少）的对数期望频数，不是零和约束下 $\ln F$ 的总均值。交互项的指数是条件OR，例如 $\exp(-0.777)=0.46$：在同一收入层内，有色人种“分娩中等对分娩少”的优势是白人的0.46倍。}
+\subsection{拟合优度检验}
+\sourcepages{7}{34-35}
+\[
+\text{LR chi-square}=2\sum_{\text{all cells}}O\log\left(\frac OE\right),\qquad
+\text{Pearson chi-square}=\sum_{\text{all cells}}\frac{(O-E)^2}{E}.
+\]
+当模型成立时，两个统计量均近似服从 $\chi^2$ 分布。如果 $\chi^2>\chi^2_{\alpha(df)}$ 或者 $P<\alpha$，则拒绝该模型。
+\begin{derivation}{由Poisson似然推导偏差 $G^2$}
+\dpart{假设}各格频数 $O_c$ 为独立Poisson变量，均值 $\mu_c$；候选模型的MLE拟合值为 $E_c=\widehat\mu_c$。
+\dpart{关键等式}对数似然 $\ell(\bm\mu)=\sum_c(O_c\ln\mu_c-\mu_c-\ln O_c!)$。饱和模型的MLE为 $\widehat\mu_c=O_c$。偏差
+\[
+G^2=2\{\ell(\bm O)-\ell(\bm E)\}=2\sum_c\left\{O_c\ln\frac{O_c}{E_c}-(O_c-E_c)\right\}.
+\]
+若模型含常数项 $u$，常数项的得分方程为 $\sum_c(O_c-E_c)=0$，线性项整体消去，得 $G^2=2\sum_cO_c\ln(O_c/E_c)$（$O_c=0$ 的格子按 $0\ln0=0$ 计）。多项、乘积多项抽样下，只要模型含相应的固定边际项，同样成立。
+\dpart{结论}$\mathrm{df}=\text{格子数}-\text{独立参数个数}$。模型成立、格子数固定且期望频数足够大时，$G^2$ 与Pearson $X^2$ 都近似服从 $\chi^2_{\mathrm{df}}$，两者也很接近。
+\dpart{解释}稀疏表（许多期望频数小于5、甚至有0格）时，$\chi^2$ 近似不可靠，$G^2$ 与 $X^2$ 可能相差很大；这时比较嵌套模型的 $\Delta G^2$ 通常比单个模型的拟合优度检验更稳健，也可合并稀疏类别或用精确检验。
+\end{derivation}
+\begin{annotation}拟合优度检验的 $H_0$ 是“模型成立”。$P>0.05$ 只说明证据不足以否定模型，不能证明模型正确；样本很大时，有实际意义很小的偏离也会被判为显著。模型选择应结合嵌套模型的 $\Delta G^2$ 与简约原则：本例选 $u_{12},u_{13},u_{23}$ 两两关联模型。\end{annotation}
+\subsection{残差分析}
+\sourcepages{7}{36-40}
+除卡方检验以外，残差分析也能用于评估模型拟合程度。
+\[
+R_{\mathrm{P}}=\frac{O_{ijk}-E_{ijk}}{\sqrt{E_{ijk}}}\qquad(\text{Pearson残差}),\qquad
+R_{\mathrm{adj}}=\frac{O_{ijk}-E_{ijk}}{\sqrt{E_{ijk}(1-h_{ijk})}}\qquad(\text{调整残差}).
+\]
+Pearson残差的平方和就是Pearson $X^2$。由于 $E_{ijk}$ 是从同一资料估计的，$O-E$ 的方差小于 $E$，Pearson残差的方差小于1，并不服从 $N(0,1)$；除以 $\sqrt{1-h_{ijk}}$（$h_{ijk}$ 为该格的杠杆值）得到的调整（标准化）残差在模型成立时才近似服从 $N(0,1)$。如果存在调整残差超出 $(-2,2)$ 的格子，提示该格拟合不好，应进一步检查。
+\begin{annotation}$\pm2$ 是筛查界限：格子很多时，即使模型正确，也约有5\%的格子会超出 $\pm2$，不能因个别格子超出就否定模型；反过来，残差都在 $\pm2$ 以内也不等于模型正确。残差的意义在于指出偏离出现在哪些格子、方向如何。\end{annotation}
+下面两表是\emph{完全独立模型} $(u_1,u_2,u_3)$ 的期望频数和Pearson残差（已用R复算；本例两种肤色的合计都是407，故该模型下两种肤色的期望频数相同）。
+\ctable{期望频数（完全独立模型）}{\begin{tabular}{llrrr}\toprule 肤色&家庭收入&少（0--1次）&中等（2--3次）&多（4次及以上）\\\midrule
+白人&低收入&78.34&110.87&35.3\\
+&中收入&53.21&75.31&23.98\\
+&高收入&10.47&14.82&4.72\\
+有色人种&低收入&78.33&110.87&35.3\\
+&中收入&53.21&75.31&23.98\\
+&高收入&10.47&14.82&4.72\\\bottomrule\end{tabular}}\ctable{Pearson残差（完全独立模型）}{\begin{tabular}{llrrr}\toprule 肤色&家庭收入&少（0--1次）&中等（2--3次）&多（4次及以上）\\\midrule
+白人&低收入&$-1.3$&3.1&1.3\\
+&中收入&$-2.4$&0.3&$-1.6$\\
+&高收入&$-2.3$&$-1.5$&3.4\\
+有色人种&低收入&$-0.2$&$-1.6$&$-1.7$\\
+&中收入&4.6&$-0.6$&$-1.2$\\
+&高收入&1.1&$-1.8$&4.3\\\bottomrule\end{tabular}}
+\begin{annotation}完全独立模型有多个格子的残差超出 $\pm2$（最大4.6），与它的 $G^2=81.96$、$P<0.001$ 一致，说明完全独立模型不适用。原批注把这些残差当作两两关联模型的残差，结论“两两关联模型不太好”不成立。两两关联模型的结果见下表：调整残差绝对值都不超过1.5，最小期望频数为4.66，没有拟合不好的格子。\end{annotation}
+\ctable{两两关联模型的期望频数与调整残差}{\small\begin{tabular}{llrrr@{\qquad}rrr}\toprule &&\multicolumn{3}{c}{期望频数}&\multicolumn{3}{c}{调整残差}\\\cmidrule(lr){3-5}\cmidrule(lr){6-8}肤色&家庭收入&少&中等&多&少&中等&多\\\midrule
+白人&低收入&62.48&148.15&42.37&1.39&$-1.50$&0.26\\
+&中收入&38.86&74.18&16.96&$-0.89$&1.15&$-0.42$\\
+&高收入&4.66&7.67&11.67&$-1.08$&0.81&0.19\\
+有色人种&低收入&81.52&88.85&25.63&$-1.39$&1.50&$-0.26$\\
+&中收入&84.14&73.82&17.04&0.89&$-1.15$&0.42\\
+&高收入&12.34&9.33&14.33&1.08&$-0.81$&$-0.19$\\\bottomrule\end{tabular}}
+\textbf{结论} 模型“$u_{12},u_{13},u_{23}$”为最佳模型，表明任意两个变量间存在相关关系。
+\subsection{何时可以通过合并数据来简化高维列联表？}
+\sourcepages{7}{41-45}
+\textbf{OR可折叠性}\quad 对三维表中的变量 $X$、$Y$ 和第三变量 $Z$，若各层的条件OR相同，且都等于把 $Z$ 合并后的边际OR，即 $\OR_{XY(k)}=\OR_{XY}$（$k=1,\ldots,K$），则称 $X$、$Y$ 的关联关于 $Z$ 可折叠，此时合并 $Z$ 不改变 $X$ 与 $Y$ 的关联。
+
+\textbf{充分条件}\quad 若两两关联模型成立（$u_{123}=0$），且 $Z$ 与 $X$、$Y$ 中至少一个条件独立，即 $X\perp Z\mid Y$ 或 $Y\perp Z\mid X$，则 $X$ 与 $Y$ 的关联关于 $Z$ 可折叠。有的资料称“当且仅当第三个变量独立于其中一个或两个时”，“当且仅当”过强：这是充分条件而非必要条件，在个别参数取值下，即使两个条件都不满足，各层OR与边际OR也可能恰好相等。
+\begin{derivation}{$X\perp Z\mid Y$ 时OR可折叠}
+\dpart{假设}$2\times2\times K$ 表，格子概率 $p_{ijk}>0$，且 $X\perp Z\mid Y$：$P(Z=k\mid X=i,Y=j)=P(Z=k\mid Y=j)\equiv w_{jk}$。
+\dpart{关键等式}$p_{ijk}=p_{ij\cdot}\,P(Z=k\mid X=i,Y=j)=p_{ij\cdot}\,w_{jk}$，于是第 $k$ 层的条件OR
+\[
+\OR_{XY(k)}=\frac{p_{11k}p_{22k}}{p_{12k}p_{21k}}=\frac{p_{11\cdot}w_{1k}\cdot p_{22\cdot}w_{2k}}{p_{12\cdot}w_{2k}\cdot p_{21\cdot}w_{1k}}=\frac{p_{11\cdot}p_{22\cdot}}{p_{12\cdot}p_{21\cdot}}=\OR_{XY}.
+\]
+\dpart{结论}各层条件OR相等，且等于边际OR，合并 $Z$ 不改变 $X$ 与 $Y$ 的关联。$Y\perp Z\mid X$ 时同理（权重换成 $P(Z=k\mid X=i)$）。
+\end{derivation}
+
+\textbf{例1} 当变量1独立于其他所有变量时（$u_{13}=u_{12}=0$），则可以完全删除变量1来构建列联表。
+
+\textbf{例2} 当 $u_{12}=u_{123}=0$ 时，则可以把变量1的数据合并，得到变量2和变量3的二维列联表；且可以把变量2的数据合并，得到变量1和变量3的二维列联表。
+\begin{annotation}这与流行病学中混杂的直观概念相呼应：第三变量要同时与两个变量都有关联，才可能使合并后的关联偏离分层关联；只要它与其中一个（条件）无关，合并就是安全的。但两个概念并不等同：混杂是因果概念，取决于变量间的因果结构；可折叠性只是统计性质。OR本身还有不可折叠性：即使 $Z$ 与 $X$ 独立（无混杂），只要 $Z$ 与 $Y$ 有关，边际OR一般也会比条件OR更接近1（见第2章的例子）。\end{annotation}
+如果 $u_{13}$ 和 $u_{23}$ 都不为0（例如两两关联模型、饱和模型），合并变量3一般会改变变量1与2的关联，可能歪曲其大小甚至方向（辛普森悖论），此时应在分层或模型中保留变量3；但这不是必然的，是否改变要比较边际OR与条件OR。存在三因素交互（$u_{123}\ne0$）时，各层OR本身不同，用一个合并后的OR概括没有意义，应分层报告。
+\begin{annotation}辛普森悖论（例2癌症资料）中：在重症和非重症两层内新疗法的存活率都更高（条件关联），合并后反而更低（边际关联），原因是治疗方案与病情严重程度强相关（新疗法多用于重症），而病情又与生存相关，病情在这里是混杂因素，应报告分层或调整后的结果。\end{annotation}
+对于高维列联表数据，切忌盲目合并某变量的各层数据，切忌对各个压缩的 $2\times2$ 列联表重复使用 $\chi^2$ 检验。正确的方法是采用对数线性模型进行分析。
+\begin{annotation}最后可以得知哪些因素间存在关联，哪些因素可合并。\end{annotation}
+\subsection{对数线性模型的分析步骤}
+\sourcepages{7}{46-47}
+\cfigure{对数线性模型的分析步骤}{\begin{tikzpicture}[node distance=9mm,every node/.style={draw,font=\small,align=center,minimum height=8mm},main/.style={minimum width=65mm}]
+\node[main] (a) {层次建模方法};\node[main,below=of a] (b) {拟合对数线性模型};\node[main,below=of b] (c) {拟合效果检验：卡方、LR};\node[main,below=of c] (d) {残差分析};
+\node[right=7mm of b,yshift=5mm] (e) {理论频数$^*$};\node[right=7mm of b,yshift=-6mm] (f) {参数估计$^*$};\node[right=7mm of c,yshift=-8mm] (g) {模型选择};
+\draw[PlotPrimary,line width=.65pt,-{Stealth}] (a)--(b);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (b)--(c);\draw[PlotPrimary,line width=.65pt,-{Stealth}] (c)--(d);\draw (b.east)--(e.west);\draw (b.east)--(f.west);\draw (c.east)--(g.west);\draw (d.east)--(g.west);
+\node[draw=none,above=4mm of a,font=\footnotesize] {饱和模型、两两关联模型、条件独立模型、部分独立模型、完全独立模型};
+\node[draw=none,right=0mm of c,below=0mm,font=\footnotesize] {$P>0.05$};\node[draw=none,below=0mm of d,font=\footnotesize] {在 $(-2,2)$ 范围};\end{tikzpicture}}
+Ref1: Christensen (1997) for a numerical explanation of the iterative computation of estimates. Ref2: Knoke and Burke, 1980。
+
+\textbf{模型不足} 解释性；独立性；适合的样本量；理论频数的大小：1、20\%。
+\begin{annotation}解释性不好，需估计很多项的参数，不够直观，不如Logistic的参数直观。样本量要求较大，理论频数不能有小于1的，理论频数在1--5之间的不能超过20\%。\end{annotation}
+\section{案例讨论}
+\sourcepages{7}{48-55}
+现有一批关于孕妇和新生儿的资料，包含四个变量：吸烟与否、怀孕前是否服用某种避孕药、新生儿情况正常与否、孕妇年龄。数据见下表。请分析吸烟和服用某种避孕药与是否有新生儿异常之间的关系。
+\ctable{表5\quad 5251例新生儿情况与孕妇吸烟以及服用某种避孕药的关系}{\begin{tabular}{lllrr}\toprule 年龄（岁）$W$&吸烟 $X$&怀孕前服用某避孕药 $Y$&新生儿正常&新生儿不正常\\\midrule
+$\le29$&是&是&204&58\\
+&是&否&330&67\\
+&否&是&1051&210\\
+&否&否&1014&178\\
+30--34&是&是&125&31\\
+&是&否&180&42\\
+&否&是&582&144\\
+&否&否&489&85\\
+$\ge35$&是&是&35&20\\
+&是&否&35&10\\
+&否&是&158&53\\
+&否&否&119&31\\\bottomrule\end{tabular}}\begin{center}\footnotesize 注：资料摘自李建立、史秉璋，中国卫生统计，1988，5(6)：33。原标题为“5254例”，表中各格合计为5251例（正常4322例、不正常929例）；以下全部结果均按表中数据复算，与课程作业评分标准中的拟合结果一致。\end{center}
+\begin{enumerate}
+\item 请采用对数线性模型分析该资料，并探讨变量之间的关系。
+\item 请问可否采用Logistic回归方法分析该资料并回答所提问题？
+\item 对数线性模型和Logistic回归分析方法在解决此问题上有何异同？
+\end{enumerate}
+4维列联表（年龄 $W$ 3个水平、吸烟 $X$、避孕药 $Y$、新生儿情况 $Z$ 各2个水平），共 $3\times2\times2\times2=24$ 个格子，饱和模型有24个独立参数，任何模型的自由度都不超过 $24-1=23$。
+\ctable{对数线性模型的拟合结果表（R复算）}{\footnotesize\begin{tabularx}{\textwidth}{Xrrrrrr}\toprule 模型（列出最高阶项）&df&LR卡方 $G^2$&$P$&Pearson卡方&$P$&对应的Logistic模型\\\midrule
+$W,X,Y,Z$（完全独立）&18&107.05&$<0.001$&110.51&$<0.001$&---\\\addlinespace
+$WXY,Z$&11&36.91&$<0.001$&39.91&$<0.001$&只含截距\\\addlinespace
+$WXY,XZ$&10&31.49&$<0.001$&33.70&$<0.001$&$X$\\\addlinespace
+$WXY,YZ$&10&27.01&0.003&29.02&0.001&$Y$\\\addlinespace
+$WXY,WZ$&9&19.31&0.023&19.85&0.019&$W$\\\addlinespace
+$WXY,WZ,XZ,YZ$&7&3.84&0.798&3.85&0.796&$W+X+Y$（选定）\\\addlinespace
+$WXY,WZ,XYZ$&6&3.64&0.726&3.63&0.727&$W+X\times Y$\\\addlinespace
+$WXY,WYZ,XZ$&5&2.99&0.701&2.99&0.701&$X+W\times Y$\\\addlinespace
+全部三因素交互&2&2.30&0.317&2.29&0.318&---\\\addlinespace
+$WXYZ$（饱和模型）&0&0&---&0&---&$W\times X\times Y$\\\bottomrule\end{tabularx}}
+\revnote{原表的自由度为40、38、36、34、32，超过24个格子所能提供的最大自由度23，$G^2$ 也与表5数据不符，无法由本例资料得到，故按复算结果替换。本例关心的是 $W$、$X$、$Y$ 对 $Z$ 的作用，解释变量之间的关联（$WXY$）不是研究问题，故所有候选模型都保留 $WXY$ 项（解释变量的边际取饱和）。从 $WXY,Z$ 起逐步加入与 $Z$ 有关的项：$WZ$、$XZ$、$YZ$ 都使 $G^2$ 显著下降；三项同时加入后 $G^2=3.84$，$\mathrm{df}=7$，$P=0.80$；再加入 $XYZ$（$\Delta G^2=0.20$，$\Delta\mathrm{df}=1$）或 $WYZ$（$\Delta G^2=0.84$，$\Delta\mathrm{df}=2$）都无明显改善。故选 $WXY,WZ,XZ,YZ$：年龄、吸烟、服药各自与新生儿异常有关，且未见交互作用。}
+\subsection{变量定义}
+结局变量（$Z$）：二分类变量，$Z=0$（新生儿正常）、$Z=1$（新生儿不正常）。
+
+自变量：年龄（$W$），有序分类，$W=1$（$\le29$岁）、$W=2$（30--34岁）、$W=3$（$\ge35$岁）。设置为哑变量：以 $W=1$ 为参照组，生成 $W2,W3$ 两个哑变量。吸烟（$X$）：二分类，$X=0$（否）、$X=1$（是）；避孕药（$Y$）：二分类，$Y=0$（否）、$Y=1$（是）。
+\sourcepages{7}{56-59}
+\ctable{Logistic回归参数估计（分组二项资料，R复算）}{\begin{tabular}{lrrrrl}\toprule 变量&回归系数 $\beta$&标准误&$Z$&$P$&结论\\\midrule
+(Intercept)&$-1.791$&0.066&$-27.04$&$<0.001$&参照组的基线对数优势\\
+W2（30--34岁）&0.095&0.080&1.19&0.235&无统计学意义\\
+W3（$\ge35$岁）&0.489&0.119&4.12&$<0.001$&有统计学意义\\
+X1（吸烟）&0.227&0.086&2.65&0.008&有统计学意义\\
+Y1（服药）&0.233&0.073&3.17&0.002&有统计学意义\\\bottomrule\end{tabular}\par\smallskip\footnotesize 偏差 $D=3.84$，$\mathrm{df}=12-5=7$，$P=0.80$（12个协变量组合）。}\ctable{优势比与实际意义}{\begin{tabularx}{\textwidth}{lrrX}\toprule 变量&OR值&95\%CI（下限--上限）&实际意义\\\midrule
+W2（30--34岁）&1.100&0.940--1.286&吸烟、服药情况相同时，与$\le29$岁相比，30--34岁新生儿异常的优势未见显著差别（CI包含1）\\\addlinespace
+W3（$\ge35$岁）&1.631&1.293--2.058&吸烟、服药情况相同时，$\ge35$岁新生儿异常的优势是$\le29$岁的1.63倍（增加63\%）\\\addlinespace
+X1（吸烟）&1.254&1.061--1.483&年龄、服药情况相同时，吸烟者新生儿异常的优势是不吸烟者的1.25倍\\\addlinespace
+Y1（服药）&1.262&1.093--1.457&年龄、吸烟情况相同时，服药者新生儿异常的优势是不服药者的1.26倍\\\addlinespace\bottomrule\end{tabularx}}
+新生儿异常的比例为 $929/5251=17.7\%$，不算罕见，OR不能直接读作“风险增加的百分比”，上表的“增加63\%”指优势而非概率。
+\ctable{包含交互项的Logistic回归结果（R复算）}{\footnotesize\begin{tabularx}{\textwidth}{p{3.5cm}lrX}\toprule 变量&OR值（95\%CI）&$P$&结论\\\midrule
+W2（30--34岁）&1.04 (0.82--1.31)&0.770&主效应的含义变为“不服药者中”的年龄效应\\\addlinespace
+W3（$\ge35$岁）&1.47 (1.01--2.12)&0.043&同上\\\addlinespace
+X1（吸烟）&1.21 (0.96--1.53)&0.113&“不服药者中”吸烟的OR\\\addlinespace
+Y1（服药）&1.17 (0.95--1.44)&0.130&“$\le29$岁、不吸烟者中”服药的OR\\\addlinespace
+X1:Y1（吸烟$\times$服药）&1.08 (0.77--1.51)&0.660&未见吸烟与服药的交互作用\\\addlinespace
+W2:Y1（30--34岁$\times$服药）&1.12 (0.82--1.53)&0.488&未见年龄与服药的交互作用\\\addlinespace
+W3:Y1（$\ge35$岁$\times$服药）&1.20 (0.74--1.93)&0.459&同上\\\addlinespace\bottomrule\end{tabularx}}
+\revnote{原有的三张Logistic结果表（如X1系数0.278、Y1系数0.470，X1:Y1的OR 1.25、$P=0.01$，W3:Y1的OR 1.50、$P<0.001$）均无法由表5资料得到，按复算结果替换。三个交互项的联合似然比检验 $\chi^2=1.04$，$\mathrm{df}=3$，$P=0.79$，没有交互作用的证据，应报告不含交互项的模型。含交互项后主效应的含义改变（变为交互变量取参照水平时的效应），不能与无交互项模型的OR直接比较。}
+\begin{derivation}{对数线性模型与Logistic模型的对应关系}
+\dpart{假设}$Z$ 为二分类结局，解释变量 $W,X,Y$；对数线性模型包含解释变量的全部交互 $WXY$（其边际为饱和）。
+\dpart{关键等式}在解释变量取值 $\bm x=(w,x,y)$ 的格子中，
+\[
+\logit P(Z=1\mid\bm x)=\ln\frac{\mu_{\bm x,1}}{\mu_{\bm x,0}}=\ln\mu_{\bm x,1}-\ln\mu_{\bm x,0}.
+\]
+相减时所有不含 $Z$ 的项（$\lambda$、$\lambda^W$、$\lambda^X$、$\lambda^Y$ 及 $WXY$ 各项）全部相消，只剩含 $Z$ 的项：$\lambda^Z$ 成为Logistic的截距，$\lambda^{WZ}$、$\lambda^{XZ}$、$\lambda^{YZ}$ 成为各自变量的系数，$\lambda^{XYZ}$ 成为 $X\times Y$ 交互项的系数。
+\dpart{结论}Poisson似然可分解为“各解释变量组合的总频数 $n_{\bm x}$”部分与“给定 $n_{\bm x}$ 时 $Z$ 的条件二项似然”部分。当模型对解释变量的边际取饱和（含 $WXY$）时，前一部分只与 $WXY$ 等项有关，两部分的参数互不相交，故对数线性模型中含 $Z$ 项的MLE及其标准误，与条件二项似然（Logistic回归）得到的结果完全相同，偏差和自由度也相同。本例 $WXY,WZ,XZ,YZ$ 模型中 $\lambda^{XZ}=0.227$、$\lambda^{YZ}=0.233$ 等，与上面Logistic回归的系数逐一相等，$G^2=3.84$、$\mathrm{df}=7$ 也与Logistic偏差相同。
+\dpart{解释}若对数线性模型没有包含 $WXY$，两者的估计一般不同，此时对数线性模型对解释变量之间的关联也作了限制。以结局为中心的问题用Logistic回归更直接；若所有变量地位平等，关心的是关联结构，则用对数线性模型。
+\end{derivation}
+\ctable{对数线性模型与Logistic回归模型的比较}{\begin{tabularx}{\textwidth}{p{1.8cm}XX}\toprule 对比维度&对数线性模型&Logistic回归模型\\\midrule
+变量角色&所有变量地位平等，不区分因变量与自变量，聚焦变量间的关联结构&明确区分结局变量（$Z$，二分类）和自变量（$W,X,Y$），$Z$是因变量，其余为自变量\\\addlinespace
+分析视角&从频数分布出发，分析各变量组合下的单元格频数与变量间交互的关系&从结局风险出发，分析自变量对“新生儿不正常（$Z=1$）”发生概率的影响\\\addlinespace
+模型核心&对单元格期望频数取自然对数，分解主效应和交互效应：$\ln(\mu_{wxyz})=\lambda+\lambda_w^W+\lambda_x^X+\lambda_y^Y+\lambda_z^Z+\text{交互项}$&对结局发生的优势取自然对数，构建线性模型：$\ln\dfrac{P(Z=1)}{1-P(Z=1)}=\beta_0+\beta_1W+\beta_2X+\beta_3Y$\\\addlinespace
+效应量化指标&效应参数（$\lambda$），反映频数的对数变化；含 $Z$ 的两因素项取指数即条件OR&优势比（OR），反映自变量对结局风险的影响程度（流行病学中更易解释）\\\addlinespace
+交互效应分析&可分析任意维度的交互，适合探索变量间的复杂关联结构&自变量的主效应对应对数线性模型中与 $Z$ 的两因素项，自变量之间的交互项（如 $X\times Y$）对应三因素项 $XYZ$；自变量之间本身的关联（$WXY$）被条件化，不需要建模\\\addlinespace
+资料要求&适用于列联表汇总数据&个体资料与汇总资料均可：汇总资料以“异常数/总数”作分组二项响应（或以频数作权重），结果与个体资料相同\\\bottomrule\end{tabularx}}
+\sourcepages{7}{60}
+\subsection{各自优势}
+\ctable{对数线性模型与Logistic模型}{\begin{tabularx}{\textwidth}{XX}\toprule 对数线性模型&Logistic模型\\\midrule
+不区分因变量与自变量&区分因变量和自变量\\
+探索复杂的交互作用&聚焦自变量对结局的影响，验证性\\
+适合高维列联表汇总数据&危险度指标更易理解和直观，OR\\\bottomrule\end{tabularx}}
+两种方法结合使用，先用对数线性模型探索变量间的关联与交互，再用Logistic回归模型分析自变量对因变量的作用大小，将对数线性模型分析中发现的重要的交互作用项纳入模型，深入量化风险。
+\section*{小结}
+\sourcepages{7}{61-62}
+对数线性模型：高维列联表资料、变量间的关系；饱和模型、层次模型；分析步骤：模型构建、参数估计、假设检验、拟合优度、残差分析、模型选择、结果解释、注意事项。
+\section{课后作业}
+\sourcepages{7}{63-64}
+现有一批关于孕妇和新生儿的资料，包含四个变量：吸烟与否、怀孕前是否服用某种避孕药、新生儿情况正常与否、孕妇年龄。数据见表5。请分析这四个变量之间的关系，并探讨新生儿异常的危险因素。
+
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（推导与诊断题）}
+\question{对 $2\times2\times K$ 表（$X$、$Y$ 二分类，$Z$ 有 $K$ 层），(1) 用对数线性模型如何检验“给定 $Z$ 时 $X$ 与 $Y$ 条件独立”？自由度是多少？(2) 若该检验 $P=0.40$，而把 $Z$ 合并后的 $X\times Y$ 表 $\chi^2$ 检验 $P<0.001$，如何解释？}
+\answer{(1) 比较模型 $(XZ,YZ)$ 与 $(XY,XZ,YZ)$，或直接看 $(XZ,YZ)$ 相对饱和模型的 $G^2$。$(XZ,YZ)$ 的自由度为 $4K-(1+1+1+(K-1)+(K-1)+(K-1))=K$，即每层一个条件对数OR为0的约束；它等价于Cochran--Mantel--Haenszel型的条件独立检验。(2) 分层后 $X$、$Y$ 无关，合并后却有关，说明 $Z$ 与 $X$、$Y$ 都有关联（$u_{XZ}\ne0$、$u_{YZ}\ne0$），合并时产生了虚假的边际关联（辛普森悖论）。此时不能合并 $Z$；结论应是“控制 $Z$ 后未见 $X$ 与 $Y$ 有关联”，但 $P=0.40$ 也不能证明条件独立。}
+\section{附录：对数线性模型的软件实现}
+\sourcepages{7}{65-67}
+\Needspace{13\baselineskip}
+\subsection{R语言实现}
+\par\noindent
+\begin{coursecode}{R}
+library(MASS)                                    #loglm在MASS包中
+model <- loglm(Counts ~ A + B + C, data=data) #无交互项
+model <- loglm(Counts ~ A + B + C + A*C + B*C, data=data) #1,3和2,3交互
+model <- loglm(Counts ~ (A + B + C)^2, data=data) #两两交互
+model <- loglm(Counts ~ A * B * C, data=data) #三项交互
+mod1=loglin(data=mydata, margin=list(1,2,3)) #无交互项
+mod2=loglin(data=mydata, margin=list(c(1,3),c(2,3))) #1,3和2,3交互
+mod3=loglin(data=mydata, margin=list(c(1,2),c(1,3),c(2,3))) #两两交互
+mod4=loglin(data=mydata, margin=list(c(1,2,3))) #三项交互
+1 - pchisq(mod1$lrt, mod1$df)
+\end{coursecode}
+\par
+根据似然比检验 $\chi^2$（lrt）和自由度（df）输出与饱和模型差异性检验的 $P$ 值。也可用Poisson GLM拟合，得到参数估计、标准误和残差：\texttt{glm(Counts \textasciitilde{} (A+B+C)\^{}2, family=poisson, data=data)}，以 \texttt{anova(m1, m2, test="Chisq")} 比较嵌套模型；以宫颈癌资料验证，两两关联模型 $G^2=3.22$，$\mathrm{df}=4$。
+\subsection{SPSS软件实现}
+\sourcepages{7}{68-69}
+Analyze $\to$ Loglinear $\to$ Model Selection。Options：Display for Saturated Model，Parameter estimates、Association table；Display：Frequencies、Residuals；Model Criteria：Maximum iterations 20、Convergence Default、Delta .5。
+
+Analyze $\to$ Loglinear $\to$ General。Specify Model：Custom。Build Term(s)：Interaction、Main effects、All 2-way、All 3-way、All 4-way、All 5-way。
+\Needspace{9\baselineskip}
+\subsection{SAS实现}
+\sourcepages{7}{70}
+\par\noindent
+\begin{coursecode}{SAS}
+proc catmod;
+  weight wt;               /* 频数变量 */
+  model r1*r2=_response_;
+  loglin r1|r2;            /* 饱和模型；若为独立模型，则 loglin r1 r2; */
+run;
+\end{coursecode}
+\par
+\subsection{Stata实现}
+\sourcepages{7}{71}
+Stata中没有官方内置的loglinear模型函数，一般借用Poisson模型来实现，具体方法详见参考资料：\url{http://repec.org/usug2015/buis_loglinear_uksug15.pdf}。
+\par\noindent
+\begin{coursecode}{Stata}
+poisson _freq i.变量1 i.变量2, irr nolog      // 独立模型
+poisson _freq i.变量1##i.变量2, irr nolog     // 变量1和变量2的交互项
+\end{coursecode}
+\par
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 三维列联表的模型含$u_{12}$、$u_{13}$，不含$u_{23}$和$u_{123}$，写出三个变量之间的关系。\\
+\textit{答：给定变量1时，变量2与变量3条件独立。}
+\item 写出层次模型原则。\\
+\textit{答：模型含某个高阶交互项时，必须包含它所涉及变量的全部低阶项。}
+\item $2\times3\times3$列联表拟合完全独立模型，计算剩余自由度。\\
+\textit{答：格子数18减去参数个数$1+1+2+2=6$，为12。}
+\item 解释偏差$G^2=3.22$、$\mathrm{df}=4$、$P=0.52$的含义。\\
+\textit{答：未发现该模型与资料有显著偏离，但不能据此证明模型正确；模型选择还应结合嵌套模型的$\Delta G^2$与简约原则。}
+\item 写出可将三维表合并为二维表以分析两个变量关系的条件。\\
+\textit{答：被合并的变量与这两个变量中至少一个条件独立（如模型中无$u_{13}$或无$u_{23}$）时，合并不改变二者之间的关联。}
+\end{enumerate}
+\end{fuxi}

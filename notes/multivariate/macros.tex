@@ -1,0 +1,64 @@
+% 应用多元分析：兼容 Einfart/plain 北大红学习笔记主题
+\colorlet{Brick}{PKURed}
+\colorlet{Forest}{black!70}
+\colorlet{Plum}{black!45}
+\colorlet{Ochre}{black!85}
+\colorlet{Grid}{Rule!60}
+\colorlet{CodeBorder}{CodeRule}
+\colorlet{PaperTint}{Paper}
+\pgfplotsset{every axis/.append style={font=\small,axis line style={Ink,line width=.55pt},
+  axis background/.style={fill=white},tick align=outside,tick style={Ink,line width=.45pt},
+  ticklabel style={font=\footnotesize,text=Muted},label style={font=\small,text=Ink},
+  grid=major,grid style={Grid,line width=.3pt},legend style={draw=none,fill=none,font=\footnotesize,cells={anchor=west}},
+  legend cell align=left,legend image post style={line width=.9pt}}}
+\numberwithin{equation}{chapter}
+% 将三级标题与其后的几行正文或代码一起排版，避免标题孤立在页末。
+\pretocmd{\subsubsection}{\ifinner\else\Needspace{6\baselineskip}\fi}{}{}
+\let\E\relax
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
+\let\diag\relax
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\tr}{tr}
+\newcommand{\trans}{^{\mathsf T}}
+\newcommand{\Source}[1]{\par\noindent{\footnotesize\color{Muted}#1}\par}
+\newcommand{\Note}[1]{\begin{zbnote}#1\end{zbnote}}
+\newcommand{\Example}[1]{\par\addvspace{8pt}\Needspace{3\baselineskip}\noindent{\sffamily\bfseries\color{black}#1}\par\nopagebreak}
+\newenvironment{zm}[1][]{\par\noindent{\sffamily\bfseries\color{black}证明}\if\relax\detokenize{#1}\relax\else{\bfseries\color{black}（#1）}\fi\quad}{\nobreak\hfill$\square$\par}
+\newenvironment{chaptersummary}[1]{\par\addvspace{12pt}\Needspace{12\baselineskip}\noindent
+  {\sffamily\bfseries\large\color{black}#1}\par\nopagebreak\smallskip\small\noindent
+  \tabularx{\linewidth}{>{\sffamily\bfseries\color{black}\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}X}\toprule}
+  {\bottomrule\endtabularx\par}
+\newcommand{\RKeyword}[1]{{\bfseries\color{CodeKeyword}#1}}
+\newcommand{\RFunction}[1]{\textcolor{CodeFunction}{#1}}
+\newcommand{\RString}[1]{\textcolor{CodeString}{#1}}
+\newcommand{\RNumber}[1]{\textcolor{CodeConstant}{#1}}
+\newcommand{\RComment}[1]{\textcolor{CodeComment}{\itshape #1}}
+\newcommand{\ROperator}[1]{\textcolor{Muted}{#1}}
+\renewcommand{\theFancyVerbLine}{\color{Muted}\tiny\arabic{FancyVerbLine}}
+\DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\fontsize{9.3pt}{12.6pt}\selectfont,
+  commandchars=\\\{\},breaklines=true,breakanywhere=true,breakautoindent=true,breaksymbolleft={},breaksymbolright={},
+  numbers=left,numbersep=7pt,xleftmargin=9mm,xrightmargin=2mm,frame=single,framerule=.4pt,framesep=3mm,
+  rulecolor=\color{CodeRule},formatcom=\xeCJKVerbAddon\color{Ink},baselinestretch=1.1}
+\captionsetup[table]{position=top}
+\setlength{\textfloatsep}{16pt plus 3pt minus 2pt}
+\setlength{\intextsep}{14pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{.88}\renewcommand{\bottomfraction}{.75}
+\renewcommand{\textfraction}{.1}\renewcommand{\floatpagefraction}{.78}
+
+% 润色补充：与线性回归册相同的R代码环境（listings，可直接写R源码）
+\lstdefinelanguage{CourseR}{sensitive=true,alsoletter={._0123456789},
+  morekeywords=[1]{if,else,repeat,while,function,for,in,next,break,TRUE,FALSE,NULL,NA,NaN,Inf},
+  morekeywords=[2]{c,cbind,cor,cov,data.frame,diag,eigen,factanal,hclust,dist,cutree,kmeans,lda,predict,prcomp,princomp,scale,solve,summary,table,library,round,print,apply,mean,sum,t,varimax,promax,sapply,var,sqrt,cumsum},
+  morecomment=[l]\#,morestring=[b]",morestring=[b]'}
+\lstdefinestyle{courseR}{language=CourseR,basicstyle=\ttfamily\fontsize{9.3}{12.8}\selectfont\color{Ink},
+  keywordstyle=[1]\color{CodeKeyword}\bfseries,keywordstyle=[2]\color{CodeFunction}\bfseries,
+  commentstyle=\color{CodeComment}\itshape,stringstyle=\color{CodeString},
+  numbers=left,numberstyle=\ttfamily\fontsize{7.3}{10}\selectfont\color{Muted!80},numbersep=9pt,
+  backgroundcolor=\color{CodeBackground},frame=single,rulecolor=\color{CodeRule},framerule=.4pt,framesep=6pt,
+  xleftmargin=25pt,xrightmargin=7pt,aboveskip=10pt,belowskip=10pt,breaklines=true,breakatwhitespace=false,
+  breakindent=14pt,columns=fullflexible,keepspaces=true,showstringspaces=false,tabsize=2,upquote=true,
+  literate={<-}{{{\color{Muted}\textless-}}}2 {\%*\%}{{{\color{Muted}\%*\%}}}3}
+\lstnewenvironment{rcode}{\lstset{style=courseR}}{}
+\newcommand{\rinline}[1]{\texttt{\detokenize{#1}}}

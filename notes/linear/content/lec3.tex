@@ -1,0 +1,850 @@
+\chapter{多重线性回归：模型诊断与相关分析}
+第2章的$t$检验、$F$检验与区间估计均以LINE假设为前提，而这些假设未必与实际数据相符。本章介绍模型拟合后的诊断方法：利用残差考察各项假设与数据是否大致相容，并识别对结论影响较大的个别观测。
+
+模型诊断包括以下三方面内容：
+\begin{enumerate}
+\item 判断哪一项假设不满足。各项假设不满足时的后果不同，见下文“各项假设的重要性”。
+\item 评价偏离的程度及其对结论的影响。实际数据不会完全满足模型假设，诊断关注的是偏离的程度与后果。
+\item 选择处理方法：修改模型（加入非线性项、变量变换），改变估计方法（稳健标准误、加权最小二乘），或核查原始数据。
+\end{enumerate}
+本章后半部分讨论的共线性、离群值与强影响点，属于数据结构导致估计不稳定或受少数观测左右的问题，与假设不满足有所区别。最后一节的复相关与偏相关，从相关分析的角度说明回归系数的含义。
+\section{考察模型是否满足LINE假设}
+诊断针对的是误差$\varepsilon$应满足的条件；误差不可观测，只能借助残差$e$来考察。
+\begin{description}
+\item[线性] 均值结构正确，$E(\varepsilon\mid X)=0$。用偏回归图等考察，如扣除$x_2,x_4$影响后，考察$x_3$与$y$的线性关系。
+\item[独立] 各误差相互独立。按时间或顺序收集的数据可用Durbin-Watson统计量诊断一阶自相关，DW$\approx2$提示无一阶自相关。
+\item[正态] 误差服从正态分布。对残差作学生化变换后绘正态Q-Q图。
+\item[等方差] 各误差的方差相同。以$\widehat y$为横轴、学生化残差为纵轴作图。
+\end{description}
+一阶自回归误差模型：
+\[
+\varepsilon_t=\rho\varepsilon_{t-1}+u_t,\qquad
+u_t\sim N(0,\sigma_u^2)\ \text{独立},\qquad|\rho|<1.
+\]
+$\rho$为1阶自相关系数。内学生化残差为
+\[
+\mathrm{SRE}_i=\frac{e_i}{s\sqrt{1-h_{ii}}}.
+\]
+\ann{“偏”指控制其他$x$的（线性）影响。偏回归图主要用于直观判断线性形式，必要时可配合检验，如加入二次项或样条项后作$t$检验或增量$F$检验。独立指各观测的误差独立；序列相关多见于时间序列或按顺序采集的数据，在经济学中讨论较多。$u_t$为随机扰动项。SRE为学生化残差，等方差作残差分布图。}
+\begin{sikao}[各项假设的重要性]
+四项假设的重要性不同，按不满足时后果的严重程度排列如下：
+\begin{enumerate}
+\item \textbf{线性（均值结构正确）}最为重要。均值结构设定错误时，系数估计本身有偏，不反映真实关系，后续检验的精确性也就失去意义。
+\item \textbf{独立性}次之。同一个体的重复测量、同一家庭或同一医院的个体之间往往相关，有效信息少于样本量$n$所示，常规标准误偏小，$P$值偏小，易得出假阳性结论。
+\item \textbf{等方差}再次。异方差时系数仍无偏，但标准误不准确，可采用稳健标准误。
+\item \textbf{正态性}影响最小。样本量较大时，依据中心极限定理，系数的检验与区间估计对误差分布不敏感；正态性主要影响小样本推断与个体预测区间。
+\end{enumerate}
+因此，残差图的检查顺序为：先考察有无曲线趋势，再考察离散程度是否变化，最后考察Q-Q图。正态性检验（如Shapiro--Wilk检验）在小样本时检验效能低，结果无统计学意义不能证明正态；在大样本时对实际意义不大的偏离也会给出有统计学意义的结果。因此诊断应以图形为主。
+\end{sikao}
+\subsection{偏回归图}
+$x_3$与$y$的偏回归图（partial regression plot，又称added-variable plot），数据为例15-1（对象\code{da}的定义见第\ref{sec:select}节）：
+\par\noindent\begin{rcode}
+e1 <- resid(lm(x3~x2+x4,data=da))   # x3中不能由x2、x4线性解释的部分
+e2 <- resid(lm(y~x2+x4,data=da))    # y中不能由x2、x4线性解释的部分
+plot(e1,e2)
+abline(lm(e2~e1))                   # 斜率 = -0.2870
+\end{rcode}\par\smallskip
+\ann{\code{resid}：\code{plot}的两个参数应为两个模型的残差向量，而非模型对象本身。}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12.2cm,height=7.7cm,xmin=-6.8,xmax=9.8,ymin=-4.4,ymax=4.9,xtick={-5,0,5},ytick={-4,-2,0,2,4},xlabel={e1},ylabel={e2}]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.15pt] coordinates {(-2.1934,0.4273) (-0.2736,-0.7561) (1.9096,-1.3481) (-0.7338,1.0635) (-3.1702,3.0652) (-1.5712,3.3815) (5.7485,-2.4904) (2.2134,-1.9316) (9.3422,-0.9967) (-0.8169,-0.9359) (-2.7772,-1.929) (-0.3887,0.1435) (2.0001,-3.8434) (-6.1505,0.2224) (5.1812,-1.9087) (1.6767,-0.4545) (-0.7918,2.031) (5.2302,-1.4152) (-3.6741,-0.236) (-0.2788,-1.958) (-3.9727,2.4326) (-0.2685,1.7654) (-0.6845,0.0366) (-2.5691,-1.2811) (-4.4128,3.766) (0.7129,4.4523) (0.713,-1.3027)};
+\addplot[domain=-6.5:9.6,draw=ChartBrick,line width=.9pt] {-.2870442*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{例15-1中$x_3$的偏回归图（由数据计算；直线斜率$-0.2870$，即完整模型中$x_3$的系数）}
+\begin{derivation}{Frisch--Waugh--Lovell定理}
+\dpart{条件}$Y=X_1\beta_1+X_2\beta_2+\varepsilon$，$[X_1\ X_2]$列满秩；$X_2$含截距列。记$H_2=X_2(X_2^\top X_2)^{-1}X_2^\top$，$M_2=I-H_2$。
+\dpart{结论}完整模型中$\beta_1$的最小二乘估计等于“$M_2Y$对$M_2X_1$回归”的系数：
+\[
+\widehat\beta_1=\bigl[(M_2X_1)^\top M_2X_1\bigr]^{-1}(M_2X_1)^\top M_2Y ,
+\]
+且这一回归的残差与完整模型的残差完全相同。
+\dpart{推导}完整模型的正规方程为$X_1^\top(Y-X_1b_1-X_2b_2)=0$与$X_2^\top(Y-X_1b_1-X_2b_2)=0$。由后者得$X_2b_2=H_2(Y-X_1b_1)$，于是完整模型的残差为
+\[
+e=Y-X_1b_1-H_2(Y-X_1b_1)=M_2(Y-X_1b_1)=M_2Y-M_2X_1b_1 .
+\]
+代入第一个方程：$X_1^\top M_2(Y-X_1b_1)=0$，即$X_1^\top M_2X_1b_1=X_1^\top M_2Y$。因$M_2$对称幂等，$X_1^\top M_2X_1=(M_2X_1)^\top(M_2X_1)$，$X_1^\top M_2Y=(M_2X_1)^\top(M_2Y)$，得结论。上式同时表明，$M_2Y$对$M_2X_1$回归的残差就是$e$。
+\dpart{统计解释}偏回归图中$e1=M_2x_3$、$e2=M_2y$，图中直线斜率正好等于完整模型中$x_3$的系数$-0.2870$，点到直线的纵向距离就是完整模型的残差。因此偏回归图能直观显示该系数由哪些点决定、残差中是否还有弯曲趋势。注意：在图上直接拟合$e2\sim e1$得到的标准误（0.1071）使用自由度$n-2$，与完整模型的0.1117（自由度$n-p=23$）略有不同，检验应以完整模型为准。
+\end{derivation}
+\subsection{考察各残差有无1阶自相关性}
+\begin{enumerate}
+\item 残差序列图：绘制残差随时间变化的图形，若呈现周期性或趋势性变化，则可能存在自相关。
+\item 残差散点图：残差$e_t$与滞后一期残差$e_{t-1}$的散点图。点集中在一、三象限为正相关，二、四象限为负相关。
+\end{enumerate}
+\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.3cm,grid=none,axis lines=middle,xtick=\empty,ytick=\empty,xmin=0,xmax=12,ymin=-1.5,ymax=1.5,xlabel={$t$},ylabel={$e_t$}]
+\addplot[draw=ChartBrick,mark=*,mark options={fill=ChartBrick},mark size=1.9pt,dashed,line width=.95pt] coordinates {(1,0.8) (2,-0.7) (3,0.6) (4,-0.5) (5,0.55) (6,-0.4) (7,0.7) (8,-0.5) (9,1) (10,-0.45)};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{负自相关（示意图）}
+\end{minipage}\hfill\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.3cm,grid=none,axis lines=middle,xtick=\empty,ytick=\empty,xmin=0,xmax=12,ymin=-1.5,ymax=1.5,xlabel={$t$},ylabel={$e_t$}]
+\addplot[draw=ChartForest,mark=*,mark options={fill=ChartForest},mark size=1.9pt,dashed,line width=.95pt] coordinates {(1,1) (2,0.75) (3,0.4) (4,-0.35) (5,-0.8) (6,-1.0) (7,-1.1) (8,-0.85) (9,-0.5) (10,0.15) (11,0.4) (12,0.65)};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{正自相关（示意图）}
+\end{minipage}
+\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.3cm,grid=none,axis lines=middle,xtick=\empty,ytick=\empty,xmin=-1.5,xmax=1.5,ymin=-1.5,ymax=1.5,xlabel={$e_{t-1}$},ylabel={$e_t$}]
+\addplot[only marks,draw=ChartForest,fill=ChartForest,mark=*,mark size=2pt] coordinates {(0.15,0.1) (0.4,0.2) (0.3,0.45) (0.8,0.65) (0.65,0.4) (1,0.95) (1.2,0.75) (0.9,0.25) (0.2,-0.2) (0.5,-0.1) (-0.3,-0.3) (-0.4,-0.65) (-0.8,-0.9) (-1,-1) (-0.65,-0.5) (-1.2,-0.85)};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{正自相关（示意图）}
+\end{minipage}
+\hfill
+\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.3cm,grid=none,axis lines=middle,xtick=\empty,ytick=\empty,xmin=-1.5,xmax=1.5,ymin=-1.5,ymax=1.5,xlabel={$e_{t-1}$},ylabel={$e_t$}]
+\addplot[only marks,draw=ChartBrick,fill=ChartBrick,mark=*,mark size=2pt] coordinates {(0.15,-0.1) (0.4,-0.2) (0.3,-0.45) (0.8,-0.65) (0.65,-0.4) (1,-0.95) (1.2,-0.75) (0.9,-0.25) (0.2,0.2) (0.5,0.1) (-0.3,0.3) (-0.4,0.65) (-0.8,0.9) (-1,1) (-0.65,0.5) (-1.2,0.85)};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{负自相关（示意图）}
+\end{minipage}
+\subsection{Durbin-Watson检验}
+\begin{enumerate}
+\item 建立回归模型并计算残差。
+\item 计算DW统计量：
+\[
+\mathrm{DW}=\frac{\sum(e_t-e_{t-1})^2}{\sum e_t^2}.
+\]
+\item 根据$\alpha$、模型自变量个数$m$、总例数$n$查DW临界值表，确定$d_L$与$d_U$，依评判标准得出残差间有无自相关的结论。
+\end{enumerate}
+\begin{center}\begin{tabular}{ll}
+\toprule 范围&判断\\\midrule
+$0<\mathrm{DW}<d_L$&存在正自相关\\
+$d_L\le\mathrm{DW}\le d_U$&不能确定\\
+$d_U<\mathrm{DW}<4-d_U$&无一阶自相关\\
+$4-d_U\le\mathrm{DW}\le4-d_L$&不能确定\\
+$4-d_L<\mathrm{DW}<4$&存在负自相关\\\bottomrule
+\end{tabular}\end{center}
+样本量较大时$\mathrm{DW}\approx2(1-\widehat\rho)$，$\widehat\rho$为相邻残差的1阶自相关系数，所以DW接近2对应$\widehat\rho\approx0$。DW接近2的含义仅限于“未发现一阶自相关”：它不能排除高阶或季节性自相关（如滞后7天、12个月）、整群（如同一家庭、同一医院）内的相关，也不能用于没有自然顺序的横断面数据。DW检验还要求模型含截距、自变量中不含滞后的$y$。R中可用\code{lmtest::dwtest(fit)}计算精确$P$值，避免查表的不确定区。
+\begin{center}\begin{tikzpicture}[x=2.7cm,y=2.2cm,font=\small]
+\draw[-{Stealth}] (0,0)--(4.25,0) node[right]{DW};
+\draw[-{Stealth}] (0,0)--(0,1.65) node[above]{$f(\mathrm{DW})$};
+\draw[draw=ChartForest,line width=1pt] plot[smooth] coordinates{(0,.55)(.6,1.05)(1.2,1.38)(2,1.48)(2.8,1.15)(3.5,.7)(4,.4)};
+\foreach \x/\lab in {.65/d_L,1.15/d_U,2/2,2.85/{4-d_U},3.35/{4-d_L},4/4}
+{\draw (\x,0)--(\x,-.04) node[below]{$\lab$};}
+\foreach \x in {.65,1.15,2.85,3.35}{\draw[draw=NoteGray!65,dashed,line width=.55pt] (\x,0)--(\x,1.4);}
+\node[align=center] at (.3,.45){正\\自相关};
+\node[align=center] at (.9,.45){不能\\确定};
+\node at (2,.45){无自相关区};
+\node[align=center] at (3.1,.45){不能\\确定};
+\node[align=center] at (3.7,.45){负\\自相关};
+\node[below left] at (0,0){0};
+\end{tikzpicture}\end{center}\subsection{考察残差是否服从正态分布}
+粗残差（未标化残差）：
+\[
+e=y-\widehat y.
+\]
+由第\ref{sec:resid}节，$\Var(e_i)=\sigma^2(1-h_{ii})$，各残差方差不等，需先统一尺度再作正态概率图。几种常用残差如下（$h_{ii}$为杠杆值，由\code{diag(H)}或\code{hatvalues(fit)}获得）：
+\begin{center}\small\renewcommand{\arraystretch}{1.6}\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}>{\centering\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{5.6cm}}
+\toprule 名称&定义&说明（R函数）\\\midrule
+标准化残差ZRE&$e_i/s$&未考虑$h_{ii}$\\
+内学生化残差SRE&$r_i=\dfrac{e_i}{s\sqrt{1-h_{ii}}}$&\code{rstandard(fit)}\\
+删除残差&$e_{(i)}=y_i-\widehat y_{i(i)}=\dfrac{e_i}{1-h_{ii}}$&删除第$i$点建模后对该点的预测误差\\
+外学生化残差（删除学生化残差）&$t_i=\dfrac{e_i}{s_{(i)}\sqrt{1-h_{ii}}}$&$\sim t(n-p-1)$，\code{rstudent(fit)}\\\bottomrule
+\end{tabular}\end{center}
+其中$\widehat y_{i(i)}$、$s_{(i)}$分别是删除第$i$个观测后所建模型对该点的预测值和剩余标准差，可不重新拟合而直接算出：
+\[
+(n-p-1)s_{(i)}^2=(n-p)s^2-\frac{e_i^2}{1-h_{ii}},\qquad
+t_i=r_i\sqrt{\frac{n-p-1}{n-p-r_i^2}} .
+\]
+删除残差$e_{(i)}$与外学生化残差$t_i$是两个量：前者有原始单位，是“把该点留在外面时的预测误差”；后者再除以自身标准误，成为无量纲的$t$统计量。常说的“将第$i$个观测删除后建立模型，再将其回代得到残差”指的是$e_{(i)}$；把它除以估计标准误$s_{(i)}/\sqrt{1-h_{ii}}$即得$t_i$。
+
+$t_i\sim t(n-p-1)$的原因：正态模型下$e_{(i)}\sim N\bigl(0,\sigma^2/(1-h_{ii})\bigr)$，$s_{(i)}^2$由其余$n-1$个观测算得，$(n-p-1)s_{(i)}^2/\sigma^2\sim\chi^2_{n-p-1}$，且与$e_{(i)}$独立（新观测与建模样本独立），由$t$分布的定义即得。内学生化残差的分子分母不独立，$r_i^2/(n-p)$服从Beta分布，$|r_i|\le\sqrt{n-p}$，不服从$t$分布。
+\ann{粗残差不服从标准正态分布。$s$是$\sigma$的估计，即剩余标准差。内学生化残差使用包含当前点的所有数据估计标准差；外学生化残差排除当前点后重新拟合模型估计标准差，也叫删除学生化残差。}
+\subsection{考察各残差是否等方差}
+以$\widehat y$（或某个$x$）为横轴、学生化残差为纵轴作图时，须区分两类不同的模式：
+\begin{itemize}
+\item 残差的\textbf{平均水平}随$\widehat y$呈弯曲或趋势变化：提示均值结构设定有误（遗漏非线性项、交互项或重要变量），属于“线性”条件的问题。
+\item 残差的\textbf{离散程度}随$\widehat y$变化，如呈喇叭形：提示异方差。散点在0上下呈宽度大致不变的水平带，提示等方差假设可接受。
+\end{itemize}
+异方差时$\widehat\beta$仍无偏，但$s^2(X^\top X)^{-1}$不再是其正确的协方差阵，常规$t$、$F$检验和区间失准。常见的后续处理：
+\begin{itemize}
+\item 稳健（异方差一致，sandwich）标准误：$\widehat{\Cov}(\widehat\beta)=(X^\top X)^{-1}X^\top\operatorname{diag}(e_i^2)X(X^\top X)^{-1}$及其小样本修正，系数估计不变。R代码见下。
+\item 加权最小二乘（WLS）：若$\Var(\varepsilon_i)=\sigma^2/w_i$且$w_i$已知或可估计，最小化$\sum w_ie_i^2$，R：\code{lm(y~x,weights=w)}。
+\item 变量变换：如方差随均数增大时对$y$取对数或平方根；此时系数的解释随之改变。
+\end{itemize}
+\par\noindent\begin{rcode}
+library(lmtest); library(sandwich)
+coeftest(fit,vcov=vcovHC(fit,type="HC3"))   # 稳健标准误
+\end{rcode}\par\smallskip
+\noindent\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.5cm,grid=none,axis lines=middle,xtick=\empty,ytick={0},xmin=0,xmax=4.5,ymin=-1.3,ymax=1.3,xlabel={$x$},ylabel={$e$}]
+\addplot[only marks,draw=ChartForest,fill=ChartForest,mark=*,mark size=2pt] coordinates {(0.25,0.15) (0.5,-0.4) (0.7,0.4) (1,-0.1) (1.2,0.45) (1.5,-0.45) (1.8,0.08) (2,0.42) (2.3,-0.08) (2.7,0.05) (3,-0.55) (3.2,-0.52) (3.5,-0.12) (3.8,0.4)};
+\addplot[draw=ChartBrick,line width=.8pt,dashed,domain=0:4.3] {.8};\addplot[draw=ChartBrick,line width=.8pt,dashed,domain=0:4.3] {-.8};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{等方差（示意图）}
+\end{minipage}
+\hfill
+\begin{minipage}{.49\linewidth}\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.3cm,height=4.5cm,grid=none,axis lines=middle,xtick=\empty,ytick={0},xmin=0,xmax=4.5,ymin=-1.3,ymax=1.3,xlabel={$x$},ylabel={$e$}]
+\addplot[only marks,draw=ChartForest,fill=ChartForest,mark=*,mark size=2pt] coordinates {(0.25,0.01875) (0.5,-0.1) (0.7,0.13999999999999999) (1,-0.05) (1.2,0.27) (1.5,-0.3375) (1.8,0.07200000000000001) (2,0.42) (2.3,-0.092) (2.7,0.0675) (3,-0.8250000000000001) (3.2,-0.8320000000000001) (3.5,-0.21) (3.8,0.76)};
+\addplot[draw=ChartBrick,line width=.8pt,dashed,domain=0:4.3] {.27*x};\addplot[draw=ChartBrick,line width=.8pt,dashed,domain=0:4.3] {-.27*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{异方差（示意图）}
+\end{minipage}
+
+\subsection{例15-1的模型诊断}
+下面对第2章筛选得到的模型\code{y~x2+x3+x4}进行诊断。实际工作中应首先作图：\code{plot(fit)}依次给出残差--拟合值图（考察线性与等方差）、正态Q-Q图、尺度--位置图（考察等方差）和残差--杠杆图（标出Cook距离等高线）。相应的数值检查如下：
+\par\noindent\begin{rcode}
+library(lmtest)
+fit <- lm(y~x2+x3+x4,data=da)
+par(mfrow=c(2,2)); plot(fit)            # 四张诊断图
+shapiro.test(rstudent(fit))             # 正态
+dwtest(fit)                             # 一阶自相关（需观测有自然顺序才有意义）
+bptest(fit)                             # Breusch-Pagan异方差检验
+inf <- data.frame(t=rstudent(fit),h=hatvalues(fit),D=cooks.distance(fit))
+round(head(inf[order(-inf$D),],4),3)    # Cook距离最大的4个点
+\end{rcode}
+\begin{routput}
+	Shapiro-Wilk normality test
+W = 0.95395, p-value = 0.267
+
+	Durbin-Watson test
+DW = 1.6447, p-value = 0.1812
+
+	studentized Breusch-Pagan test
+BP = 0.59577, df = 3, p-value = 0.8974
+
+       t     h     D
+25 1.838 0.476 0.694
+6  1.963 0.356 0.473
+26 2.918 0.131 0.242
+9  1.050 0.335 0.138
+\end{routput}
+结果解释如下：
+\begin{itemize}
+\item 三项检验均无统计学意义，未发现明显的非正态、自相关和异方差。但$n=27$，各项检验的效能均较低，结果仅表明未发现明显问题。本例27名患者没有时间顺序，改变排列顺序即可改变DW值，故DW检验的意义有限。
+\item 平均杠杆值$p/n=4/27=0.148$。第25号观测的$h=0.476$，超过平均值的3倍，为高杠杆点。该患者的甘油三酯为10.89，远高于其他患者（其总胆固醇11.54也为全样本最高，但$x_1$不在本模型中，不影响杠杆值）。该观测的Cook距离为0.694，为全样本最大，虽未超过1，但远大于$4/n=0.148$，应核查原始记录，并比较删除该观测前后的系数。
+\item 第26号观测的外学生化残差为2.918，在$y$方向上偏离最大，但其杠杆值低，Cook距离仅为0.242，对系数的影响有限。
+\end{itemize}
+诊断发现的异常观测不应直接删除。核查后若数据无误，应予保留，并在报告中给出敏感性分析的结果，即删除与保留这些观测时结论是否一致。
+\section{考察自变量间有无严重共线性}
+共线性（collinearity）指自变量间高度线性相关。如果糖化血红蛋白$x_4$可以用甘油三脂$x_2$、空腹胰岛素$x_3$的线性组合完全表达，
+\[
+x_4=b_0+b_2x_2+b_3x_3,
+\]
+则称$x_4$与$x_2,x_3$间有完全共线性。这时设计矩阵$X$不满秩，$X^\top X$奇异，$(X^\top X)^{-1}$不存在，正规方程有无穷多组解：各回归系数不能唯一确定（不可识别），但拟合值$\widehat Y$是$Y$在$X$列空间上的投影，仍唯一确定。作回归分析\code{lm(y~x2+x3+x4)}时，R会对冗余的列给出\code{NA}。当严重共线性时，即$x_4\approx b_0+b_2x_2+b_3x_3$，方程有解，但$X^\top X$接近奇异，会出现某个自变量的回归系数符号异常或标准误显著增大问题。
+\subsection{共线性诊断}
+两两相关系数不足以排除共线性：多个自变量之间可以存在线性依赖，而任意两个变量的相关系数都不大。例如$x_4=x_1+x_2+x_3$、三者互不相关且方差相同时，$x_4$与每个$x_j$的相关系数只有$1/\sqrt3\approx0.58$，却是完全共线性。因此除看$R$阵里的相关系数绝对值是否接近1之外，诊断方法有：
+\begin{itemize}
+\item 方差扩大因子（Variance Inflation Factor，VIF）很大，如$>10$。
+\item 容忍度（TOL，即VIF倒数）很小，如$<0.1$。
+\item 对$X$的相关阵求特征值。如有特征值接近0，得出的条件指数（Condition Index）大于30，提示严重共线性（10--30为中等）。
+\end{itemize}
+\[
+k=\sqrt{\frac{\lambda_{\max}}{\lambda_{\min}}}.
+\]
+以上界限（10、0.1、30）都是经验界限，不是检验的临界值；共线性是否“严重”，还要看所关心系数的标准误是否大到影响结论。例15-1中4个自变量的VIF为2.19、1.78、1.28、1.27，相关阵特征值为2.037、1.031、0.647、0.285，最大条件指数2.67，不存在严重共线性。R：\code{car::vif(fit)}。
+\subsection{VIF的计算}
+将第$k$个自变量$X_k$作为因变量，其余所有自变量作为解释变量，建立线性回归模型：
+\[
+X_k=\gamma_0+\gamma_1X_1+\cdots+\gamma_{k-1}X_{k-1}
++\gamma_{k+1}X_{k+1}+\cdots+\gamma_mX_m+\text{误差}.
+\]
+得到该模型的决定系数$R_k^2$，表示其他自变量对$X_k$的解释程度。
+\[
+\mathrm{VIF}_k=\frac1{1-R_k^2}.
+\]
+$R_k^2$越接近1，说明$X_k$与其他自变量的线性相关性越强，VIF值越大。
+\ann{例子：《多元统计分析方法》45页。VIF越大，$X_k$能被其他自变量线性解释的程度越高。}
+\begin{derivation}{VIF的来源}
+\dpart{条件}$\Cov(\varepsilon\mid X)=\sigma^2I$，模型含截距，$X$列满秩。记$x_j$为第$j$个自变量的观测向量，$R_j^2$为$x_j$对其余自变量（含截距）回归的决定系数。
+\dpart{结论}
+\[
+\operatorname{Var}(\widehat\beta_j\mid X)
+=\frac{\sigma^2}{\sum_i(x_{ij}-\bar x_j)^2}\cdot\frac1{1-R_j^2}.
+\]
+\dpart{推导}令$M_{-j}=I-H_{-j}$，$H_{-j}$为向其余列（含全1列）张成空间的投影阵。由Frisch--Waugh--Lovell定理，$\widehat\beta_j=(x_j^\top M_{-j}x_j)^{-1}x_j^\top M_{-j}Y$，故
+\[
+\Var(\widehat\beta_j\mid X)=\frac{x_j^\top M_{-j}\,\sigma^2I\,M_{-j}x_j}{(x_j^\top M_{-j}x_j)^2}=\frac{\sigma^2}{x_j^\top M_{-j}x_j}.
+\]
+$x_j^\top M_{-j}x_j$正是$x_j$对其余自变量回归的残差平方和，等于$(1-R_j^2)\sum_i(x_{ij}-\bar x_j)^2$，代入即得。
+\dpart{统计解释}比较基准是：$x_j$与其他自变量在样本中完全不相关（$R_j^2=0$）时的方差$\sigma^2/\sum_i(x_{ij}-\bar x_j)^2$。VIF就是实际方差相对于这一基准的倍数，标准误扩大$\sqrt{\mathrm{VIF}}$倍。例3.1中身高与体重的相关系数为0.742，$\mathrm{VIF}=1/(1-0.742^2)=2.23$，两系数的标准误约为无共线性时的1.49倍。共线性只增大方差，不使最小二乘估计产生偏倚。
+\end{derivation}
+\begin{sikao}[共线性对估计的影响：模拟]
+上述推导表明，共线性增大估计的方差，但不产生偏倚。以下用模拟加以说明。设真实模型为$y=1+x_1+x_2+\varepsilon$，$\sigma=2$，$n=30$，$x_1$与$x_2$的相关系数$r$分别取0、0.9、0.99，各重复抽样2000次：
+\par\noindent\begin{rcode}
+set.seed(7)
+one <- function(r){
+  n <- 30; x1 <- rnorm(n); x2 <- r*x1+sqrt(1-r^2)*rnorm(n)
+  y <- 1+x1+x2+rnorm(n,sd=2)
+  s <- summary(lm(y~x1+x2)); f <- s$fstatistic
+  c(b1=coef(s)[2,1], p1=coef(s)[2,4], p2=coef(s)[3,4],
+    pF=unname(pf(f[1],f[2],f[3],lower.tail=FALSE)))
+}
+for(r in c(0,0.9,0.99)){
+  res <- t(replicate(2000,one(r)))
+  cat("r=",r," mean(b1)=",round(mean(res[,"b1"]),3)," sd(b1)=",round(sd(res[,"b1"]),3),
+      " P(b1<0)=",round(mean(res[,"b1"]<0),3),
+      " F显著而两个t都不显著:",round(mean(res[,"pF"]<.05&res[,"p1"]>.05&res[,"p2"]>.05),3),"\n")
+}
+\end{rcode}
+\begin{routput}
+r= 0  mean(b1)= 0.997  sd(b1)= 0.389  P(b1<0)= 0.004  F显著而两个t都不显著: 0.016 
+r= 0.9  mean(b1)= 1.019  sd(b1)= 0.91  P(b1<0)= 0.124  F显著而两个t都不显著: 0.59 
+r= 0.99  mean(b1)= 1.007  sd(b1)= 2.906  P(b1<0)= 0.354  F显著而两个t都不显著: 0.878
+\end{routput}
+三种情形下$b_1$的均数均接近1，即估计无偏。$r=0.99$时，$b_1$的标准差增大至$r=0$时的7倍以上，超过三分之一的样本中$b_1$为负值，即符号与真值相反；近九成样本出现整体$F$检验有统计学意义而两个$t$检验均无统计学意义的情况。$\mathrm{VIF}=1/(1-0.99^2)\approx50$，$\sqrt{50}\approx7$，与模拟结果一致。
+
+共线性的实质在于各变量的作用难以分离：数据能够表明$x_1$与$x_2$合起来与$y$有关，但不足以确定二者各自的贡献。若研究目的仅为预测$y$，共线性的影响不大；若需解释单个系数，共线性会造成严重困难。删除变量、岭回归与主成分回归，都是通过施加额外约束来换取估计的稳定。
+\end{sikao}
+\subsection{严重共线性的处理}
+\begin{itemize}
+\item 删除冗余自变量。
+\item 岭回归分析。
+\item 主成分回归分析。
+\end{itemize}
+\ann{岭回归见书47页；主成分回归在多元分析课讲解。}
+\section{岭回归分析}\label{sec:ridge}
+标准化回归系数与岭回归：
+\[
+\widetilde b=R_{XX}^{-1}r_y=
+\begin{bmatrix}\widetilde b_1\\\vdots\\\widetilde b_m\end{bmatrix},
+\qquad
+\widetilde b(k)=(R_{XX}+kI)^{-1}r_y.
+\]
+岭回归在相关矩阵$R_{XX}$的主对角线元素上增加$k$（岭参数），使矩阵远离奇异，改善估计中的病态（ill-conditioned）问题，以偏倚换取方差的大幅减小。数据中自变量间的相关性本身并未改变。
+
+\textbf{惩罚最小二乘形式。}先将各自变量中心化并标准化，记为矩阵$Z$，$y$中心化。截距不受惩罚，估计为$\bar y$。岭回归估计使
+\[
+\sum_{i=1}^n(y_i-\bar y-z_i^\top b)^2+\lambda\sum_{j=1}^mb_j^2
+\]
+达到最小，解为$\widehat b(\lambda)=(Z^\top Z+\lambda I)^{-1}Z^\top(y-\bar y\mathbf 1)$。若$Z$按样本标准差标准化、$y$也标准化，则$Z^\top Z=(n-1)R_{XX}$，$Z^\top y=(n-1)r_y$，上式即为
+\[
+\widetilde b(k)=(R_{XX}+kI)^{-1}r_y,\qquad k=\frac{\lambda}{n-1}.
+\]
+不同软件对$\lambda$的尺度规定不同（如按$n$或$n-1$归一，标准化时用$n$还是$n-1$作分母），岭参数的数值不能跨软件直接比较。
+\begin{derivation}{谱分解下的收缩与偏差--方差变化}
+\dpart{条件}$R_{XX}=\sum_j\lambda_je_je_j^\top$为谱分解；同方差模型，标准化尺度下$\Cov(r_y)$与$R_{XX}$成比例，从而$\Cov(\widetilde b)$与$R_{XX}^{-1}$成比例。
+\dpart{结论}岭估计把普通最小二乘估计在每个特征方向上乘以收缩因子$\lambda_j/(\lambda_j+k)$；特征值越小的方向收缩越多。$k>0$时估计有偏，但方差减小。
+\dpart{推导}
+\[
+\widetilde b=R_{XX}^{-1}r_y=\sum_j\frac{1}{\lambda_j}e_je_j^\top r_y,\qquad
+\widetilde b(k)=\sum_j\frac{1}{\lambda_j+k}e_je_j^\top r_y=\sum_j\frac{\lambda_j}{\lambda_j+k}\,\bigl(e_je_j^\top\widetilde b\bigr).
+\]
+普通最小二乘的协方差阵与$\sum_j\lambda_j^{-1}e_je_j^\top$成比例，当某个$\lambda_j\to0$（近似共线性）时方差爆炸；岭估计的协方差阵与$\sum_j\lambda_j(\lambda_j+k)^{-2}e_je_j^\top$成比例，每项不超过$1/(4k)$，有界。代价是偏倚$E[\widetilde b(k)]-\widetilde\beta=-\sum_jk/(\lambda_j+k)\,e_je_j^\top\widetilde\beta$。$R_{XX}+kI$的条件数$\sqrt{(\lambda_{\max}+k)/(\lambda_{\min}+k)}$也随$k$增大而下降。
+\dpart{统计解释}可以证明总存在某个$k>0$使岭估计的均方误差小于最小二乘估计（Hoerl--Kennard），这并不违背Gauss--Markov定理，因为岭估计不是无偏估计。
+\end{derivation}
+\textbf{岭参数的选择。}岭迹图可作直观参考：系数随$k$增大逐渐稳定。原例依据下图取$k=0.04$。但不应以“系数符号转正”作为选择原则：偏回归系数的符号与单变量相关的符号不同本身可能是合理的，按预期符号挑选$k$等于用结论引导估计。更客观的做法是用交叉验证或广义交叉验证（GCV）选择使预测误差最小的$k$。
+\par\noindent\begin{rcode}
+library(MASS)
+rr <- lm.ridge(y~x1+x2+x3+x4,data=da,lambda=seq(0,20,by=0.01))
+select(rr)                   # 给出HKB、L-W估计及GCV最小的lambda
+coef(rr)[which.min(rr$GCV),] # GCV最优lambda=8.83时的系数（原始尺度）
+\end{rcode}\par\smallskip
+以例15-1数据演示（该例共线性并不严重，仅用于说明用法）：GCV选得$\lambda=8.83$，截距为6.325，$x_1$--$x_4$的系数为0.279、0.243、$-0.207$、0.500；最小二乘估计依次为5.943与0.142、0.351、$-0.271$、0.638。相比之下，各斜率整体向0收缩，$x_1$与$x_2$之间有所重新分配。\code{lm.ridge}内部标准化时以$n$为分母，其$\lambda$与上面$k$的换算以该函数的定义为准。
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12cm,height=7cm,axis lines=left,xmin=0,xmax=.102,ymin=-2.2,ymax=2.4,xtick={0,.01,.02,.03,.04,.05,.06,.07,.08,.09,.1},xticklabels={0,.01,.02,.03,.04,.05,.06,.07,.08,.09,.1},scaled x ticks=false,ytick={-2,-1,0,1,2},xlabel={$k$},ylabel={$b$}]
+\addplot[mark=none,draw=ChartForest,line width=1.05pt] coordinates {(0,2.2) (0.003,1.8) (0.006,1.3) (0.01,0.65) (0.02,0.43) (0.03,0.36) (0.04,0.33) (0.06,0.31) (0.08,0.29) (0.1,0.27)};
+\addplot[mark=none,draw=ChartBrick,dotted,line width=1.1pt] coordinates {(0,-2) (0.003,-1.6) (0.006,-0.9) (0.01,-0.28) (0.02,-0.06) (0.03,0.035) (0.04,0.08) (0.06,0.13) (0.08,0.15) (0.1,0.16)};
+\addplot[mark=none,draw=ChartOchre,dashed,line width=1.05pt] coordinates {(0,0.72) (0.01,0.65) (0.02,0.6) (0.03,0.56) (0.04,0.53) (0.06,0.5) (0.08,0.46) (0.1,0.44)};
+\node[text=ChartForest] at (axis cs:.005,2) {$b_1$};\node[text=ChartBrick] at (axis cs:.006,-1.75) {$b_2$};\node[text=ChartOchre] at (axis cs:.004,.5) {$b_3$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{图3.1\quad 不同岭参数$k$时回归系数的岭迹（示意图，非由本书数据计算）}
+\section{诊断离群值和强影响点}
+\begin{description}
+\item[$y$的异常值] 响应方向的离群点，一般认为是删除学生化残差$|t_i|>3$的观测值，也可与$t(n-p-1)$分布比较。
+\item[$x$的异常值] 自变量方向远离数据中心的高杠杆点，如杠杆值$h_{ii}$超出平均杠杆值$\bar h=p/n$的2--3倍的样本点。
+\item[强影响点] 删除该数据点会使估计结果（系数、拟合值、检验结论）发生显著变化的点。
+\end{description}
+平均杠杆值来自$\tr(H)=p$（第\ref{sec:resid}节）：$\bar h=\frac1n\sum h_{ii}=p/n$。$h_{ii}$只取决于$x$，度量第$i$点在自变量空间中离中心的远近，与$y$无关。
+
+$x$的异常值不一定是强影响点，要结合库克距离（$p$为含截距的参数个数）：
+\[
+D_i=\frac{e_i^2}{p\,s^2}\frac{h_{ii}}{(1-h_{ii})^2}=\frac{r_i^2}{p}\cdot\frac{h_{ii}}{1-h_{ii}}.
+\]
+它反映杠杆值和残差的综合效应，$D_i>1$（或$>4/n$）提示强影响点；这些都是提示进一步核查的经验界限。
+\begin{derivation}{Cook距离的含义}
+\dpart{条件}$\widehat\beta_{(i)}$、$\widehat Y_{(i)}=X\widehat\beta_{(i)}$为删除第$i$个观测后所得的系数及其对全部$n$个点的拟合值。
+\dpart{结论}
+\[
+D_i=\frac{(\widehat Y-\widehat Y_{(i)})^\top(\widehat Y-\widehat Y_{(i)})}{p\,s^2}
+=\frac{(\widehat\beta-\widehat\beta_{(i)})^\top X^\top X(\widehat\beta-\widehat\beta_{(i)})}{p\,s^2}
+=\frac{e_i^2}{p\,s^2}\frac{h_{ii}}{(1-h_{ii})^2}.
+\]
+\dpart{推导}由矩阵求逆的秩一更新公式可得$\widehat\beta-\widehat\beta_{(i)}=(X^\top X)^{-1}x_i\,e_i/(1-h_{ii})$。代入第二个表达式，$x_i^\top(X^\top X)^{-1}X^\top X(X^\top X)^{-1}x_i=h_{ii}$，即得第三个表达式。
+\dpart{统计解释}$D_i$衡量“删去第$i$点后全部拟合值整体移动了多少”，并以$p\,s^2$标准化。它是残差（$r_i^2$）与杠杆（$h_{ii}/(1-h_{ii})$）的乘积：只有残差较大且杠杆较高的点，删除后结果才会明显改变。
+\end{derivation}
+\ann{删除观测后考察系数、检验。为什么不用学生化残差？}
+\answer{学生化残差只反映$y$方向的偏离，不反映该点在$x$方向的位置。高杠杆点会把回归线拉向自己，自身残差反而很小（$\Var(e_i)=\sigma^2(1-h_{ii})$），学生化残差可能并不大，但删去它后系数可能大变。反过来，$x$居中的点即使残差较大，对系数的影响也有限。所以判断强影响要同时看残差和杠杆，即用Cook距离（或DFFITS、DFBETAS）。}
+\subsection{$y$的异常值举例}
+\begin{center}\begin{tabular}{crr}
+\toprule 编号&$x$&$y$\\\midrule
+1&1&3.4\\2&2&7.9\\3&3&14.6\\4&4&13.6\\5&5&15.5\\\midrule
+（6）&（10）&（33.0）\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=10.5cm,height=7.2cm,xmin=-.3,xmax=10.8,ymin=-.5,ymax=36,xtick={0,2,4,6,8,10},ytick={0,5,10,15,20,25,30,35},xlabel={$x$},ylabel={$y$},legend pos=north west]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.15pt] coordinates {(1,3.4) (2,7.9) (3,14.6) (4,13.6) (5,15.5)};
+\addlegendentry{1--5号}
+\addplot[only marks,draw=ChartBrick,mark=triangle*,mark options={fill=ChartBrick},mark size=2.8pt] coordinates {(10,33)};
+\addlegendentry{6号$(10,33)$}
+\addplot[domain=1:5,draw=ChartForest,line width=1pt] {2.03+2.99*x};
+\addlegendentry{$\widehat y=2.03+2.99x$}
+\addplot[domain=1:10,draw=ChartBrick,line width=1pt,dashed] {1.6967+3.1128*x};
+\addlegendentry{$\widehat y=1.70+3.11x$（含6号）}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\question{第3号观测是否异常？说明理由。如果增加6号观测，$x_6=10,y_6=33$，其是否异常？}
+\ann{第3号超出了，$=4.\mathrm{xx}$。}
+\answer{
+\begin{itemize}
+\item 1--5号（$n=5$，$p=2$）：拟合$\widehat y=2.03+2.99x$。第3点残差$e_3=14.6-11.00=3.60$，$h_{33}=0.2$（低于平均杠杆$p/n=0.4$），内学生化残差$r_3=1.646$，外学生化残差$t_3=4.3164>3$，参照$t(n-p-1)=t(2)$，单点双侧$P=0.0497$。故第3点是响应方向的离群点，但不是高杠杆点；其$D_3=0.339<1$，不是强影响点。注意$n=5$时自由度只有2，若对5个点同时检验作Bonferroni校正，$P=0.25$，证据并不充分，应核查原始记录而不是直接删除。
+\item 加入6号点后（$n=6$）：$h_{66}=0.8361$，远超$2p/n=0.667$，是$x$方向的高杠杆点；但它几乎落在原趋势的延长线上，$t_6=0.177$，不是响应离群点；$D_6=0.1056<1$，删去它对拟合影响不大，不是强影响点。此时第3点的$t_3=4.466$，仍是响应离群点。
+\item 由此区分三个概念：响应离群看$t_i$，高杠杆看$h_{ii}$，强影响看$D_i$（二者兼有才强）。
+\end{itemize}
+R：\code{rstudent(fit); hatvalues(fit); cooks.distance(fit)}。}
+\par\noindent\begin{rcode}
+x <- 1:5; y <- c(3.4,7.9,14.6,13.6,15.5)
+f1 <- lm(y~x)
+round(cbind(t=rstudent(f1),h=hatvalues(f1),D=cooks.distance(f1)),3)
+\end{rcode}
+\begin{routput}
+       t   h     D
+1 -1.074 0.6 0.823
+2 -0.044 0.3 0.001
+3  4.316 0.2 0.339
+4 -0.157 0.3 0.008
+5 -0.937 0.6 0.687
+\end{routput}
+表中外学生化残差最大的是第3点，而Cook距离最大的是两端的第1、5点。两端各点的杠杆值为0.6，对斜率起决定作用，删除其中任一点，回归直线均有明显转动；第3点位于中部，删除后直线主要发生平移。仅有5个观测时，几乎每一点都具有一定影响，此类指标只能作为参考。
+\section{多重线性相关分析}
+\subsection{复相关系数}
+除用皮尔逊相关系数度量$y$与$x_i$间的线性相关程度外，可以用复相关系数$R$度量$y$与多个自变量间的线性相关程度：
+\[
+R=\operatorname{cor}(y,\widehat y).
+\]
+含截距时$R^2=[\operatorname{cor}(y,\widehat y)]^2$，$R=\sqrt{R^2}$。例3.1中$R=\sqrt{0.546}=0.739$。
+\ann{多个$x$看成一个整体。}
+\subsection{偏相关分析}
+偏相关系数表示一组变量中，任意两个变量在其他变量固定不变时，它们之间的相关密切程度和方向；或扣除其他变量对它们的影响后，两个变量间的线性相关情况，用$r_{x_1,x_2\mid x_3,x_4,\ldots,x_m}$表示。
+
+要讨论$y$与$x_1$的相关关系时，应扣除其他自变量影响。
+\ann{相当于把$y$看作$x_{m+1}$。作回归得到残差，看残差之间的相关性。}
+\textbf{残差定义与计算公式。}设要控制的变量集合为$Z$（$q$个变量）。分别作$x$对$Z$、$y$对$Z$的回归（均含截距），偏相关系数就是两组残差的相关系数：
+\[
+r_{xy\cdot Z}=\operatorname{cor}\bigl(e_{x\mid Z},\,e_{y\mid Z}\bigr).
+\]
+只控制一个变量$z$时有显式公式
+\[
+r_{xy\cdot z}=\frac{r_{xy}-r_{xz}r_{yz}}{\sqrt{(1-r_{xz}^2)(1-r_{yz}^2)}} .
+\]
+\textbf{检验。}$H_0$：总体偏相关系数为0。
+\[
+t=\frac{r_{xy\cdot Z}\sqrt{n-2-q}}{\sqrt{1-r_{xy\cdot Z}^2}}\overset{H_0}{\sim}t(n-2-q).
+\]
+这一$t$值与“$y$对$x$和$Z$作多重回归时$x$系数的$t$检验”完全相同，自由度$n-2-q=n-p$也相同：由Frisch--Waugh--Lovell定理，$x$的系数就是两组残差回归的斜率。因此“$x$的偏回归系数为0”与“$x$、$y$的偏相关系数为0”是同一个假设。
+
+表8.3中$r_{XY}=0.932$，$r_{XZ}=0.918$，$r_{YZ}=0.958$，扣除智商$Z$后
+\[
+r_{XY\cdot Z}=\frac{0.932-0.918\times0.958}{\sqrt{(1-0.918^2)(1-0.958^2)}}=0.461,
+\]
+\[
+t=\frac{0.461\sqrt{15}}{\sqrt{1-0.461^2}}=2.013,\quad\nu=15,\quad P=0.062 .
+\]
+（按三位小数代入得0.462，0.461为用未舍入相关系数的结果；$n=18$，$q=1$。）
+数学与语文成绩的简单相关很高（0.932），主要是二者都与智商相关；扣除智商的线性影响后，相关明显减弱。
+
+“控制其他变量”在这里指线性调整：只去掉了$x$、$y$中能被$Z$线性解释的部分。若$x$或$y$与$Z$呈非线性关系、$Z$测量有误差，或存在未纳入的共同影响因素，偏相关系数仍可能受残余混杂影响。
+\par\noindent\begin{rcode}
+X <- c(78,84,61,52,93,89,98,98,65,73,48,45,67,75,95,88,99,81)       # 数学
+Y <- c(83,76,70,58,82,78,89,95,61,75,53,43,70,78,97,92,92,88)       # 语文
+Z <- c(95,100,100,75,105,97,110,120,76,92,61,60,88,96,125,113,126,102) # 智商
+cor(resid(lm(X~Z)),resid(lm(Y~Z)))    # 0.4612
+summary(lm(Y~X+Z))                    # X的t=2.013，P=0.062
+\end{rcode}\par\smallskip
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{表8.3\quad 18名学生的智商、数学成绩和语文成绩}
+\begin{center}\small\begin{tabular}{rrrr@{\qquad}rrrr}
+\toprule 编号&数学$X$&语文$Y$&智商$Z$&编号&数学$X$&语文$Y$&智商$Z$\\\midrule
+1&78&83&95&10&73&75&92\\
+2&84&76&100&11&48&53&61\\
+3&61&70&100&12&45&43&60\\
+4&52&58&75&13&67&70&88\\
+5&93&82&105&14&75&78&96\\
+6&89&78&97&15&95&97&125\\
+7&98&89&110&16&88&92&113\\
+8&98&95&120&17&99&92&126\\
+9&65&61&76&18&81&88&102\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+{\small 《医学统计学与电脑试验》第二版，160页，方积乾主编。}
+\begin{center}\begin{tikzpicture}[font=\small]
+\begin{scope}[shift={(0.0,0)}]
+\draw[-{Stealth}] (0,0)--(2.8,0);\draw[-{Stealth}] (0,0)--(0,2.8);
+\node[right] at (2.8,0) {$X$};\node[above] at (0,2.8) {$Y$};
+\fill[ChartForest!85] (2.1111,2.3103) circle (.024);
+\fill[ChartForest!85] (1.8889,2.2766) circle (.024);
+\fill[ChartForest!85] (1.6056,2.2542) circle (.024);
+\fill[ChartForest!85] (2.1111,2.1757) circle (.024);
+\fill[ChartForest!85] (1.4111,2.1421) circle (.024);
+\fill[ChartForest!85] (2.3111,2.1533) circle (.024);
+\fill[ChartForest!85] (1.7778,2.0860) circle (.024);
+\fill[ChartForest!85] (1.1889,2.0299) circle (.024);
+\fill[ChartForest!85] (1.9500,2.0299) circle (.024);
+\fill[ChartForest!85] (1.6000,1.9626) circle (.024);
+\fill[ChartForest!85] (1.4000,1.9346) circle (.024);
+\fill[ChartForest!85] (2.0389,1.9290) circle (.024);
+\fill[ChartForest!85] (1.2222,1.8953) circle (.024);
+\fill[ChartForest!85] (1.0222,1.8785) circle (.024);
+\fill[ChartForest!85] (1.4556,1.8785) circle (.024);
+\fill[ChartForest!85] (2.2222,1.8617) circle (.024);
+\fill[ChartForest!85] (1.7500,1.8393) circle (.024);
+\fill[ChartForest!85] (1.8444,1.8168) circle (.024);
+\fill[ChartForest!85] (1.4667,1.7776) circle (.024);
+\fill[ChartForest!85] (1.2278,1.7271) circle (.024);
+\fill[ChartForest!85] (2.0778,1.6542) circle (.024);
+\fill[ChartForest!85] (1.6667,1.6486) circle (.024);
+\fill[ChartForest!85] (0.7111,1.6374) circle (.024);
+\fill[ChartForest!85] (0.9611,1.5925) circle (.024);
+\fill[ChartForest!85] (1.1889,1.5757) circle (.024);
+\fill[ChartForest!85] (0.7111,1.5084) circle (.024);
+\fill[ChartForest!85] (1.1111,1.4804) circle (.024);
+\fill[ChartForest!85] (1.5444,1.4636) circle (.024);
+\fill[ChartForest!85] (0.6111,1.4579) circle (.024);
+\fill[ChartForest!85] (1.8111,1.4579) circle (.024);
+\fill[ChartForest!85] (2.0667,1.4523) circle (.024);
+\fill[ChartForest!85] (1.4111,1.4411) circle (.024);
+\fill[ChartForest!85] (0.9056,1.3738) circle (.024);
+\fill[ChartForest!85] (1.5778,1.3065) circle (.024);
+\fill[ChartForest!85] (1.1944,1.3009) circle (.024);
+\fill[ChartForest!85] (2.1222,1.2841) circle (.024);
+\fill[ChartForest!85] (0.7611,1.2785) circle (.024);
+\fill[ChartForest!85] (1.1222,1.2561) circle (.024);
+\fill[ChartForest!85] (0.5111,1.2224) circle (.024);
+\fill[ChartForest!85] (0.6556,1.2224) circle (.024);
+\fill[ChartForest!85] (1.9667,1.1832) circle (.024);
+\fill[ChartForest!85] (1.3167,1.1495) circle (.024);
+\fill[ChartForest!85] (1.7778,1.1495) circle (.024);
+\fill[ChartForest!85] (0.6167,1.1327) circle (.024);
+\fill[ChartForest!85] (0.9444,1.1271) circle (.024);
+\fill[ChartForest!85] (1.5667,1.1215) circle (.024);
+\fill[ChartForest!85] (0.6778,1.0822) circle (.024);
+\fill[ChartForest!85] (0.4389,1.0430) circle (.024);
+\fill[ChartForest!85] (1.1000,1.0430) circle (.024);
+\fill[ChartForest!85] (0.5833,1.0374) circle (.024);
+\fill[ChartForest!85] (0.8167,1.0374) circle (.024);
+\fill[ChartForest!85] (1.4889,1.0374) circle (.024);
+\fill[ChartForest!85] (0.3056,1.0150) circle (.024);
+\fill[ChartForest!85] (1.7056,0.9757) circle (.024);
+\fill[ChartForest!85] (0.7389,0.9589) circle (.024);
+\fill[ChartForest!85] (0.4667,0.9084) circle (.024);
+\fill[ChartForest!85] (1.2000,0.9084) circle (.024);
+\fill[ChartForest!85] (0.2333,0.8579) circle (.024);
+\fill[ChartForest!85] (1.4444,0.8636) circle (.024);
+\fill[ChartForest!85] (0.9111,0.8187) circle (.024);
+\fill[ChartForest!85] (0.3111,0.7907) circle (.024);
+\fill[ChartForest!85] (0.4944,0.7346) circle (.024);
+\fill[ChartForest!85] (1.0667,0.7121) circle (.024);
+\fill[ChartForest!85] (1.2333,0.7065) circle (.024);
+\fill[ChartForest!85] (0.3278,0.6729) circle (.024);
+\fill[ChartForest!85] (0.1889,0.6561) circle (.024);
+\fill[ChartForest!85] (0.9667,0.6561) circle (.024);
+\fill[ChartForest!85] (0.6667,0.6112) circle (.024);
+\fill[ChartForest!85] (0.7556,0.5720) circle (.024);
+\fill[ChartForest!85] (0.5556,0.5327) circle (.024);
+\fill[ChartForest!85] (1.0889,0.5159) circle (.024);
+\fill[ChartForest!85] (1.2667,0.5215) circle (.024);
+\fill[ChartForest!85] (0.8722,0.5103) circle (.024);
+\fill[ChartForest!85] (0.1111,0.4935) circle (.024);
+\fill[ChartForest!85] (0.3667,0.4654) circle (.024);
+\fill[ChartForest!85] (0.5111,0.4654) circle (.024);
+\fill[ChartForest!85] (0.7278,0.4374) circle (.024);
+\fill[ChartForest!85] (0.9222,0.4037) circle (.024);
+\fill[ChartForest!85] (0.2667,0.3252) circle (.024);
+\fill[ChartForest!85] (0.7778,0.3252) circle (.024);
+\fill[ChartForest!85] (0.5556,0.3028) circle (.024);
+\fill[ChartForest!85] (0.1111,0.2467) circle (.024);
+\fill[ChartForest!85] (0.4333,0.2467) circle (.024);
+\fill[ChartForest!85] (0.1944,0.1794) circle (.024);
+\fill[ChartForest!85] (0.2944,0.1346) circle (.024);
+\node at (1.3,-.55) {(a)};\end{scope}
+\begin{scope}[shift={(3.5,0)}]
+\draw[-{Stealth}] (0,0)--(2.8,0);\draw[-{Stealth}] (0,0)--(0,2.8);
+\node[right] at (2.8,0) {$Z$};\node[above] at (0,2.8) {$X$};
+\fill[ChartForest!85] (2.0872,2.2542) circle (.024);
+\fill[ChartForest!85] (1.8427,2.2206) circle (.024);
+\fill[ChartForest!85] (1.5924,2.1925) circle (.024);
+\fill[ChartForest!85] (1.3763,2.0860) circle (.024);
+\fill[ChartForest!85] (1.7403,2.0299) circle (.024);
+\fill[ChartForest!85] (1.1602,1.9907) circle (.024);
+\fill[ChartForest!85] (1.5810,1.9178) circle (.024);
+\fill[ChartForest!85] (1.3649,1.8953) circle (.024);
+\fill[ChartForest!85] (1.9962,1.8673) circle (.024);
+\fill[ChartForest!85] (1.1943,1.8393) circle (.024);
+\fill[ChartForest!85] (1.4332,1.8393) circle (.024);
+\fill[ChartForest!85] (1.0009,1.8224) circle (.024);
+\fill[ChartForest!85] (2.2066,1.8112) circle (.024);
+\fill[ChartForest!85] (1.4559,1.7383) circle (.024);
+\fill[ChartForest!85] (1.0464,1.6935) circle (.024);
+\fill[ChartForest!85] (1.1943,1.6710) circle (.024);
+\fill[ChartForest!85] (2.0417,1.6150) circle (.024);
+\fill[ChartForest!85] (1.1602,1.5308) circle (.024);
+\fill[ChartForest!85] (1.0806,1.4411) circle (.024);
+\fill[ChartForest!85] (1.7687,1.4243) circle (.024);
+\fill[ChartForest!85] (2.0303,1.4131) circle (.024);
+\fill[ChartForest!85] (1.5583,1.2729) circle (.024);
+\fill[ChartForest!85] (2.0986,1.2336) circle (.024);
+\fill[ChartForest!85] (0.7450,1.2224) circle (.024);
+\fill[ChartForest!85] (0.6142,1.1832) circle (.024);
+\fill[ChartForest!85] (0.4834,1.1664) circle (.024);
+\fill[ChartForest!85] (1.9336,1.1607) circle (.024);
+\fill[ChartForest!85] (1.7517,1.1215) circle (.024);
+\fill[ChartForest!85] (1.2796,1.1103) circle (.024);
+\fill[ChartForest!85] (1.5469,1.0879) circle (.024);
+\fill[ChartForest!85] (0.5801,1.0822) circle (.024);
+\fill[ChartForest!85] (0.6427,1.0486) circle (.024);
+\fill[ChartForest!85] (0.4038,1.0093) circle (.024);
+\fill[ChartForest!85] (1.4673,1.0093) circle (.024);
+\fill[ChartForest!85] (0.2844,0.9869) circle (.024);
+\fill[ChartForest!85] (0.5460,0.9869) circle (.024);
+\fill[ChartForest!85] (0.7962,0.9981) circle (.024);
+\fill[ChartForest!85] (1.6834,0.9421) circle (.024);
+\fill[ChartForest!85] (0.7052,0.9084) circle (.024);
+\fill[ChartForest!85] (0.4322,0.8804) circle (.024);
+\fill[ChartForest!85] (1.1602,0.8804) circle (.024);
+\fill[ChartForest!85] (0.2104,0.8243) circle (.024);
+\fill[ChartForest!85] (1.4218,0.8243) circle (.024);
+\fill[ChartForest!85] (0.3014,0.7514) circle (.024);
+\fill[ChartForest!85] (0.4607,0.7121) circle (.024);
+\fill[ChartForest!85] (1.0351,0.6953) circle (.024);
+\fill[ChartForest!85] (1.1943,0.6729) circle (.024);
+\fill[ChartForest!85] (0.3128,0.6449) circle (.024);
+\fill[ChartForest!85] (0.9441,0.6280) circle (.024);
+\fill[ChartForest!85] (0.1763,0.6168) circle (.024);
+\fill[ChartForest!85] (0.7393,0.5439) circle (.024);
+\fill[ChartForest!85] (1.2341,0.5047) circle (.024);
+\fill[ChartForest!85] (0.0910,0.4710) circle (.024);
+\fill[ChartForest!85] (0.8417,0.4766) circle (.024);
+\fill[ChartForest!85] (1.0578,0.4822) circle (.024);
+\fill[ChartForest!85] (0.3412,0.4430) circle (.024);
+\fill[ChartForest!85] (0.6938,0.4150) circle (.024);
+\fill[ChartForest!85] (0.9100,0.3701) circle (.024);
+\fill[ChartForest!85] (0.2559,0.3028) circle (.024);
+\fill[ChartForest!85] (0.7507,0.3028) circle (.024);
+\fill[ChartForest!85] (0.5118,0.2748) circle (.024);
+\fill[ChartForest!85] (0.0853,0.2355) circle (.024);
+\fill[ChartForest!85] (0.3924,0.2355) circle (.024);
+\draw[draw=ChartForest,line width=1pt] (.2,.1)--(2.3,2.3);\draw[draw=ChartBrick,line width=1pt] (1.0,.95)--(1.0,1.65);
+\node[left] at (1,1.65) {$X-\widehat X$};
+\node at (1.3,-.55) {(b)};\end{scope}
+\begin{scope}[shift={(7.0,0)}]
+\draw[-{Stealth}] (0,0)--(2.8,0);\draw[-{Stealth}] (0,0)--(0,2.8);
+\node[right] at (2.8,0) {$Z$};\node[above] at (0,2.8) {$Y$};
+\fill[ChartForest!85] (2.0929,2.2542) circle (.024);
+\fill[ChartForest!85] (1.8540,2.2206) circle (.024);
+\fill[ChartForest!85] (1.5924,2.1925) circle (.024);
+\fill[ChartForest!85] (2.0815,2.1140) circle (.024);
+\fill[ChartForest!85] (1.3820,2.0692) circle (.024);
+\fill[ChartForest!85] (2.2863,2.0804) circle (.024);
+\fill[ChartForest!85] (1.7460,2.0187) circle (.024);
+\fill[ChartForest!85] (1.1716,1.9738) circle (.024);
+\fill[ChartForest!85] (1.9393,1.9738) circle (.024);
+\fill[ChartForest!85] (1.5697,1.9178) circle (.024);
+\fill[ChartForest!85] (1.3763,1.8729) circle (.024);
+\fill[ChartForest!85] (2.0133,1.8673) circle (.024);
+\fill[ChartForest!85] (1.2171,1.8224) circle (.024);
+\fill[ChartForest!85] (1.4445,1.8168) circle (.024);
+\fill[ChartForest!85] (1.0123,1.8056) circle (.024);
+\fill[ChartForest!85] (2.1896,1.8000) circle (.024);
+\fill[ChartForest!85] (1.7289,1.7832) circle (.024);
+\fill[ChartForest!85] (1.8199,1.7720) circle (.024);
+\fill[ChartForest!85] (1.4502,1.7215) circle (.024);
+\fill[ChartForest!85] (1.2171,1.6598) circle (.024);
+\fill[ChartForest!85] (2.0588,1.6150) circle (.024);
+\fill[ChartForest!85] (1.6379,1.5925) circle (.024);
+\fill[ChartForest!85] (0.6938,1.5757) circle (.024);
+\fill[ChartForest!85] (0.9327,1.5364) circle (.024);
+\fill[ChartForest!85] (1.5242,1.4243) circle (.024);
+\fill[ChartForest!85] (2.0360,1.4131) circle (.024);
+\fill[ChartForest!85] (1.3991,1.3907) circle (.024);
+\fill[ChartForest!85] (2.0986,1.2336) circle (.024);
+\fill[ChartForest!85] (1.9393,1.1495) circle (.024);
+\fill[ChartForest!85] (1.7517,1.1215) circle (.024);
+\fill[ChartForest!85] (1.2910,1.1103) circle (.024);
+\fill[ChartForest!85] (1.5469,1.0935) circle (.024);
+\fill[ChartForest!85] (1.4673,0.9869) circle (.024);
+\fill[ChartForest!85] (1.6720,0.9421) circle (.024);
+\fill[ChartForest!85] (0.4379,0.8748) circle (.024);
+\fill[ChartForest!85] (0.2104,0.8243) circle (.024);
+\fill[ChartForest!85] (1.4389,0.8187) circle (.024);
+\fill[ChartForest!85] (0.8929,0.7682) circle (.024);
+\fill[ChartForest!85] (0.2957,0.7514) circle (.024);
+\fill[ChartForest!85] (0.4777,0.7065) circle (.024);
+\fill[ChartForest!85] (1.2114,0.6617) circle (.024);
+\fill[ChartForest!85] (0.3128,0.6505) circle (.024);
+\fill[ChartForest!85] (0.1763,0.6168) circle (.024);
+\fill[ChartForest!85] (0.6427,0.5720) circle (.024);
+\fill[ChartForest!85] (0.7450,0.5383) circle (.024);
+\fill[ChartForest!85] (0.5346,0.4935) circle (.024);
+\fill[ChartForest!85] (1.0578,0.4822) circle (.024);
+\fill[ChartForest!85] (1.2398,0.4822) circle (.024);
+\fill[ChartForest!85] (0.1024,0.4654) circle (.024);
+\fill[ChartForest!85] (0.3469,0.4430) circle (.024);
+\fill[ChartForest!85] (0.4891,0.4374) circle (.024);
+\fill[ChartForest!85] (0.9043,0.3701) circle (.024);
+\fill[ChartForest!85] (0.2559,0.3028) circle (.024);
+\fill[ChartForest!85] (0.7621,0.2972) circle (.024);
+\fill[ChartForest!85] (0.4038,0.2299) circle (.024);
+\fill[ChartForest!85] (0.1024,0.2299) circle (.024);
+\fill[ChartForest!85] (0.1820,0.1626) circle (.024);
+\fill[ChartForest!85] (0.2673,0.1234) circle (.024);
+\draw[draw=ChartForest,line width=1pt] (.2,.1)--(2.3,2.3);\draw[draw=ChartBrick,line width=1pt] (1.0,.95)--(1.0,1.65);
+\node[left] at (1,1.65) {$Y-\widehat Y$};
+\node at (1.3,-.55) {(c)};\end{scope}
+\begin{scope}[shift={(10.5,0)}]
+\draw[-{Stealth}] (0,0)--(2.8,0);\draw[-{Stealth}] (0,0)--(0,2.8);
+\node[right] at (2.8,0) {$X-\widehat X$};\node[above] at (0,2.8) {$Y-\widehat Y$};
+\fill[ChartForest!85] (2.0020,2.2542) circle (.024);
+\fill[ChartForest!85] (1.7388,2.2206) circle (.024);
+\fill[ChartForest!85] (1.3898,2.1925) circle (.024);
+\fill[ChartForest!85] (1.4755,2.1925) circle (.024);
+\fill[ChartForest!85] (2.0020,2.1252) circle (.024);
+\fill[ChartForest!85] (1.1694,2.1196) circle (.024);
+\fill[ChartForest!85] (0.8633,2.0972) circle (.024);
+\fill[ChartForest!85] (1.2490,2.0860) circle (.024);
+\fill[ChartForest!85] (2.2286,2.0972) circle (.024);
+\fill[ChartForest!85] (1.6286,2.0187) circle (.024);
+\fill[ChartForest!85] (1.8367,1.9907) circle (.024);
+\fill[ChartForest!85] (1.0163,1.9794) circle (.024);
+\fill[ChartForest!85] (1.3837,1.9738) circle (.024);
+\fill[ChartForest!85] (0.6980,1.9514) circle (.024);
+\fill[ChartForest!85] (0.8755,1.9346) circle (.024);
+\fill[ChartForest!85] (1.4694,1.9065) circle (.024);
+\fill[ChartForest!85] (1.2245,1.8841) circle (.024);
+\fill[ChartForest!85] (1.9224,1.8729) circle (.024);
+\fill[ChartForest!85] (1.0531,1.8393) circle (.024);
+\fill[ChartForest!85] (0.5878,1.8112) circle (.024);
+\fill[ChartForest!85] (0.3184,1.7832) circle (.024);
+\fill[ChartForest!85] (1.6041,1.7832) circle (.024);
+\fill[ChartForest!85] (1.7020,1.7664) circle (.024);
+\fill[ChartForest!85] (1.0531,1.6710) circle (.024);
+\fill[ChartForest!85] (1.3898,1.6766) circle (.024);
+\fill[ChartForest!85] (1.9592,1.6150) circle (.024);
+\fill[ChartForest!85] (1.5306,1.5925) circle (.024);
+\fill[ChartForest!85] (0.4898,1.5757) circle (.024);
+\fill[ChartForest!85] (0.2143,1.5645) circle (.024);
+\fill[ChartForest!85] (2.2408,1.5645) circle (.024);
+\fill[ChartForest!85] (0.7714,1.5364) circle (.024);
+\fill[ChartForest!85] (0.9918,1.5140) circle (.024);
+\fill[ChartForest!85] (0.4959,1.4579) circle (.024);
+\fill[ChartForest!85] (0.9122,1.4299) circle (.024);
+\fill[ChartForest!85] (1.6653,1.4243) circle (.024);
+\fill[ChartForest!85] (1.9469,1.4243) circle (.024);
+\fill[ChartForest!85] (0.3673,1.4131) circle (.024);
+\fill[ChartForest!85] (1.4082,1.4131) circle (.024);
+\fill[ChartForest!85] (1.2490,1.3963) circle (.024);
+\fill[ChartForest!85] (2.1551,1.3570) circle (.024);
+\fill[ChartForest!85] (0.2510,1.3402) circle (.024);
+\fill[ChartForest!85] (0.7041,1.3178) circle (.024);
+\fill[ChartForest!85] (1.0592,1.3009) circle (.024);
+\fill[ChartForest!85] (1.8429,1.2897) circle (.024);
+\fill[ChartForest!85] (1.6653,1.2673) circle (.024);
+\fill[ChartForest!85] (1.4388,1.2617) circle (.024);
+\fill[ChartForest!85] (2.0204,1.2561) circle (.024);
+\fill[ChartForest!85] (0.5449,1.2224) circle (.024);
+\fill[ChartForest!85] (0.9184,1.2056) circle (.024);
+\fill[ChartForest!85] (0.4224,1.1832) circle (.024);
+\fill[ChartForest!85] (0.2694,1.1664) circle (.024);
+\fill[ChartForest!85] (1.0531,1.1551) circle (.024);
+\fill[ChartForest!85] (1.8367,1.1551) circle (.024);
+\fill[ChartForest!85] (0.4837,1.1327) circle (.024);
+\fill[ChartForest!85] (1.6286,1.1103) circle (.024);
+\fill[ChartForest!85] (1.4265,1.0879) circle (.024);
+\fill[ChartForest!85] (2.0816,1.0935) circle (.024);
+\fill[ChartForest!85] (0.7408,1.0879) circle (.024);
+\fill[ChartForest!85] (0.2694,1.0654) circle (.024);
+\fill[ChartForest!85] (2.3143,1.0710) circle (.024);
+\fill[ChartForest!85] (0.1837,1.0093) circle (.024);
+\fill[ChartForest!85] (0.6061,0.9981) circle (.024);
+\fill[ChartForest!85] (1.3469,0.9925) circle (.024);
+\fill[ChartForest!85] (0.8694,0.9533) circle (.024);
+\fill[ChartForest!85] (1.5551,0.9308) circle (.024);
+\fill[ChartForest!85] (1.8490,0.9364) circle (.024);
+\fill[ChartForest!85] (0.5020,0.9084) circle (.024);
+\fill[ChartForest!85] (0.2082,0.8804) circle (.024);
+\fill[ChartForest!85] (1.0102,0.8748) circle (.024);
+\fill[ChartForest!85] (1.6776,0.8636) circle (.024);
+\fill[ChartForest!85] (1.5367,0.8411) circle (.024);
+\fill[ChartForest!85] (0.7776,0.8187) circle (.024);
+\fill[ChartForest!85] (1.1939,0.8187) circle (.024);
+\fill[ChartForest!85] (1.6347,0.7626) circle (.024);
+\fill[ChartForest!85] (0.3918,0.7346) circle (.024);
+\fill[ChartForest!85] (1.4449,0.6841) circle (.024);
+\fill[ChartForest!85] (0.8694,0.6729) circle (.024);
+\fill[ChartForest!85] (1.0408,0.6617) circle (.024);
+\fill[ChartForest!85] (1.7143,0.6617) circle (.024);
+\fill[ChartForest!85] (1.8612,0.6673) circle (.024);
+\fill[ChartForest!85] (0.7714,0.6112) circle (.024);
+\fill[ChartForest!85] (1.2122,0.6168) circle (.024);
+\fill[ChartForest!85] (0.5878,0.5944) circle (.024);
+\fill[ChartForest!85] (1.3776,0.5439) circle (.024);
+\fill[ChartForest!85] (1.6041,0.5159) circle (.024);
+\fill[ChartForest!85] (0.9429,0.4935) circle (.024);
+\fill[ChartForest!85] (1.9163,0.5047) circle (.024);
+\fill[ChartForest!85] (1.0776,0.4879) circle (.024);
+\fill[ChartForest!85] (0.8816,0.4654) circle (.024);
+\fill[ChartForest!85] (1.7755,0.4542) circle (.024);
+\node at (1.3,-.55) {(d)};\end{scope}
+\end{tikzpicture}\end{center}
+\figtitle{图21.1\quad 扣除智商的影响后，数学成绩$Y$和语文成绩$X$之间的偏相关系数示意图（按原书图形重绘，点数与表8.3不同，仅示意(a)--(d)的残差构造过程）}
+{\small 《医学统计学与电脑试验》第二版，383页，方积乾主编。}
+
+\begin{sikao}[简单相关、偏相关、复相关与回归的关系]
+三种相关系数与回归分析的对应关系如下：
+\begin{itemize}
+\item 简单相关$r_{xy}$：不控制任何变量，$x$与$y$的线性关联；对应简单回归的斜率检验。
+\item 偏相关$r_{xy\cdot Z}$：扣除$Z$的线性影响后的关联；与多重回归中$x$系数的$t$检验等价。
+\item 复相关$R$：$y$与全部自变量（合成一个$\widehat y$）的关联；$R^2$的检验就是整体$F$检验。
+\end{itemize}
+数学与语文成绩的例子中，简单相关系数为0.932，扣除智商的影响后降为0.461，且无统计学意义。第三个变量同时影响两个变量的情形，在流行病学中称为混杂。另有一种相反的情形：若$Z$为$x$影响$y$的中间变量（例如$x$为吸烟、$Z$为肺功能、$y$为死亡），控制$Z$会扣除$x$的部分真实作用。是否应控制某一变量，取决于该变量在因果结构中的位置，不能由统计量本身判断。
+\end{sikao}
+
+\begin{fuxi}
+\begin{enumerate}
+\item 诊断以残差为依据。残差方差为$\sigma^2(1-h_{ii})$，故应先作学生化处理再作图或比较。内学生化残差用\code{rstandard()}，外学生化残差用\code{rstudent()}，后者服从$t(n-p-1)$。
+\item 残差对拟合值作图：平均水平呈曲线趋势提示线性问题，离散程度呈喇叭形提示异方差。
+\item 独立性主要依据研究设计判断；DW检验仅针对有顺序数据的一阶自相关，DW$\approx2(1-\widehat\rho)$。
+\item 异方差时系数仍无偏，但标准误不准确，可采用稳健标准误、加权最小二乘或变量变换。
+\item 共线性：VIF$_j=1/(1-R_j^2)$，标准误扩大为原来的$\sqrt{\mathrm{VIF}}$倍；常用经验界限为VIF$>10$、条件指数$>30$。两两相关系数不大时也可能存在共线性。
+\item 岭回归以偏倚换取方差的减小，在特征值小的方向上收缩最多；岭参数宜用交叉验证（GCV）确定，不宜以系数符号是否符合预期为依据。
+\item 区分三个概念：$y$方向的离群用$t_i$判断，高杠杆用$h_{ii}$判断（与$y$无关，均数为$p/n$），强影响用Cook距离$D_i$判断（残差与杠杆的综合）。
+\item 偏相关系数的检验与相应偏回归系数的$t$检验等价；此处的“控制”仅指线性扣除。
+\end{enumerate}
+\end{fuxi}
+
+\begin{fuxi}[常见错误表述]
+\begin{itemize}
+\item “Shapiro--Wilk检验$P>0.05$，证明残差服从正态分布。”应表述为：未发现残差明显偏离正态分布。
+\item “VIF$<10$，故不存在共线性。”10仅为经验界限，应考察关心的系数的标准误是否大到影响结论。
+\item “该点学生化残差很小，故对模型没有影响。”高杠杆点将回归线拉向自身，其残差反而较小，应结合Cook距离判断。
+\item “发现离群点后将其删除并重新分析。”应先核查数据；数据无误时予以保留，并报告删除前后的敏感性分析结果。
+\end{itemize}
+\end{fuxi}

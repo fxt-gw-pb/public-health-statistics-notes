@@ -1,0 +1,478 @@
+\chapter{因子分析}
+因子分析与主成分分析在计算上相似，均需求解特征值，但二者的方向相反。主成分分析由变量构造综合指标，$c=a\trans x$，主成分为变量的加权和，数据给定即可计算。因子分析由因子解释变量，$x=Lf+u$，假定存在不可观测的公因子，变量之间的相关源于公因子的共同作用。
+
+因此，因子分析以一种解释为出发点：若干指标之间相关，是因为它们有共同的来源。这与流行病学中两个结局因共同危险因素而相关的思路一致。在心理测量中，言语能力、数学能力等不可直接观测，只能通过各科成绩加以推断，因子分析即用于此类推断。
+
+本章的重点为：模型$\Sigma=LL\trans+\Psi$的由来；负荷、共性方差与因子贡献的含义；因子旋转不改变模型拟合而改变解释的原因。
+\section{因子分析}
+因子分析（factor analysis）探讨多个可观测变量间的相关性，解释相关阵或协方差阵为什么会分块。有研究者认为，$p$个表型变量受少数$k$个（$k<p$）不可观测隐变量（因子）支配。因子分析的任务是探讨因子如何支配变量，还原它们之间的协方差结构。
+\Note{主成分分析是数学变换，目的为降维与信息浓缩。因子分析是统计模型，目的是寻找潜在变量（公因子）并解释它们的意义，且允许误差。}
+\subsection{发展历程}
+1904年，Charles Spearman认为学生古典语、法语和英语三门成绩受公因子“语言能力”支配，用一个不可观测变量解释可观测变量间的相关性（协方差结构）。
+\[
+R=\begin{array}{c@{\quad}c}
+\begin{matrix}\text{古典语}\\\text{法语}\\\text{英语}\end{matrix}&
+\begin{bmatrix}1.00&0.83&0.78\\0.83&1.00&0.67\\0.78&0.67&1.00\end{bmatrix}
+\end{array}.
+\]
+\begin{sikao}[单因子模型的相关结构]
+若三门成绩仅受一个公因子支配，由下一节的推导，任意两门课程的相关系数等于二者负荷的乘积：$r_{12}=l_1l_2$，$r_{13}=l_1l_3$，$r_{23}=l_2l_3$。三个方程含三个未知数，可直接求解：
+\[
+l_1^2=\frac{r_{12}r_{13}}{r_{23}}=\frac{0.83\times0.78}{0.67}=0.966,\qquad l_1=0.983,
+\]
+\[
+l_2=\frac{0.83}{0.983}=0.844,\qquad l_3=\frac{0.78}{0.983}=0.793 .
+\]
+该结果与\rinline{factanal(covmat=R3,factors=1,n.obs=100)}给出的最大似然负荷（0.983、0.844、0.793）相同，此时模型自由度为0，恰好拟合。变量多于3个时，方程个数多于未知数，“相关系数等于负荷乘积”成为可由数据检验的约束，这是因子模型拟合优度检验的基础。
+
+Spearman正是根据相关系数之间的这种比例关系，推断存在一个一般智力因子。
+\end{sikao}
+1930年，Louis Thurstone提出多因子理论，并引入因子旋转技术。20世纪50年代至今，随着计算机发展，因子分析应用于心理学以外的众多领域。
+\section{因子模型}
+\subsection{单因子模型}
+学生古典语、法语和英语三门成绩受公因子$f$（语言能力）支配。$f$解释不了的部分称为特殊因子，类似回归中的残差。
+\begin{equation}
+\begin{cases}
+x_1^*=l_1f+u_1,\\
+x_2^*=l_2f+u_2,\\
+x_3^*=l_3f+u_3.
+\end{cases}
+\end{equation}
+设随机变量$f$和$u_i$满足
+\[
+\E(f)=0,\quad\var(f)=1,\quad\E(u)=0,\quad
+\cov(u)=\Psi=\diag(\psi_1,\psi_2,\psi_3),\quad\cov(u,f)=0.
+\]
+\Note{$*$表示标准化处理，也可用$x_i-\bar x_i$进行中心化处理。$f$为隐变量或潜变量，需估计$l_1,l_2,l_3$。$\Psi$是对角矩阵，即三个特殊因子互不相关（协方差为0），$\psi_i$表示各自的方差。互不相关只是二阶矩条件；要说相互独立，还需附加条件，例如$(f,u)$服从联合正态分布。}
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}[>=Stealth,line width=.65pt,every node/.style={font=\small},every path/.style={draw=Muted}]
+\node[draw=Plum,ellipse,text=Plum,minimum width=29mm,minimum height=12mm] (f) at (0,2.5) {语言能力 $f$};
+\foreach \i/\lab/\x in {1/古典语/-3,2/法语/0,3/英语/3}{
+\node[draw=Ink,minimum width=23mm,minimum height=10mm] (x\i) at (\x,1) {\lab};
+\node[draw=Muted,ellipse,fill=PaperTint,minimum width=23mm,minimum height=10mm] (u\i) at (\x,-.5) {残差 $u_\i$};
+\draw[->,Plum] (f)--(x\i);\draw[->] (u\i)--(x\i);}
+\end{tikzpicture}
+\caption{单因子模型}
+\end{figure}\FloatBarrier
+\subsection{正交多因子模型}
+课本例5.8中，Lawley和Maxwell对220名男生的六门课成绩（盖尔语、英语、历史、算术、代数、几何）作因子分析，可能存在两个公因子$f_1$和$f_2$。
+\begin{equation}
+\begin{aligned}
+x_1^*&=l_{11}f_1+l_{12}f_2+u_1,\\
+x_2^*&=l_{21}f_1+l_{22}f_2+u_2,\\
+&\ \vdots\\
+x_6^*&=l_{61}f_1+l_{62}f_2+u_6.
+\end{aligned}
+\end{equation}
+\[
+\E(f)=0,\quad\cov(f)=I,\quad\E(u)=0,\quad
+\cov(u)=\Psi=\diag(\psi_1,\ldots,\psi_6),\quad\cov(u,f)=0.
+\]
+\Note{正交两因子模型的$\cov(f)$为$2\times2$单位阵。}
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}[>=Stealth,line width=.65pt,every node/.style={font=\small},x=2cm,y=1.15cm]
+\node[draw=Plum,text=Plum,ellipse,minimum width=13mm,minimum height=9mm] (f1) at (1.5,2.4) {$f_1$};\node[draw=Forest,text=Forest,ellipse,minimum width=13mm,minimum height=9mm] (f2) at (3.5,2.4) {$f_2$};
+\foreach \i in {1,...,6}{\node[draw=Ink,minimum width=13mm,minimum height=8mm] (x\i) at (\i-1,0) {$x_\i^*$};\node (u\i) at (\i-1,-.85) {$u_\i$};\draw[->,Plum!75] (f1)--(x\i);\draw[->,Forest!75,dashed] (f2)--(x\i);\draw[->,Muted] (u\i)--(x\i);}
+\end{tikzpicture}
+\caption{正交两因子模型}
+\end{figure}\FloatBarrier
+\subsection{矩阵表示}
+以正交两因子模型为例，$X=LF+u$，$L$称为因子负荷系数矩阵（loading matrix），有$p$行$k$列。
+\[
+X=\begin{bmatrix}x_1^*\\\vdots\\x_6^*\end{bmatrix},\quad
+L=\begin{bmatrix}l_{11}&l_{12}\\\vdots&\vdots\\l_{61}&l_{62}\end{bmatrix},\quad
+F=\begin{bmatrix}f_1\\f_2\end{bmatrix},\quad
+u=\begin{bmatrix}u_1\\\vdots\\u_6\end{bmatrix}.
+\]
+\[
+X=LF+u=
+\begin{bmatrix}l_{11}f_1+l_{12}f_2+u_1\\\vdots\\l_{61}f_1+l_{62}f_2+u_6\end{bmatrix}.
+\]
+\Note{重点是估计出$L$。}
+\subsection{负荷矩阵的作用}
+求出负荷系数矩阵，就可以写出因子模型表达式。
+\begin{equation}
+R=R^*+\Psi,\qquad R^*=LL\trans.
+\end{equation}
+约相关阵$R^*$（Reproduced Correlation Matrix）可还原指标间大部分相关性。
+
+标化变量$X$的协方差阵$\cov(X)$即相关阵$R$。在模型假设下，
+\begin{align*}
+\cov(X)&=\E\bigl[(LF+u)(LF+u)\trans\bigr]\\
+&=\E\bigl[LFF\trans L\trans+uu\trans+LFu\trans+uF\trans L\trans\bigr]\\
+&=L\E(FF\trans)L\trans+\E(uu\trans)+L\E(Fu\trans)+\E(uF\trans)L\trans\\
+&=LIL\trans+\Psi+0+0=LL\trans+\Psi.
+\end{align*}
+这是总体模型下的等式。样本中$L$、$\Psi$都要估计，只能近似成立：$R\approx\widehat L\widehat L\trans+\widehat\Psi$。残差阵$E=R-(\widehat L\widehat L\trans+\widehat\Psi)$衡量模型对相关结构的拟合程度。
+\Note{$R^*$为$6\times6$矩阵。其第一项对角元素为$l_{11}^2+l_{12}^2$。标化后的方差为1，故$1-(l_{11}^2+l_{12}^2)=\var(u_1)$。例2中，0.634为可被公因子解释的共性方差，0.366由特殊因子解释。}
+\section{因子模型的估计方法}
+估计方法包括主成分法（principal component，PC）、极大似然法（maximum likelihood，ML）、主因子法（principal factor）、迭代主因子法（iterated principal factor）等。
+\Needspace{7\baselineskip}
+\subsection{主成分法因子分析}
+\Example{例1\quad 三门语言成绩}
+从古典语、法语和英语三门成绩的相关矩阵出发，用主成分法作因子分析。
+\[
+X=\begin{bmatrix}x_1^*\\x_2^*\\x_3^*\end{bmatrix}
+=\begin{bmatrix}l_1\\l_2\\l_3\end{bmatrix}f+u,
+\qquad
+R=LL\trans+\Psi=
+\begin{bmatrix}l_1\\l_2\\l_3\end{bmatrix}\begin{bmatrix}l_1&l_2&l_3\end{bmatrix}
++\begin{bmatrix}\psi_1&0&0\\0&\psi_2&0\\0&0&\psi_3\end{bmatrix}.
+\]
+\[
+R=\begin{bmatrix}
+l_1^2+\psi_1&l_1l_2&l_1l_3\\
+l_1l_2&l_2^2+\psi_2&l_2l_3\\
+l_1l_3&l_2l_3&l_3^2+\psi_3
+\end{bmatrix}.
+\]
+\subsubsection{基本思想}
+根据矩阵谱分解，相关阵可以用特征值$\lambda_i$和特征向量$e_i$表达：
+\[
+R=\begin{bmatrix}1&r_{12}&r_{13}\\r_{12}&1&r_{23}\\r_{13}&r_{23}&1\end{bmatrix},\qquad
+A=\begin{bmatrix}
+\sqrt{\lambda_1}e_{11}&\sqrt{\lambda_2}e_{21}&\sqrt{\lambda_3}e_{31}\\
+\sqrt{\lambda_1}e_{12}&\sqrt{\lambda_2}e_{22}&\sqrt{\lambda_3}e_{32}\\
+\sqrt{\lambda_1}e_{13}&\sqrt{\lambda_2}e_{23}&\sqrt{\lambda_3}e_{33}
+\end{bmatrix}.
+\]
+\begin{equation}
+R=AA\trans=\sum_{i=1}^3\lambda_i e_i e_i\trans.
+\end{equation}
+视$A$为三因子模型的$L$矩阵，则$R=LL\trans+0$。本例仅一个特征值大于1，且贡献率为84\%，故只保留$A$的第一列，即为主成分解。
+\subsubsection{因子分析过程}
+\begin{code}
+\RFunction{eigen}(R)
+\RNumber{2.5219123} \ROperator{/} \RNumber{3}
+\end{code}
+\[
+(\lambda_1,\lambda_2,\lambda_3)=(2.5219123,\ 0.3341080,\ 0.1439797),
+\]
+\[
+\begin{bmatrix}e_1&e_2&e_3\end{bmatrix}=
+\begin{bmatrix}
+-0.5991079&-0.1148613&0.7923867\\
+-0.5729499&-0.6297937&-0.5244885\\
+-0.5592836&0.7682231&-0.3115046
+\end{bmatrix},\qquad\frac{\lambda_1}{3}=0.8406374.
+\]
+\[
+L=\begin{bmatrix}\sqrt{\lambda_1}e_{11}\\\sqrt{\lambda_1}e_{12}\\\sqrt{\lambda_1}e_{13}\end{bmatrix}
+=\begin{bmatrix}1.588\times0.599\\1.588\times0.573\\1.588\times0.559\end{bmatrix}
+=\begin{bmatrix}0.951\\0.910\\0.888\end{bmatrix}.
+\]
+\[
+x_1^*=0.951f+u_1,\qquad x_2^*=0.910f+u_2,\qquad x_3^*=0.888f+u_3.
+\]
+\paragraph{特殊方差与残差矩阵}
+主成分法令$\widehat\psi_i=1-\widehat l_i^{2}$，得$\widehat\Psi=\diag(0.095,\ 0.172,\ 0.211)$。残差矩阵为
+\[
+E=R-(\widehat L\widehat L\trans+\widehat\Psi)=
+\begin{bmatrix}0&-0.036&-0.065\\-0.036&0&-0.138\\-0.065&-0.138&0\end{bmatrix}.
+\]
+以法语与英语为例：观测相关系数为0.67，模型再现$\widehat l_2\widehat l_3=0.910\times0.888=0.808$，残差为$-0.138$。
+
+与Spearman例中的最大似然解（0.983、0.844、0.793）相比，主成分法的负荷（0.951、0.910、0.888）中后两个明显偏大。原因在于主成分法将对角线上的1全部作为待解释的方差，其中本应属于特殊因子的部分也归入了公因子。最大似然解的残差阵为0，而主成分法将法语与英语的相关高估了0.138。
+
+两者反映不同的方面。84\%的贡献率$\lambda_1/3$说明公因子解释了三个标准化变量总方差（对角线）的84\%。残差矩阵看的是非对角的相关系数被再现得怎样。主成分法人为使对角线残差为0，且往往高估负荷，本例三个非对角残差都为负，即一个因子高估了变量间的相关，法语与英语之间尤甚。贡献率高，并不保证相关结构拟合得好。
+\subsubsection{SPSS数据格式与语法}
+\begin{center}\begin{tabular}{llrrr}\toprule
+{\bfseries \texttt{ROWTYPE\_}}&{\bfseries \texttt{VARNAME\_}}&{\bfseries $x_1$}&{\bfseries $x_2$}&{\bfseries $x_3$}\\\midrule
+MEAN&&&&\\
+STDDEV&&&&\\
+N&&100.00&100.00&100.00\\
+CORR&$x_1$&1.00&0.83&0.78\\
+CORR&$x_2$&0.83&1.00&0.67\\
+CORR&$x_3$&0.78&0.67&1.00\\\bottomrule
+\end{tabular}\end{center}
+\begin{code}
+\RKeyword{FACTOR}
+ \ROperator{/}\RKeyword{matrix} \RKeyword{in} (cor \ROperator{=} \ROperator{*})
+ \ROperator{/}\RKeyword{ANALYSIS} x1 x2 x3
+ \ROperator{/}\RKeyword{EXTRACTION} \RKeyword{PC}
+ \ROperator{/}\RKeyword{ROTATION} \RKeyword{NOROTATE}
+\end{code}
+\Example{例2\quad 220名男生六门课成绩（课本例5.8）}
+要求：确定因子个数，并用主成分法作因子分析。
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{六门课成绩的相关矩阵}\label{tab:six}
+\begin{tabular}{lrrrrrr}\toprule
+ &{\bfseries  盖尔语 }&{\bfseries  英语 }&{\bfseries  历史 }&{\bfseries  算术 }&{\bfseries  代数 }&{\bfseries  几何}\\\midrule
+盖尔语 & 1.000 & 0.439 & 0.410 & 0.288 & 0.329 & 0.248\\
+英语 & 0.439 & 1.000 & 0.351 & 0.354 & 0.320 & 0.329\\
+历史 & 0.410 & 0.351 & 1.000 & 0.164 & 0.190 & 0.181\\
+算术 & 0.288 & 0.354 & 0.164 & 1.000 & 0.595 & 0.470\\
+代数 & 0.329 & 0.320 & 0.190 & 0.595 & 1.000 & 0.464\\
+几何 & 0.248 & 0.329 & 0.181 & 0.470 & 0.464 & 1.000\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\subsubsection{因子负荷系数矩阵的性质}
+\begin{enumerate}
+\item 行元素平方和即共性方差，说明变量主要受公因子还是特殊因子支配。
+\item 列元素平方和即因子贡献。
+\item 观测变量标准化（$\var X_i=1$）、因子方差为1且因子正交（$\cov(F)=I$）、$\cov(F,u)=0$时，负荷系数即因子与变量间的相关系数：
+\[
+\cov(X_i,F_j)=\cov\Bigl(\sum_{s=1}^kl_{is}F_s+u_i,\ F_j\Bigr)=l_{ij},\qquad
+\operatorname{corr}(X_i,F_j)=\frac{l_{ij}}{\sqrt{\var X_i\var F_j}}=l_{ij}.
+\]
+变量未标准化时，相关系数为$l_{ij}/\sigma_i$；因子斜交时，$\cov(X_i,F_j)$为$L\Phi$的元素（$\Phi$为因子相关阵），不再等于$l_{ij}$。
+\end{enumerate}
+本例相关阵的特征值为2.733、1.130、0.615、0.601、0.525、0.396，有两个大于1，按“特征值大于1”保留2个因子。这只是经验准则（Kaiser准则），还应结合碎石图、拟合检验、残差和因子能否解释来定。
+\subsection{最大似然法因子分析}
+\Example{例3\quad 血压与体型指标}
+测定742名正常人的收缩压（mmHg）、舒张压（mmHg）、体重（kg）、腰围（cm）和臀围（cm）五个指标。假设它们服从均数为$\mu$、协方差阵为$\Sigma$的多元正态分布，要求从相关阵出发用最大似然法作因子分析。原始数据为课程文件\texttt{exp2forMLE.sav}。
+\[
+X=LF+u,\qquad \Sigma=\cov(X)=LL\trans+\Psi,\qquad
+\Psi=\diag(\psi_1,\ldots,\psi_5).
+\]
+\[
+X\sim N_p(\mu,\Sigma),\qquad\mathcal L=\prod_{i=1}^n f(x_i),\qquad\log\mathcal L\ \text{含未知参数}.
+\]
+\Note{要求原变量符合多元正态分布。}
+\subsubsection{正态分布}
+设$x$服从均数为$\mu$、方差为$\sigma^2$的一元正态分布，则
+\[
+f(x)=\frac{1}{(2\pi)^{1/2}\sigma}\exp\left[-\frac12(x-\mu)(\sigma^2)^{-1}(x-\mu)\right]=\frac{1}{\sqrt{2\pi}\,\sigma}\exp\left[-\frac{(x-\mu)^2}{2\sigma^2}\right].
+\]
+设随机向量$X=(x_1,\ldots,x_p)\trans$服从$p$元正态分布，则
+\begin{equation}
+f(X)=\frac{1}{(2\pi)^{p/2}|\Sigma|^{1/2}}
+\exp\left[-\frac12(X-\mu)\trans\Sigma^{-1}(X-\mu)\right].
+\end{equation}
+$\mu$为均数向量，$\Sigma$为$x_1,\ldots,x_p$的协方差阵，$|\Sigma|$为其行列式值。
+\subsubsection{一元最大似然估计}
+\begin{code}
+data \ROperator{<-} \RFunction{rnorm}(\RNumber{200}, \RNumber{10}, \RNumber{2})
+nll1 \ROperator{<-} \RKeyword{function}(params) \{
+  mu \ROperator{<-} params[\RNumber{1}]
+  sigma \ROperator{<-} \RFunction{exp}(params[\RNumber{2}])          \RComment{\# 对数尺度参数化，保证sigma > 0}
+  \ROperator{-}\RFunction{sum}(\RFunction{dnorm}(data, mean \ROperator{=} mu, sd \ROperator{=} sigma, log \ROperator{=} \RKeyword{TRUE}))
+\}
+fit \ROperator{<-} \RFunction{optim}(par \ROperator{=} \RFunction{c}(\RNumber{8}, \RFunction{log}(\RNumber{3})), fn \ROperator{=} nll1, method \ROperator{=} \RString{"BFGS"})
+\RFunction{c}(mu \ROperator{=} fit\ROperator{\$}par[\RNumber{1}], sigma \ROperator{=} \RFunction{exp}(fit\ROperator{\$}par[\RNumber{2}]))
+\end{code}
+估计值与闭式解$\bar x$及$\sqrt{\sum(x_i-\bar x)^2/n}$一致（注意分母为$n$）。
+\subsubsection{多元最大似然估计}
+\begin{code}
+\RFunction{library}(MASS)                      \RComment{\# mvrnorm() 在 MASS 包中}
+\RFunction{library}(mvtnorm)                   \RComment{\# dmvnorm() 在 mvtnorm 包中}
+mu \ROperator{<-} \RFunction{c}(\RNumber{152}, \RNumber{38})
+sigma \ROperator{<-} \RFunction{matrix}(\RFunction{c}(\RNumber{70}, \RNumber{34}, \RNumber{34}, \RNumber{30}), \RNumber{2}, \RNumber{2})
+da \ROperator{<-} \RFunction{mvrnorm}(\RNumber{100}, mu, sigma)
+nll2 \ROperator{<-} \RKeyword{function}(params) \{
+  m \ROperator{<-} params[\RNumber{1}\ROperator{:}\RNumber{2}]                       \RComment{\# 均值向量}
+  U \ROperator{<-} \RFunction{matrix}(\RFunction{c}(\RFunction{exp}(params[\RNumber{3}]), \RNumber{0}, params[\RNumber{4}], \RFunction{exp}(params[\RNumber{5}])), \RNumber{2}, \RNumber{2})
+  S \ROperator{<-} \RFunction{crossprod}(U)                     \RComment{\# S = t(U) U，必为正定}
+  \ROperator{-}\RFunction{sum}(\RFunction{dmvnorm}(da, mean \ROperator{=} m, sigma \ROperator{=} S, log \ROperator{=} \RKeyword{TRUE}))
+\}
+U0 \ROperator{<-} \RFunction{chol}(\RFunction{cov}(da))                      \RComment{\# 以样本矩估计作初值}
+par0 \ROperator{<-} \RFunction{c}(\RFunction{colMeans}(da), \RFunction{log}(U0[\RNumber{1}, \RNumber{1}]), U0[\RNumber{1}, \RNumber{2}], \RFunction{log}(U0[\RNumber{2}, \RNumber{2}]))
+mle\_result \ROperator{<-} \RFunction{optim}(par \ROperator{=} par0, fn \ROperator{=} nll2, method \ROperator{=} \RString{"BFGS"})
+\end{code}
+二元正态有2个均值和3个协方差参数（$\sigma_{11},\sigma_{12},\sigma_{22}$），共5个未知参数。上面用Cholesky分解$\Sigma=U\trans U$参数化（$U$为上三角阵，对角元取指数），恰好5个自由参数，且对任何参数值$\Sigma$都正定，优化不会走到不合法的区域。
+
+设$x_1,\ldots,x_n$独立同分布于$N_p(\mu,\Sigma)$。不论$\Sigma$取何值，$\mu$的极大似然估计都是$\bar x$；代入后得到只含$\Sigma$的对数似然。记$S_n=\frac1n\sum_{i=1}^n(x_i-\bar x)(x_i-\bar x)\trans$（分母为$n$），则
+\begin{align*}
+\log\mathcal L(L,\Psi)
+&=C-\frac n2\log|\Sigma|-\frac12\tr(\Sigma^{-1}nS_n)\\
+&=C-\frac n2\left\{\log|LL\trans+\Psi|+\tr\bigl[(LL\trans+\Psi)^{-1}S_n\bigr]\right\}.
+\end{align*}
+不加约束时，最大值在$\Sigma=S_n$处取得。因子分析是在$\Sigma=LL\trans+\Psi$（$L$为$p\times k$阵，$\Psi$为正对角阵）的约束下求极大似然，没有闭式解，只能迭代。ML估计具有尺度不变性，从相关阵或协方差阵出发得到等价的解。
+\subsubsection{模型自由度}
+以$p$为变量数、$k$为因子数。$\Sigma$（或$R$）有$p(p+1)/2$个不同元素。模型参数为$L$的$pk$个元素和$\Psi$的$p$个对角元；因子方差已固定为1、因子间协方差固定为0（$\cov(F)=I$），不再计为参数。但对任意$k\times k$正交阵$T$，$L^*=LT$与$L$给出同一个$LL\trans$（见\ref{sec:rotation}节），模型无法区分；$k\times k$正交阵有$k(k-1)/2$个自由度，必须扣除（估计时常加“$L\trans\Psi^{-1}L$为对角阵”之类的约束来取定唯一解）。于是
+\begin{equation}
+df=\frac{p(p+1)}2-\left[pk+p-\frac{k(k-1)}2\right]=\frac{(p-k)^2-p-k}{2}.\label{eq:fa-df}
+\end{equation}
+展开即可验证两式相等：$\bigl[p^2+p-2pk-2p+k^2-k\bigr]/2=\bigl[(p-k)^2-p-k\bigr]/2$。六门课例中$p=6$、$k=2$：$df=21-(12+6-1)=4$。$df>0$时模型对$\Sigma$施加了实质约束，才能检验拟合优度。
+\Note{有的资料把参数数记为$p(k+1)+k$，即把因子方差也算作参数，且没有扣除旋转不确定性。按此计算六门课例得$df=21-20=1$，与上式的4矛盾，应以上式为准。}
+\subsubsection{拟合优度检验}
+最大似然法因子分析，当模型自由度大于0时，可进行拟合优度检验。
+\[
+H_0:\Sigma=LL\trans+\Psi,\qquad H_1:\Sigma\text{为其他正定矩阵},\qquad \alpha=0.05.
+\]
+\begin{equation}
+\chi^2=\left(n-1-\frac{2p+4k+5}{6}\right)\log\frac{|\widehat\Sigma|}{|S_n|}\ \dot\sim\ \chi^2(df),
+\end{equation}
+$df$按式\eqref{eq:fa-df}计算。从相关阵出发调用\texttt{factanal()}时，必须用\texttt{n.obs}给出样本量，否则无法计算检验统计量：
+\begin{code}
+r \ROperator{<-} \RFunction{c}(\RNumber{.439, .410, .288, .329, .248, .351, .354, .320, .329, .164, .190, .181, .595, .470, .464})
+R \ROperator{<-} \RFunction{diag}(\RNumber{6}); R[\RFunction{lower.tri}(R)] \ROperator{<-} r; R \ROperator{<-} R \ROperator{+} \RFunction{t}(R) \ROperator{-} \RFunction{diag}(\RNumber{6})   \RComment{\# 表\ref{tab:six}}
+out1 \ROperator{<-} \RFunction{factanal}(covmat \ROperator{=} R, factors \ROperator{=} \RNumber{2}, n.obs \ROperator{=} \RNumber{220}, rotation \ROperator{=} \RString{"none"})
+out1\ROperator{\$}STATISTIC; out1\ROperator{\$}dof; out1\ROperator{\$}PVAL
+\end{code}
+完整输出如下（直接采用varimax旋转，旋转不影响检验结果）：
+\par\noindent\begin{rcode}
+out2 <- factanal(covmat=R,factors=2,n.obs=220,rotation="varimax")
+print(out2, cutoff=0)
+\end{rcode}
+\begin{routput}
+Uniquenesses:
+  Gaelic  English  History    Arith  Algebra Geometry 
+   0.510    0.594    0.644    0.377    0.431    0.628 
+
+Loadings:
+         Factor1 Factor2
+Gaelic   0.235   0.659  
+English  0.323   0.549  
+History  0.088   0.590  
+Arith    0.771   0.170  
+Algebra  0.724   0.213  
+Geometry 0.572   0.210  
+
+               Factor1 Factor2
+SS loadings      1.612   1.203
+Proportion Var   0.269   0.201
+Cumulative Var   0.269   0.469
+
+Test of the hypothesis that 2 factors are sufficient.
+The chi square statistic is 2.33 on 4 degrees of freedom.
+The p-value is 0.674 
+\end{routput}
+输出各项的含义：\rinline{Uniquenesses}为特殊方差$\widehat\psi_i$，$1-\widehat\psi_i$为共性方差（如算术$1-0.377=0.623$）；\rinline{Loadings}为负荷矩阵；\rinline{SS loadings}为各列平方和，即因子贡献；\rinline{Proportion Var}为因子贡献除以变量数6。最后两行为拟合优度检验。
+
+仅取一个因子时，同一检验给出$\chi^2=52.0$，$df=9$，$P=4.5\times10^{-8}$，拒绝单因子模型。单一的一般能力因子不足以解释六门课程之间的相关，需区分数学与文史两个方面。此例说明拟合优度检验可辅助确定因子个数。
+
+六门课例：$\chi^2=2.33$，$df=4$，$P=0.674$。$P>0.05$表示在$\alpha=0.05$水平上未拒绝两因子的协方差结构，并不等于证明模型正确。样本量大时微小偏离也会被拒绝，样本量小时检验效能又低。本例残差相关的最大绝对值为0.030，各变量共性方差在0.36～0.62之间，两个因子（数学、文史）都能解释，几方面结合起来看，两因子模型是合适的。
+\subsection{主因子法与迭代主因子法}
+对例3的五项指标，从相关阵出发用主因子法作因子分析。
+\begin{enumerate}
+\item 估计共性方差初值。常用复相关系数平方$h_i^{2(0)}=1-1/r^{ii}$（$r^{ii}$为$R^{-1}$的第$i$个对角元，即$x_i$对其余变量回归的$R^2$），也可用该变量与其他变量相关系数绝对值的最大值。
+\item 用共性方差初值代替相关阵的主对角线，得到约相关阵$R_h=R-\widehat\Psi$。
+\item 对约相关阵求特征值和特征向量，取前$k$个，$\widehat L=(\sqrt{\lambda_1}e_1,\ldots,\sqrt{\lambda_k}e_k)$，即主因子解。
+\item 迭代：令$h_i^2=\sum_{j=1}^k\widehat l_{ij}^{2}$、$\widehat\psi_i=1-h_i^2$，回到第2步，直至相邻两次的$\max_i|h_i^{2(t+1)}-h_i^{2(t)}|$小于容许误差（如$10^{-4}$）或达到最大迭代次数。
+\end{enumerate}
+\Note{迭代主因子法收敛时，等价于使非对角残差平方和最小的（未加权）最小二乘解。最大似然法则在正态似然下按$1/\psi_i$加权。两者相似但不相同，都可能出现下述Heywood现象。}
+\subsubsection{Heywood现象}
+用最大似然法或主因子法作因子分析时，有时会出现共性方差$h_i^2\geqslant1$的情况，称为Heywood现象，给解释带来困难。应区分两种情形。
+\begin{itemize}
+\item $\widehat\psi_i=0$（$h_i^2=1$）：边界解，估计落在参数空间的边界上，该变量被公因子完全解释，相应的标准误和检验不可靠。R的\texttt{factanal()}把$\psi_i$限制为不小于0.005，遇到这种情形会停在下界。
+\item $\widehat\psi_i<0$（$h_i^2>1$）：方差为负，已在参数空间之外，是不容许解（improper solution），不能解释。
+\end{itemize}
+常见原因有样本量小、因子数取得过多或过少、模型设定不当、个别变量与其他变量高度共线等。
+\Note{课本72页。}
+\section{因子旋转}\label{sec:rotation}
+上述方法求出的是因子分析的初始解。有时初始因子不易解释，实际应用中常对负荷作正交变换，即旋转，以得到更简单的结构，便于因子解释。最常用的方法是方差最大（varimax）正交旋转。
+
+在保持因子间正交、各变量共性方差不变的条件下，使负荷结构尽量简单：每一列的平方负荷尽量两极分化，接近0或接近1。采用Kaiser标准化时，令$h_i^2=\sum_{j=1}^kl_{ij}^2$，规范化负荷为$\tilde l_{ij}=l_{ij}/h_i$，即把每行化为单位长度。varimax选择正交阵$T$，使各列规范化平方负荷的方差之和
+\[
+V=\sum_{j=1}^k\left[\frac1p\sum_{i=1}^p\tilde l_{ij}^{\,4}-\Bigl(\frac1p\sum_{i=1}^p\tilde l_{ij}^{\,2}\Bigr)^2\right]
+\]
+达到最大，求得$T$后再把各行乘回$h_i$。R的\texttt{varimax()}默认\texttt{normalize = TRUE}，即采用Kaiser标准化。从几何观点看，正交旋转保持原坐标轴的正交性，对其进行旋转。
+\Example{例5\quad 六门课成绩的方差最大正交旋转}
+利用220名男生六门课成绩的相关矩阵，用最大似然法作因子分析，并作方差最大正交旋转。
+\begin{code}
+out1 \ROperator{<-} \RFunction{factanal}(covmat \ROperator{=} R, factors \ROperator{=} \RNumber{2}, n.obs \ROperator{=} \RNumber{220}, rotation \ROperator{=} \RString{"none"})
+\RFunction{loadings}(out1)
+out2 \ROperator{<-} \RFunction{factanal}(covmat \ROperator{=} R, factors \ROperator{=} \RNumber{2}, n.obs \ROperator{=} \RNumber{220}, rotation \ROperator{=} \RString{"varimax"})
+\RFunction{print}(\RFunction{loadings}(out2), cutoff \ROperator{=} \RNumber{0})   \RComment{\# 默认 cutoff = 0.1 会隐藏小负荷}
+\end{code}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{旋转前后的负荷矩阵及方差贡献}\label{tab:rot}
+\begin{tabular}{lrrrr}\toprule
+{\bfseries 指标 }&{\bfseries  初始 $f_1$ }&{\bfseries  初始 $f_2$ }&{\bfseries  旋转 $f_1$ }&{\bfseries  旋转 $f_2$}\\\midrule
+盖尔语 & 0.553 & 0.429 & 0.235 & 0.659\\
+英语 & 0.568 & 0.288 & 0.323 & 0.549\\
+历史 & 0.392 & 0.450 & 0.088 & 0.590\\
+算术 & 0.740 & -0.273 & 0.771 & 0.170\\
+代数 & 0.724 & -0.211 & 0.724 & 0.213\\
+几何 & 0.595 & -0.132 & 0.572 & 0.210\\
+载荷平方和 & 2.209 & 0.606 & 1.612 & 1.203\\
+方差贡献比例 & 0.368 & 0.101 & 0.269 & 0.201\\
+累积贡献比例 & 0.368 & 0.469 & 0.269 & 0.469\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\Note{旋转后，$f_1$为数学因子，$f_2$为文史因子。表中历史在旋转后$f_1$上的负荷0.088，在默认输出中因\texttt{print()}的\texttt{cutoff = 0.1}而显示为空白，此处补出。}
+\begin{zm}[旋转不改变拟合]
+设$T$为正交阵，$L^*=LT$，则
+\[
+L^*L^{*\mathsf T}=LTT\trans L\trans=LL\trans.
+\]
+所以$\widehat\Sigma=LL\trans+\Psi$、残差阵、似然值和$\chi^2$检验都不变；$LL\trans$的对角元即共性方差$h_i^2$，也不变。
+\end{zm}
+各列平方和（因子贡献）则可以改变，即公因子解释的方差在因子间重新分配。本例总共性方差$2.209+0.606=1.612+1.203=2.815$保持不变，旋转后两个因子的贡献更均衡。
+
+\begin{sikao}[因子旋转的依据]
+同一资料经旋转后负荷矩阵发生变化，旋转前后的两组负荷均为同一模型的有效表示。
+
+因子不可观测，模型只规定了$LL\trans$，即变量间的相关结构，而未规定坐标轴的方向。这与描述平面上点的位置类似：采用东西--南北坐标或旋转$30^\circ$后的坐标均可，点的位置不变。本例旋转前，第一因子是与所有课程相关的一般因子，第二因子是文史与数学的对比；旋转后，两个因子分别对应数学课程与文史课程。两种表示的似然值、$\chi^2$与残差完全相同，选择的依据是何者更便于解释。
+
+因子的名称由分析者依据负荷确定，具有一定的主观性。因子分析的结论宜通过新资料或专业理论加以验证。
+\end{sikao}
+求varimax的正交阵$T$一般只能用迭代法。当$k=2$时，可以精确求出$2\times2$正交变换矩阵$T$：
+\[
+T_{\text{顺时针}}=\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix},\qquad
+T_{\text{逆时针}}=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
+\]
+\begin{code}
+out2\ROperator{\$}rotmat
+\RFunction{acos}(\RNumber{0.8420397}) \ROperator{/} pi \ROperator{*} \RNumber{180}
+\RFunction{asin}(\RNumber{0.5394156}) \ROperator{/} pi \ROperator{*} \RNumber{180}
+\end{code}
+\[
+T=\begin{bmatrix}0.8420397&0.5394156\\-0.5394156&0.8420397\end{bmatrix},\qquad
+\theta=32.64386^\circ\quad(\arccos),\quad32.64387^\circ\quad(\arcsin).
+\]
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=9.6cm,height=8cm,xmin=-1.05,xmax=1.05,ymin=-1.05,ymax=1.05,axis equal image,xlabel={$L_{\cdot1}$},ylabel={$L_{\cdot2}$},xtick={-1,-.5,0,.5,1},ytick={-1,-.5,0,.5,1}]\addplot[only marks,mark=*,mark size=2.6pt,Ink] coordinates {(0.553,0.429) (0.568,0.288) (0.392,0.45) (0.74,-0.273) (0.724,-0.211) (0.595,-0.132)};\addplot[Muted,line width=.6pt,->] coordinates {(-1,0) (1,0)};\addplot[Muted,line width=.6pt,->] coordinates {(0,-1) (0,1)};\addplot[Brick,densely dashed,line width=1pt] coordinates {(-1,.64060594) (1,-.64060594)};\addplot[Forest,densely dashed,line width=1pt] coordinates {(-.64060594,-1) (.64060594,1)};\end{axis}\end{tikzpicture}
+\caption{六门课因子负荷与正交旋转（$32.64386^\circ$）}
+\end{figure}\FloatBarrier
+
+\section{因子得分}
+公共因子的估计，即因子得分，是对不可观测、抽象但有实际意义的随机变量的估计。
+\subsection{估计方法}
+\paragraph{Bartlett法} 给定$L$和$\Psi$，把个体的因子值$f$当作待估参数，使加权残差平方和
+\[
+Q(f)=(x^*-Lf)\trans\Psi^{-1}(x^*-Lf)
+\]
+最小，权重为特殊方差的倒数。一阶条件为$\partial Q/\partial f=-2L\trans\Psi^{-1}(x^*-Lf)=0$，解得
+\begin{equation}
+\widehat f_b=(L\trans\Psi^{-1}L)^{-1}L\trans\Psi^{-1}x^*.
+\end{equation}
+这就是以$\Psi^{-1}$为权的加权最小二乘回归。若进一步假定$x^*\mid f\sim N(Lf,\Psi)$，$Q(f)$就是$-2\times$对数似然（相差常数），$\widehat f_b$也是$f$的极大似然估计。这一“极大似然”解释仅限于给定$L$、$\Psi$的正态条件模型。它条件无偏：$\E(\widehat f_b\mid f)=f$。
+\paragraph{Thomson法（回归法）} 把$f$当作随机变量，$\E f=0$，$\cov(f)=I$，$\cov(f,x^*)=L\trans$，$\cov(x^*)=\Sigma=LL\trans+\Psi$。使$\E\|f-Ax^*\|^2$最小的线性预测为$A=\cov(f,x^*)\cov(x^*)^{-1}=L\trans\Sigma^{-1}$，即
+\begin{equation}
+\widehat f_t=L\trans\Sigma^{-1}x^*=(I+L\trans\Psi^{-1}L)^{-1}L\trans\Psi^{-1}x^*.
+\end{equation}
+\begin{zm}[两种写法相等]
+$(I+L\trans\Psi^{-1}L)L\trans=L\trans+L\trans\Psi^{-1}LL\trans=L\trans\Psi^{-1}(\Psi+LL\trans)=L\trans\Psi^{-1}\Sigma$。左乘$(I+L\trans\Psi^{-1}L)^{-1}$、右乘$\Sigma^{-1}$即得。
+\end{zm}
+$\widehat f_t$是最优线性预测；若$(f,x^*)$服从联合正态分布，它就是条件期望$\E(f\mid x^*)$，预测误差的协方差阵为$\cov(f-\widehat f_t)=I-L\trans\Sigma^{-1}L$。Thomson得分向0收缩，条件有偏，但均方误差比Bartlett得分小；Bartlett得分条件无偏，方差较大。
+\Note{可以使用旋转前或旋转后的因子。无论哪种方法，因子得分都只是预测值，含有预测误差，并不是个体真实的因子值；实际计算时$L$、$\Psi$又用估计值代替。把得分当作无误差的变量再放进回归等分析，会低估不确定性。}
+计算个体得分需要每个人的标准化观测值$x^*$。只有相关矩阵时，只能算出得分系数$L\trans R^{-1}$，算不出个体得分；R中\texttt{factanal(x = 原始数据, scores = "regression")}可以给出得分，\texttt{factanal(covmat = R)}则不能。
+\Example{例6\quad 计算因子得分}
+测定742名正常人的收缩压、舒张压、体重、腰围和臀围五个指标，从相关阵出发用主成分法作因子分析，作方差最大正交旋转，并计算回归法因子得分。原始数据为课程文件\texttt{exp2forMLE.sav}（742行，变量\texttt{ssy}、\texttt{szy}、\texttt{tz}、\texttt{yw}、\texttt{tw}），例3也用这份数据。
+\begin{code}
+da \ROperator{<-} foreign\ROperator{::}\RFunction{read.spss}(\RString{"exp2forMLE.sav"}, to.data.frame \ROperator{=} \RKeyword{TRUE})
+R \ROperator{<-} \RFunction{cor}(da); e \ROperator{<-} \RFunction{eigen}(R)                \RComment{\# 特征值 3.09, 1.25, 0.34, ...}
+L \ROperator{<-} e\ROperator{\$}vectors[, \RNumber{1}\ROperator{:}\RNumber{2}] \ROperator{\%*\%} \RFunction{diag}(\RFunction{sqrt}(e\ROperator{\$}values[\RNumber{1}\ROperator{:}\RNumber{2}]))   \RComment{\# 主成分解}
+L \ROperator{<-} \RFunction{unclass}(\RFunction{varimax}(L)\ROperator{\$}loadings)          \RComment{\# 方差最大旋转}
+F \ROperator{<-} \RFunction{scale}(da) \ROperator{\%*\%} \RFunction{solve}(R) \ROperator{\%*\%} L         \RComment{\# 回归法：每行为 t(L) R^\{-1\} x*}
+\end{code}
+旋转后第一因子在体重、腰围、臀围上的负荷为0.93～0.95，为体型因子；第二因子在收缩压、舒张压上的负荷约0.88～0.89，为血压因子。
+
+\begin{chaptersummary}{本章小结：因子分析}
+研究目的&用少数不可观测的公因子解释多个观测变量之间的相关（协方差结构），并给公因子以专业解释\\
+统计模型&$x^*=Lf+u$，$\cov(f)=I$，$\cov(u)=\Psi$为对角阵，$\cov(f,u)=0$；于是$\Sigma=LL\trans+\Psi$\\
+主要条件&变量间有相关且存在共同因子结构（KMO、Bartlett检验作参考）；ML法及其拟合检验要求多元正态、样本量足够；$df>0$模型才可检验\\
+结果解释&负荷（标准化、正交时即相关系数）、共性方差$h_i^2$、因子贡献、残差相关阵；旋转只重新分配贡献，不改变拟合\\
+常见误用&把特殊因子“互不相关”说成“独立”；只凭特征值大于1或$P>0.05$定因子数；忽视Heywood解；把84\%之类的贡献率当作相关结构拟合良好；以为只有相关矩阵也能算个体得分；把得分当作无误差的真值\\
+\end{chaptersummary}
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 标准化变量的正交因子模型中，某变量在两个因子上的负荷为0.6和0.5，计算其共性方差与特殊方差。\\
+\textit{答：共性方差$0.36+0.25=0.61$，特殊方差$0.39$。}
+\item $p=6$个变量取$k=2$个因子，计算最大似然因子分析拟合优度检验的自由度。\\
+\textit{答：$[(6-2)^2-6-2]/2=4$。}
+\item 列出因子旋转前后保持不变的量与发生变化的量。\\
+\textit{答：共性方差、$LL\trans$、残差阵、似然值与$\chi^2$检验不变；负荷矩阵和各因子贡献（列平方和）会变，总贡献不变。}
+\item 主成分法因子分析中第一因子的贡献率为84\%，说明这一数值能否用于判断单因子模型的拟合程度。\\
+\textit{答：不能。贡献率反映对角线上的方差，拟合程度需看非对角线的残差相关是否足够小；采用最大似然法时还可作$\chi^2$检验。}
+\item 比较主成分分析与因子分析的根本区别。\\
+\textit{答：主成分分析是变量的线性变换，不设模型；因子分析是统计模型，假定公因子导致变量相关，并单独设特殊因子（误差）。}
+\end{enumerate}
+\end{fuxi}

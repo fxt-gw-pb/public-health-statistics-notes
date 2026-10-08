@@ -1,0 +1,757 @@
+\ExerciseChapter{对数线性模型、泊松回归与负二项回归}
+
+\label{chapter:4}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\section{作业题}
+
+\subsection{数据分析题}
+
+\Question{H4-1}{新生儿情况的四维列联表}
+
+现有一批孕妇和新生儿资料，包含四个变量：吸烟与否、怀孕前是否服用某种避孕药、新生儿情况正常与否、孕妇年龄。分析吸烟和服用某种避孕药与是否有新生儿异常之间的关系。\textbf{共6分。}
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.22}\begin{tabular}{@{}lllrr@{}}
+\toprule
+年龄 & 吸烟 & 孕前用药 & 正常 & 不正常 \\
+\midrule
+
+\(\le29\) & 否 & 否 & 1014 & 178 \\
+\(\le29\) & 否 & 是 & 1051 & 210 \\
+\(\le29\) & 是 & 否 & 330 & 67 \\
+\(\le29\) & 是 & 是 & 204 & 58 \\
+30--34 & 否 & 否 & 489 & 85 \\
+30--34 & 否 & 是 & 582 & 144 \\
+30--34 & 是 & 否 & 180 & 42 \\
+30--34 & 是 & 是 & 125 & 31 \\
+\(\ge35\) & 否 & 否 & 119 & 31 \\
+\(\ge35\) & 否 & 是 & 158 & 53 \\
+\(\ge35\) & 是 & 否 & 35 & 10 \\
+\(\ge35\) & 是 & 是 & 35 & 20 \\
+\bottomrule\end{tabular}\end{center}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  请采用对数线性模型分析该资料，并探讨变量之间的关系。（2分）
+\item
+  请问可否采用Logistic回归方法分析该资料并回答所提问题？（2分）
+\item
+  对数线性模型和Logistic回归分析方法在解决此问题上有何异同？（2分）
+\end{enumerate}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{H4-2}{就诊次数的泊松回归}
+
+1977/1978年澳大利亚健康调查共收集了5190人的就诊次数数据（DoctorVisits），可在R中通过AER包获取。为使数据满足泊松回归要求的等离散条件，原题要求将就诊次数为0的观察行删除，最终得到1049人的数据df.ps2。数据获取、调整命令如下：
+
+\begin{verbatim}
+install.packages("AER")
+library(AER)
+data("DoctorVisits")
+help(DoctorVisits)
+df.ps2 <- DoctorVisits[which(DoctorVisits$visits > 0), ]
+\end{verbatim}
+
+原题数据样例字段：visits、gender、age、income、illness、reduced、health、private、freepoor、freerepat、nchronic、lchronic。
+
+\textbf{问题（2分）：} 请构建泊松回归模型，使用一个或多个解释变量来解释就诊次数的差异，并对模型结果进行解读。
+
+本题保留原题的删零指令；方法适用性在章末说明。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{H4-3}{校园暴力犯罪与地区差异}
+
+现有10个高等教育机构（学院或大学）的所在地区、学生数量及暴力犯罪数量等信息。\textbf{共2分。}
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.22}\begin{tabular}{@{}rlrrrl@{}}
+\toprule
+Enrollment & type & nv & nvrate & enroll1000 & region \\
+\midrule
+
+5590 & U & 30 & 5.37 & 5.59 & SE \\
+1040 & C & 0 & 0 & 1.04 & SE \\
+35747 & U & 23 & 0.643 & 35.7 & W \\
+28176 & C & 1 & 0.0355 & 28.2 & W \\
+10568 & U & 1 & 0.0946 & 10.6 & SW \\
+3127 & U & 0 & 0 & 3.13 & SW \\
+20675 & U & 7 & 0.339 & 20.7 & W \\
+12548 & C & 0 & 0 & 12.5 & W \\
+30063 & U & 19 & 0.632 & 30.1 & C \\
+4429 & C & 4 & 0.903 & 4.43 & C \\
+\bottomrule\end{tabular}\end{center}
+
+Enrollment为在校人数；type为college(C)或university(U)；nv为给定年份暴力犯罪次数；nvrate为每1000学生犯罪次数；enroll1000为千人单位在校数；region：C=Central，MW=Midwest，NE=Northeast，SE=Southeast，SW=Southwest，W=West。
+
+\textbf{问题：} 请构建负二项回归模型，探究在控制学校类型差异的情况下，校园暴力犯罪是否存在地区差异。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\section{往年题}
+
+\subsection{单项选择题}
+
+\Question{R24-M14}{饱和模型的残差自由度}
+
+对没有结构零的完整 \(2\times2\times3\) 列联表拟合饱和对数线性模型。其残差自由度为多少？
+
+
+\begin{choices}
+
+\item 0。
+
+\item 1。
+
+\item 5。
+
+\item 6。
+
+\item 11。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{R24-M15}{发生率模型的偏移量}
+
+对事件次数 \(Y_i\) 建立对数连接的泊松回归，各观察单位的正暴露人时为 \(T_i\)。若目标是比较发生率，应如何处理暴露人时？
+
+
+\begin{choices}
+
+\item 将 \(T_i\) 作为结局。
+
+\item 将 \(\log T_i\) 作为系数固定为1的offset。
+
+\item 将 \(T_i\) 作为系数固定为0的offset。
+
+\item 将所有观察单位的 \(T_i\) 都改为1。
+
+\item 删除暴露人时不同的所有观察单位。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{R24-M7}{对数线性模型的变量}
+
+关于多维列联表的对数线性模型，下列说法错误的是：
+
+
+\begin{choices}
+
+\item 模型的自变量是每个格子的理论频数。
+
+\item 模型可用格子的观测计数作为响应。
+
+\item 对数连接作用于格子的期望频数。
+
+\item 分类变量的主效应和交互项可用于描述联合关联结构。
+
+\item 在适当抽样设定下，可以用泊松分布对格子计数建模。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{R24-M8}{列联表的折叠条件}
+
+对于对数线性模型的说法，错误的是：
+
+
+\begin{choices}
+
+\item 如果变量间的交互效应均不为0，则合并某个变量构建压缩的列联表将歪曲变量间的关系。
+
+\item 当变量1独立于其他所有变量时（\(u_{13}=u_{12}=0\)），则可以完全删除变量1来构建列联表。
+
+\item 当 \(u_{12}=u_{123}=0\) 时，可以把变量1的数据合并，得到变量2和变量3的二维列联表。
+
+\item 当 \(u_{12}=u_{123}=0\) 时，可以把变量2的数据合并，得到变量1和变量3的二维列联表。
+
+\item 当 \(u_{12}=u_{123}=0\) 时，可以把变量3的数据合并，得到变量1和变量2的二维列联表。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{R24-M9}{泊松与负二项分布}
+
+关于泊松分布与常用NB2参数化的负二项分布，下列哪项正确？设条件均值为 \(\mu\)，负二项分布的形状参数为 \(\theta>0\)。
+
+
+\begin{choices}
+
+\item 二者都只能用于均值严格小于1的计数。
+
+\item 负二项分布允许响应取任意负整数。
+
+\item 泊松条件方差为 \(\mu\)；NB2条件方差为 \(\mu+\mu^2/\theta\)。
+
+\item 泊松分布的条件方差总是大于条件均值。
+
+\item 无论 \(\theta\) 如何变化，负二项分布都不可能趋近泊松分布。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{名词解释}
+
+\Question{Z-D7}{饱和模型（Saturated model）}
+
+名词解释：饱和模型（Saturated model）。
+
+
+\worklines{1}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{Z-D8}{过离散（Overdispersion）}
+
+名词解释：过离散（Overdispersion）。
+
+
+\worklines{1}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{Z-D9}{偏移量（Offset）}
+
+名词解释：偏移量（Offset）。
+
+
+\worklines{1}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{简答题}
+
+\Question{E19-1}{三类模型的区别与参数含义}
+
+比较Logistic回归模型、Poisson回归模型、对数线性模型的区别，并说明其参数的意义。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E20-1}{Logistic与对数线性模型的异同}
+
+比较Logistic回归模型与对数线性模型的异同，并说明其参数的意义。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{Z-S7}{对数线性模型与Logistic}
+
+简述对数线性模型与Logistic回归模型的主要区别。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{Z-S9}{泊松过离散及处理}
+
+什么是泊松回归中的``过离散''？出现该情况应如何处理？
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{Z-S10}{饱和模型与拟合检验}
+
+简述对数线性模型中``饱和模型''的含义及其在拟合优度检验中的作用。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{计算与综合分析题}
+
+\Question{R24-C3}{莱姆病、精神疾病与自杀行为}
+
+探究莱姆病与精神疾病及自杀行为之间的关联，报告Model 1和Fully Model的IRR（incidence rate ratio）。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  研究采用了何种广义线性模型？基本假设是什么？（4分）
+\item
+  解释表格结果。（6分）
+\end{enumerate}
+
+\textbf{原稿未附方法段、结果表与数值。}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{R24-C4}{性别、年龄与饮酒年限：能否合并}
+
+原稿以男性、女性两个表分别展示青年、中年、老年和合并层中饮酒年限A/B与正常血压/高血压的频数。两张表结构相同，原稿以``频数1---4''占位，未记实际数值：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.22}\begin{tabular}{@{}lllll@{}}
+\toprule
+性别 & 年龄层 & A：正常/高血压 & B：正常/高血压 & 检验 \\
+\midrule
+
+男 & 青年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P<0.001\) \\
+男 & 中年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P>0.05\) \\
+男 & 老年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P>0.05\) \\
+男 & 合并 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P<0.001\) \\
+女 & 青年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P<0.001\) \\
+女 & 中年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P>0.05\) \\
+女 & 老年 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P>0.05\) \\
+女 & 合并 & 频数1 / 频数2 & 频数3 / 频数4 & 卡方，\(P<0.001\) \\
+\bottomrule\end{tabular}\end{center}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  根据表中结果，能否合并不同性别、不同年龄组的资料来探究饮酒年限与高血压间的关系？为什么？（3分）
+\item
+  可以用什么统计分析方法来判断是否可以合并？如何根据分析结果判断？（7分）
+\end{enumerate}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+
+\clearpage\section{补充练习}
+
+\begin{keyidea}[说明]以下为配合正文新编的补充练习，按题型编排。教学设定的数据不代表真实研究结果；解析见章末。\end{keyidea}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{单项选择题}
+
+\Question{P4-M1}{从条件独立写出层次模型}
+
+对三个分类变量\(A,B,C\)建立层次对数线性模型。只要求\(A\)与\(B\)在给定\(C\)时条件独立，同时允许\(A\)与\(C\)、\(B\)与\(C\)有关。满足此要求的最一般模型应保留哪些最高阶项？各选项均默认包含所列项的全部低阶项及截距。
+
+\begin{choices}
+
+\item \(A,B,C\)。
+
+\item \(AB,AC\)。
+
+\item \(AB,BC\)。
+
+\item \(AC,BC\)。
+
+\item \(AB,AC,BC\)。
+
+\end{choices}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{名词解释}
+
+\Question{P4-D1}{层次模型}
+
+名词解释：层次模型（Hierarchical model）。以对数线性模型保留\(ABC\)交互项为例说明。
+
+\worklines{1}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{简答题}
+
+\Question{P4-S1}{发热次数改为是否发热会改变什么}
+
+沿用正文“儿童接种疫苗后1个月发热次数”的研究。现有各儿童的发热次数及年龄组、剂量、基础疾病信息。研究者提出：“把所有正次数改为1、零次记为0，再做Logistic回归，与泊松或负二项回归得到的结论和效应指标相同；若原计数过离散，删去零次儿童即可解决。”请分两点评析。
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{计算与综合分析题}
+
+\Question{P4-C1}{对数线性模型的自由度与筛选}
+
+正文宫颈癌病例资料中，\(A\)为肤色（2类）、\(B\)为家庭收入（3类）、\(C\)为分娩次数（3类）。考虑完整\(2\times3\times3\)列联表，无结构零，使用Poisson抽样模型，且常规卡方近似可用。下表为正文列出的部分模型，均含相应低阶项。
+\begin{center}\begin{tabular}{llr}\toprule
+模型 & 最高阶项 & 残差偏差\(D\)\\\midrule
+\(M_0\) & \(A,B,C\) & 81.95\\
+\(M_1\) & \(AC,BC\) & 17.62\\
+\(M_2\) & \(AB,AC,BC\) & 3.22\\
+\(M_S\) & \(ABC\) & 0\\\bottomrule
+\end{tabular}\end{center}
+\begin{enumerate}
+\item 计算各模型的自由参数个数和残差自由度。
+\item 以\(M_S\)为参照，\(M_2\)有无明显失拟？\(M_1\)能否代替\(M_2\)？写出统计量、自由度及结论。
+\item 说明选择\(M_2\)的含义。是否意味着任意合并一个变量都不影响其余变量的关系？
+\end{enumerate}
+可用\(\chi^2_{0.05,2}=5.991\)、\(\chi^2_{0.05,4}=9.488\)。
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{数据分析题}
+
+\Question{P4-A1}{人时、发生率与offset的单位}
+
+仿照正文职业暴露研究，某教学随访资料汇总如下。设不同观察单位相互独立，暂采用等离散Poisson模型。
+\begin{center}\begin{tabular}{llrr}\toprule
+年龄层 & 暴露 & 死亡数\(Y\) & 人年\(T\)\\\midrule
+较年轻（\(A=0\)） & 未暴露（\(E=0\)） & 10 & 1000\\
+较年轻（\(A=0\)） & 暴露（\(E=1\)） & 40 & 2000\\
+较年长（\(A=1\)） & 未暴露（\(E=0\)） & 40 & 2000\\
+较年长（\(A=1\)） & 暴露（\(E=1\)） & 20 & 500\\\bottomrule
+\end{tabular}\end{center}
+\begin{enumerate}
+\item 计算各组每千人年死亡率，并写出含年龄、暴露主效应的模型及R拟合语句。
+\item 本表恰能由主效应模型精确拟合。求截距、暴露和年龄系数；说明暴露指数系数的意义。
+\item 对较年长暴露组的300人年，模型预计有多少例死亡？若将offset的人时单位改为“千人年”，哪些系数改变？
+\end{enumerate}
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+\par\addvspace{8pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{文献分析题}
+
+\Question{P4-L1}{负二项模型中的疫苗有效性}
+
+正文的以色列疫苗研究使用负二项回归，调整年龄、性别、日历周，并用各层实际观察人日处理暴露时间差异。疫苗有效性按\(VE=(1-IRR)\times100\%\)计算。
+
+沿用这一方法，\textbf{另作教学设定}：完全接种相对未接种者的某结局调整后\(IRR=0.20\)，95\% CI为0.12--0.33；资料存在明显过离散。
+\begin{enumerate}
+\item 说明选用负二项模型而非普通Poisson模型的理由，写出含人日offset的均值方程。
+\item 计算\(VE\)及其95\%置信区间，说明为何上下限顺序需改变。
+\item 能否将结果表述为“每100名接种者必有80人被保护”？若把人日全部视为相同，会遗漏什么？
+\end{enumerate}
+
+\worklines{3}
+
+\end{minipage}\par\vspace{5pt}
+
+
+\clearpage\section{习题解析}
+
+\begin{keyidea}[核对方式]按题号核对。缺失选项的补写及新编练习均在对应解析末尾说明。\end{keyidea}
+
+\subsection{作业题}
+
+\Answer{H4-1}{新生儿情况的四维列联表}
+
+\textbf{（1）} 令1=新生儿情况、2=孕前用药、3=吸烟、4=年龄，格子均数 \(m_{hijk}\)。四维饱和模型为 \[\log m=u+\sum_a u_a+\sum_{a<b}u_{ab}+\sum_{a<b<c}u_{abc}+u_{1234},\] 各项分别表示主效应、两变量、三变量和四变量交互；下标还包含对应水平，估计时需要识别约束。用层次模型逐步筛选并检验拟合。
+
+\begin{longtable}[]{@{}lrrr@{}}
+\toprule\noalign{}
+模型 & 残差df & \(G^2\) & \(P\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+仅主效应 & 18 & 107.051 & \(<0.001\) \\
+所有两变量交互 & 9 & 6.884 & 0.649 \\
+所有三变量交互 & 2 & 2.299 & 0.317 \\
+保留12、13、14、23、24 & 11 & 8.548 & 0.664 \\
+\end{longtable}
+
+评分稿的选择过程：从独立模型依次增加23、14、24、12、13，所得偏差依次约57.045、39.440、24.229、15.602、8.548；残差自由度依次17、15、13、12、11。最后加入34的改善为 \(\Delta G^2\approx1.664\)、\(\Delta df=2\)、\(P\approx0.435\)，无明确改善。原稿此处自由度写1有误。
+
+所选模型保留新生儿与用药、吸烟、年龄的关联，以及用药与吸烟、年龄的关联；未保留吸烟---年龄的两变量项。Pearson残差约在−0.82至1.47之间，未见明显异常格子，但残差小不能证明模型唯一最优。\textbf{未保留某交互项不自动允许任意折叠列联表，合并必须检查相应可折叠条件。}
+
+\textbf{（2）} 令异常为1、正常为0，用药、吸烟为0/1，以年龄\(\le29\)为参照，\(A_2=I(30\text{–}34)\)、\(A_3=I(\ge35)\)： \[\operatorname{logit}p=-1.791+0.233drug+0.227smoke+0.095A_2+0.489A_3.\] 用药OR=1.262（1.093--1.457），吸烟OR=1.254（1.061--1.483），年龄\(\ge35\) OR=1.631（1.293--2.058），均有统计学证据；30--34岁OR=1.100（0.940--1.286），证据不足。解释为控制其他因素后的异常优势比，不是概率比。
+
+\textbf{（3）} 都可用GLM框架与极大似然研究分类资料关联。对数线性模型拟合格子计数的均数、用log连接，研究分类变量的联合关联；Logistic模型明确二分类结局、用logit连接，估计条件OR，自变量亦可连续。二者在相容的模型设定下可对应，但不能把所有对数线性主效应都解释成OR。关于稀疏格子的渐近检验要谨慎；``80\%期望频数大于5''不是一切建模情境的必要条件。
+
+
+\Answer{H4-2}{就诊次数的泊松回归}
+
+\textbf{原评分口径。} 删零后1049条记录，边际方差/均数比0.921，过离散检验 \(P=0.968\)；用原题筛选结果： \[\log\mu_i=0.340-0.177income_i+0.056reduced_i-0.092I(freerepat_i=\mathrm{yes}).\] 其中 \(\mu_i=E(visits_i\mid X_i)\)，不能写成 \(\operatorname{logit}(visits)\)，也不能把左侧直接写成随机观测值的对数。
+
+\begin{longtable}[]{@{}lrrrr@{}}
+\toprule\noalign{}
+变量 & 系数 & SE & \(P\) & \(e^\beta\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+income & −0.1768 & 0.0807 & 0.0284 & 0.8379 \\
+reduced & 0.0557 & 0.0045 & \(<0.001\) & 1.0573 \\
+freerepat=yes & −0.0922 & 0.0595 & 0.1212 & 0.9119 \\
+\end{longtable}
+
+其他条件相同时，income每增加数据所用1万货币单位（AER文档称dollars），预期两周就诊次数乘0.838；减少活动天数每增加1天，预期就诊次数乘1.057。freerepat点估计低约8.8\%，但证据不足。原材料把 \(e^{0.056}\) 写成1.507，应为约1.058（精确系数给1.0573）。
+
+\textbf{方法校正。} 删除0不是让一般计数资料满足泊松假定的标准方法：选择后分布为零截断分布，且把``是否就诊''的信息丢掉。等离散针对给定协变量后的条件均值和方差，不能只用原始边际方差/均数判定。若分析原5190人，可考虑完整计数模型；若仅分析正计数者，应考虑零截断泊松/负二项等与抽样机制相符的方法。课程复现与方法建议须分别报告。
+
+
+\Answer{H4-3}{校园暴力犯罪与地区差异}
+
+计数结局为nv，暴露机会为enroll1000： \[Y_i\sim\mathrm{NB}(\mu_i,\theta),\qquad\log\mu_i=\log(enroll1000_i)+\beta_0+\beta_U I(U)+\sum_r\beta_rI(region=r).\] 以college、Central为参照，offset系数固定为1。正确R语法：
+
+\begin{verbatim}
+fit <- MASS::glm.nb(
+  nv ~ type + region + offset(log(enroll1000)), data = campus)
+\end{verbatim}
+
+\textbf{原评分数值（仅供核对原稿）。} 原材料给出截距0.511、\(U=2.567\)、\(\mathrm{SE}=0.318\)、\(\mathrm{SW}=-3.472\)、\(W=-0.397\)，对应 \(U\) 的13.026、SW 的0.031。原材料的调用和输出显示 \texttt{weights\ =\ offset(log(enroll1000))}，实际把offset误传给权重；这些数值不可作为正确率模型的答案。原材料还误对Enrollment作``犯罪次数''的离散检验，并在文字中把SW写为9.7\%。
+
+\textbf{整理者复算。} 按公式正确加入offset，普通 \texttt{glm.nb} 迭代趋近泊松边界并发出收敛警告；固定离散参数后优化系数的剖面核对也显示似然趋向 \(\theta\to\infty\) 的泊松边界，不能把原默认迭代当稳定的有限负二项估计。应检视剖面似然、不同初值、收敛状态，以及极小样本的推断稳定性；地区的整体效应应以含地区和不含地区的嵌套模型作联合检验。按R默认迭代的边界解，系数约−2.037、1.743、1.942、−2.325、−0.423，仅作为故障复现，\textbf{不据此作最终显著性结论}。
+
+原始10行数据与可运行代码均已附上。本题以正确模型形式、offset和结果核验方法作为可靠解答；原评分的系数已明确标出算法错误来源。
+
+\textbf{边界模型的条件性结果。} 泊松极限的系数为−2.0373、1.7428、1.9426、−2.3251、−0.4230，对应同类型学校SE/C约6.98、SW/C约0.098、W/C约0.655。该泊松模型中地区联合似然比 \(G^2=85.18,df=3,P<0.001\)，提示地区差异，但残差偏差17.51/5自由度、样本仅10个机构，不能将此当作通过诊断的稳健负二项推断。答题应说明这些条件和小样本限制。
+
+
+\subsection{往年题}
+
+\Answer{R24-M14}{饱和模型的残差自由度}
+
+\textbf{答案：A。}
+
+饱和模型能逐格拟合全部12格计数，残差自由度为0。固定总数约束会同时改变独立观测信息和参数自由度，不改变此残差自由度。
+
+\textbf{补写说明。} 原稿第14题整题缺失；本题为新编练习，并非恢复的往年原题。
+
+
+\Answer{R24-M15}{发生率模型的偏移量}
+
+\textbf{答案：B。}
+
+\(\log E(Y_i\mid X_i)=\log T_i+X_i^T\beta\)，等价于 \(\log\{E(Y_i\mid X_i)/T_i\}=X_i^T\beta\)。因此指数斜率对应发生率比。
+
+\textbf{补写说明。} 原稿第15题整题缺失；本题为新编练习，并非恢复的往年原题。
+
+
+\Answer{R24-M7}{对数线性模型的变量}
+
+\textbf{答案：A。}
+
+A项错误。响应是各格观测计数，模型拟合其期望频数 \(m\)，log连接作用于 \(m\)；解释项来自分类变量的主效应及交互。不能说理论频数是自变量。
+
+\textbf{补写说明。} 原稿仅记``自变量是每个格子的理论频数''，保留为A；提问句及B---E为补写。
+
+
+\Answer{R24-M8}{列联表的折叠条件}
+
+\textbf{答案：E。}
+
+按回忆题的通常意图选 \textbf{E}：\(u_{12}=u_{123}=0\) 表示1与2给定3条件独立，但1、2都可能关联于3；边际化3后可以出现1与2关联。C、D保留的另两变量关系可按相应可折叠条件讨论。
+
+\textbf{原稿细节。} B文字说``变量1独立于其他所有变量''，这是充分条件；括号仅列 \(u_{12}=u_{13}=0\) 未列 \(u_{123}=0\)，在一般饱和参数化下不完整。A也属于课程概括，不能当不附条件的普遍定理。因回忆稿措辞不严谨，E是命题意图下的答案。
+
+
+\Answer{R24-M9}{泊松与负二项分布}
+
+\textbf{答案：C。}
+
+二者均可描述非负整数计数。泊松条件均值和方差相等；常用NB2参数化为 \(E(Y\mid X)=\mu\)、\(\operatorname{Var}(Y\mid X)=\mu+\mu^2/\theta\)，\(\theta>0\)，允许过离散；\(\theta\to\infty\)趋于泊松。不能仅凭边际样本方差大于均数就断言条件泊松回归必不适用。
+
+\textbf{补写说明。} 原稿只有比较主题；提问句及全部选项为补写。
+
+
+\Answer{Z-D7}{饱和模型（Saturated model）}
+
+具有足够自由参数使每个独立观测单元的拟合均值与观测值相同的模型。在完整分类列联表中含所有主效应与各阶交互。其相对自身偏差为0，残差自由度为0，不能据此作常规卡方拟合检验。
+
+
+\Answer{Z-D8}{过离散（Overdispersion）}
+
+相对于所指定分布的方差，实际条件变异更大。泊松情形指 \(\operatorname{Var}(Y\mid X)>E(Y\mid X)\)，应先检查遗漏因素、聚集和模型形式，再考虑负二项或准似然。
+
+
+\Answer{Z-D9}{偏移量（Offset）}
+
+线性预测子中系数固定为1的已知项。发生率建模常将观察人时/暴露机会的对数作为offset，使计数均值与暴露机会成比例。
+
+
+\Answer{E19-1}{三类模型的区别与参数含义}
+
+二项Logistic：\(Y_i\sim\mathrm{Binomial}(n_i,p_i)\)，\(\log[p_i/(1-p_i)]=X_i^T\beta\)，\(e^{\beta_j}\)解释为控制其他变量后的OR。
+
+泊松回归：\(Y_i\sim\mathrm{Poisson}(\mu_i)\)，\(\log\mu_i=X_i^T\beta\)；同等暴露机会下指数系数为预期计数比。加入 \(\log T_i\) 的offset后，为发生率比IRR。
+
+对数线性模型：对多维列联表各格计数建模，\(\log m_{ijk}=u+u_i^A+u_j^B+u_k^C+\cdots\)；研究分类变量联合分布中的关联/条件独立，原分类变量地位对称。主效应和交互项含义取决于编码；OR由相应格子均数比或参数对比得到，不能一律对任何参数取指数就称OR。
+
+三者均可纳入GLM框架，常用极大似然估计。Logistic明确指定结局，后两者使用log连接，分析单位、随机部分与参数解释不同。模型本身不保证因果关系。
+
+
+\Answer{E20-1}{Logistic与对数线性模型的异同}
+
+二项Logistic：\(Y_i\sim\mathrm{Binomial}(n_i,p_i)\)，\(\log[p_i/(1-p_i)]=X_i^T\beta\)，\(e^{\beta_j}\)解释为控制其他变量后的OR。
+
+泊松回归：\(Y_i\sim\mathrm{Poisson}(\mu_i)\)，\(\log\mu_i=X_i^T\beta\)；同等暴露机会下指数系数为预期计数比。加入 \(\log T_i\) 的offset后，为发生率比IRR。
+
+对数线性模型：对多维列联表各格计数建模，\(\log m_{ijk}=u+u_i^A+u_j^B+u_k^C+\cdots\)；研究分类变量联合分布中的关联/条件独立，原分类变量地位对称。主效应和交互项含义取决于编码；OR由相应格子均数比或参数对比得到，不能一律对任何参数取指数就称OR。
+
+三者均可纳入GLM框架，常用极大似然估计。Logistic明确指定结局，后两者使用log连接，分析单位、随机部分与参数解释不同。模型本身不保证因果关系。
+
+原材料关于``对数线性模型交互参数的指数必为OR''的说法需要编码条件。例如二元变量采用参照编码时特定二阶交互系数可对应log OR；一般多水平/效应编码下应计算适当线性对比。
+
+
+\Answer{Z-S7}{对数线性模型与Logistic}
+
+对数线性拟合列联表格子期望计数的log，分析分类变量的联合关联；Logistic指定二分类结局，拟合其条件概率的logit，自变量可分类或连续，指数斜率解释为条件OR。两种方法都不能仅靠模型建立因果关系。
+
+
+\Answer{Z-S9}{泊松过离散及处理}
+
+给定协变量后的方差超过泊松条件均值。先检查遗漏的系统差异、相关性、零膨胀、暴露机会与异常点；再考虑负二项、准泊松、稳健方差或适合设计的相关资料模型。单纯删除零值不是标准处理办法。
+
+
+\Answer{Z-S10}{饱和模型与拟合检验}
+
+完整列联表中含全部主效应和交互项，能拟合每格观测计数。待检验模型的偏差（总数匹配时）为：\(D=2(\ell_{\rm sat}-\ell_{\rm fit})\)，是与饱和模型的似然比较。常规条件下可与相应自由度的卡方分布比较；较大 \(P\) 只表示失拟证据不足，不证明正确。
+
+
+\Answer{R24-C3}{莱姆病、精神疾病与自杀行为}
+
+命题通常指泊松回归，用人时作为暴露机会，\(\log E(Y\mid X)=\log T+X^T\beta\)，\(e^\beta\)为发生率比。条件独立、均值模型正确、条件等离散为基本考虑；若过离散应考虑合适的扩展。\textbf{仅凭IRR不能唯一判断泊松或负二项模型}，需要原文方法。
+
+解释须注明暴露/参照、具体结局、IRR与95\% CI，并比较Model 1和Fully Model的调整变量及估计变化；区别调整后关联与因果效果。无原表不能补填``哪些结局显著''或给出数值。
+
+
+\Answer{R24-C4}{性别、年龄与饮酒年限：能否合并}
+
+只比较各层 \(P\) 值不能决定是否合并。``青年显著、中老年不显著''并非效应存在异质性的充分证据；合并后的显著性也不能证明可以忽略年龄、性别。
+
+可用分层OR及其齐性检验（如Breslow--Day），或Logistic模型中的饮酒\(\times\)年龄、饮酒\(\times\)性别交互；也可采用四维列联表对数线性模型，保留层次结构，比较相关交互项模型。若效应有异质性，应报告分层/交互效应；若无明确异质性，再结合混杂、效应尺度和可折叠条件决定报告调整后的共同效应还是简单合并。统计``不显著''亦不证明等效。实际频数缺失，不能计算OR、齐性检验或最终合并结论。
+
+
+\subsection{补充练习}
+
+\Answer{P4-M1}{从条件独立写出层次模型}
+
+\textbf{答案：D。} 该条件独立模型为
+\[\log m_{ijk}=u+u_i^A+u_j^B+u_k^C+u_{ik}^{AC}+u_{jk}^{BC}.\]
+删去\(AB\)与\(ABC\)项，允许\(AC\)、\(BC\)存在。A项还额外要求三者相互独立，约束过强，因而不是题设“只要求”该条件独立时的最一般模型。条件独立亦不自动意味着边际表中\(A\)与\(B\)独立。
+
+
+
+\Answer{P4-D1}{层次模型}
+
+层次模型遵循：保留一个高阶交互项时，必须同时保留由该项中变量构成的全部低阶项。若保留\(ABC\)，应包含\(AB,AC,BC\)、\(A,B,C\)及截距；若仅以\(AC,BC\)作为最高阶项，则包含\(A,B,C\)及截距，但不必包含\(AB\)或\(ABC\)。模型简化应保持这种层次结构，不能保留高阶交互却仅因某个主效应不显著而将其单独删去。
+
+
+
+\Answer{P4-S1}{发热次数改为是否发热会改变什么}
+
+\textbf{（1）研究问题和指标改变。} 计数模型分析预期发热次数；同样观察期下，指数系数是预期计数比，也可解释为次数发生率比。二分类Logistic分析的是\(P(Y\ge1)\)，指数系数为至少发热一次的优势比。二分类化丢失多次发热信息，系数数值、显著性和结论不保证相同。
+
+\textbf{（2）删零不能作为纠正过离散的方法。} 零次也是计数资料的合法结果。删去零次会把研究人群改为至少发热一次者，并改变抽样分布。应检查给定协变量后的变异、模型形式和异常记录，结合正文的过离散诊断考虑负二项回归。观察到原始方差大于均值只是线索，不能单凭这一点替代模型诊断。
+
+
+
+\Answer{P4-C1}{对数线性模型的自由度与筛选}
+
+\textbf{（1）} 总格子数18。截距1个；主效应各有\(1,2,2\)个参数；\(AB,AC,BC\)项各有\(2,2,4\)个；\(ABC\)项有4个。
+\begin{center}\begin{tabular}{lrr}\toprule
+模型 & 自由参数个数 & 残差自由度\\\midrule
+\(M_0\) & 6 & 12\\
+\(M_1\) & 12 & 6\\
+\(M_2\) & 14 & 4\\
+\(M_S\) & 18 & 0\\\bottomrule
+\end{tabular}\end{center}
+\textbf{（2）} \(M_2\)相对饱和模型的偏差3.22，自由度4，\(P\approx0.522\)，没有明显失拟证据。由\(M_2\)删去\(AB\)得到\(M_1\)，
+\[\Delta D=17.62-3.22=14.40,\quad\Delta df=6-4=2.\]
+\(P\approx0.00075\)，删去\(AB\)造成明显拟合损失，故不宜以\(M_1\)替代\(M_2\)。这里\(AB\)有2个自由参数，不能因“只删了一个交互项”就写\(df=1\)。
+
+\textbf{（3）} \(M_2\)为两两关联模型，保留三种两变量关联，未保留三变量交互；此选择兼顾简洁与拟合。允许某项存在不等于仅凭模型名称便完成该项的显著性检验，仍应看相应模型比较。没有三变量交互不代表无混杂或任意可折叠；保留两两关联时，不能直接忽略第三变量。
+
+
+
+\Answer{P4-A1}{人时、发生率与offset的单位}
+
+\textbf{（1）} 四行死亡率依次为10、20、20、40例/千人年。
+\[Y_i\sim\operatorname{Poisson}(\mu_i),\qquad
+\log\mu_i=\log T_i+\beta_0+\beta_EE_i+\beta_AA_i.\]
+\begin{verbatim}
+fit <- glm(Y ~ E + A + offset(log(T)),
+           family = poisson(link = "log"), data = dat)
+\end{verbatim}
+offset作用于已知人时的对数，系数固定为1；不要把人时对数误放进权重。
+
+\textbf{（2）} 以人年计，\(\hat\beta_0=\log0.01=-4.6052\)、\(\hat\beta_E=\log2=0.6931\)、\(\hat\beta_A=\log2=0.6931\)。控制年龄后，暴露者死亡发生率为未暴露者的2倍。不能仅比死亡\textbf{人数}；例如年轻层40与10之比为4，但人时也相差2倍。
+
+\textbf{（3）} 该组死亡率为\(0.01\times2\times2=0.04\)例/人年，300人年预计\(300\times0.04=12\)例。若用\(T^*=T/1000\)，
+\[\log T=\log T^*+\log1000,\]
+新截距为\(\beta_0^*=\beta_0+\log1000=\log10=2.3026\)，两个斜率、发生率比和预计死亡数均不变。本表为教学设定，精确拟合本身不证明真实数据必然满足等离散。
+
+
+
+\Answer{P4-L1}{负二项模型中的疫苗有效性}
+
+\textbf{（1）} 负二项分布允许条件方差大于条件均值，可用于正文讨论的过离散计数。令\(V_i=1\)为完全接种、\(T_i\)为人日、\(Z_i\)为调整变量，
+\[Y_i\sim\mathrm{NB},\qquad
+\log\mu_i=\log T_i+\beta_0+\beta_VV_i+\gamma^TZ_i.\]
+\(e^{\beta_V}\)为调整后的发生率比。是否适合仍须结合模型诊断，不能把负二项模型视为对一切依赖结构的自动修正。
+
+\textbf{（2）} \(\widehat{VE}=(1-0.20)\times100\%=80\%\)。因\(1-IRR\)随IRR递减，区间应反向变换：
+\[95\%\,CI=[(1-0.33)\times100\%,(1-0.12)\times100\%]
+=[67\%,88\%].\]
+\textbf{（3）} 不能。这是接种组相对参照组的发生率降低比例，不是每100人中受保护者的确定人数，也不是绝对风险下降80个百分点。忽略各组实际观察人日，会混淆暴露机会差异与发生率差异。以上0.20及其区间为本题教学数值，不能引用为原研究结论。
+\EndExercises

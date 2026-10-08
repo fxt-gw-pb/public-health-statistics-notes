@@ -1,0 +1,938 @@
+\ExerciseChapter{多重线性回归与相关：模型构建}
+
+\label{chapter:1}
+
+\section{往年题}
+
+\subsection{单项选择题}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E14-12}{偏相关与简单相关}
+
+关于偏相关分析以下错误的说法是
+
+
+\begin{choices}
+
+\item 偏相关分析可以克服其他变量的混杂影响
+
+\item 同一组变量,偏相关系数的绝对值小于等于其简单相关系数的绝对值
+
+\item 偏相关分析可以帮助检查多重线性回归模型的线性假设是否成立
+
+\item 即使简单相关系数为正,偏相关系数也可能为负
+
+\item 对于多重线性回归,标准化偏回归系数一般不等于相应的偏相关系数
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E17-M1}{协方差阵与相关阵}
+
+关于协方差矩阵和相关矩阵以下说法正确的是 I 协方差矩阵和相关矩阵均为多变量的信息矩阵 II 协方差矩阵是中心化的信息矩阵 III 相关矩阵为中心化且单位化的信息矩阵 IV 相关矩阵以对角线为中心对称,协方差矩阵无此特点
+
+
+\begin{choices}
+
+\item 仅 I
+
+\item 仅II
+
+\item 仅III
+
+\item I II III
+
+\item I II III IV
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E17-M2}{分层与合并后的相关方向}
+
+对于分层资料,如果各层内两变量相关系数均大于0,合并层后相关系数小于0,且均有统计学意义,以下说法合理者为
+
+
+\begin{choices}
+
+\item 两变量为正相关,分层变量为混杂因子
+
+\item 两变量为负相关,分层变量为混杂因子
+
+\item 两变量相关不确定,分层变量为混杂因子
+
+\item 两变量为正相关,分层变量不是混杂因子
+
+\item 两变量为负相关,分层变量不是混杂因子
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E17-M4}{模型筛选指标}
+
+多重线性回归模型建模时,寻找最优模型宜使用的方法是
+
+
+\begin{choices}
+
+\item 决定系数最大化
+
+\item 剩余标准差最小化
+
+\item 调整决定系数最大化
+
+\item 方差分析的F值最大化
+
+\item 假设检验P值最小化
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E17-M7}{同量纲变量的贡献大小}
+
+多重线性回归模型考察各自变量贡献大小时,如果各自变量同量纲,适宜的指标是
+
+
+\begin{choices}
+
+\item 偏回归系数
+
+\item 标准化偏回归系数
+
+\item 此问题存在争议
+
+\item Y与各X的简单相关系数
+
+\item 偏相关系数
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E17-M12}{如何理解统计模型}
+
+关于统计模型的理解,合理的是
+
+
+\begin{choices}
+
+\item 优化建模方法,寻找唯一正确的模型
+
+\item 如果方法正确,则模型的形式和参数估计结果都是唯一的
+
+\item 建模时需科学严谨客观,不可依照主观意愿选择模型
+
+\item 没有正确的模型,只有有用的模型
+
+\item 统计模型只是估计工具,其结果不可信
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E21-1}{不同尺度变量的效应比较}
+
+多重线性回归模型考察自变量贡献大小时,适宜的指标
+
+
+\begin{choices}
+
+\item 偏回归系数
+
+\item 标准偏回归系数
+
+\item 偏回归系数的P值
+
+\item Y与X的简单相关系数
+
+\item 偏相关系数
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E21-3}{最佳模型的筛选方法}
+
+多重线性回归模型建模时,寻找最佳模型的方法不含
+
+
+\begin{choices}
+
+\item 决定系数最大化
+
+\item 调整决定系数最大化
+
+\item 按专业要求筛选
+
+\item CP法
+
+\item Sterpwise法
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E21-6}{辛普森反转的解释}
+
+对于分层资料,如果各层内两变量相关系数均大于0,合并层后相关系数小于0,且均有统计学意义,以下说法合理者为
+
+
+\begin{choices}
+
+\item 两变量为正相关,分层变量为混杂因子
+
+\item 两变量为负相关,分层变量为混杂因子
+
+\item 两变量相关不确定,分层变量为混杂因子
+
+\item 两变量为正相关,分层变量不是混杂因子
+
+\item 两变量为负相关,分层变量不是混杂因子
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E21-7}{简单与复相关的取值范围}
+
+简单相关系数和复相关系数说法错误的是:
+
+
+\begin{choices}
+
+\item 复相关系数按通常定义取非负值。
+
+\item 简单相关系数可以为负。
+
+\item 复相关系数为决定系数的非负平方根。
+
+\item 同一样本上的含截距OLS模型加入变量后，训练R平方不下降。
+
+\item 简单相关系数与复相关系数的取值范围相同。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{E21-10}{预测区间与均值置信区间}
+
+同一X水平和同一置信度下，新个体Y的预测区间与条件均值的置信区间比较，通常：
+
+
+\begin{choices}
+
+\item 预测区间更宽。
+
+\item 预测区间更窄。
+
+\item 必完全相同。
+
+\item 只要R²大于0.8，两者宽度为0。
+
+\item 均无法计算。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-1}{OLS残差的正交性}
+
+满列秩含截距OLS拟合后，哪项成立？
+
+
+\begin{choices}
+
+\item \(X^Te=0\)。
+
+\item \(e_i\)都等于0。
+
+\item 每个自变量都服从正态。
+
+\item 所有斜率都相等。
+
+\item 所有残差相互独立。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-2}{决定系数的定义}
+
+含截距且总平方和非零的OLS中，\(R^2\)等于：
+
+
+\begin{choices}
+
+\item \(1-SSE/SST\)。
+
+\item \(SSE/SST\)。
+
+\item \(SST/SSE\)。
+
+\item 斜率的P值。
+
+\item 样本量的倒数。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-3}{自变量改变单位}
+
+令 \(X^*=10X\) 并保持同一线性模型，原斜率b在新尺度下变为：
+
+
+\begin{choices}
+
+\item \(10b\)。
+
+\item \(b/10\)。
+
+\item \(b+10\)。
+
+\item \(b\)必不变。
+
+\item 无法等价转换。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-4}{偏相关的计算思路}
+
+欲控制Z后考察X与Y的线性关联，通常可：
+
+
+\begin{choices}
+
+\item 分别把X与Y对Z回归，求两组残差的相关。
+
+\item 只求X和Y的简单相关。
+
+\item 先删除Z最大的所有样本。
+
+\item 只看Z的均值。
+
+\item 把X与Y都除以Z，不作其他判断。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-5}{偏回归系数的单位效应}
+
+无交互且模型形式正确时，偏回归系数b\_j表示：
+
+
+\begin{choices}
+
+\item 其他变量保持不变，X\_j增1单位时条件均值的改变量。
+
+\item X\_j对Y的唯一因果贡献。
+
+\item Y必然增加的数值。
+
+\item X\_j与Y的简单相关。
+
+\item 所有样本个体都相同的真实变化。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-6}{均值标准误中的杠杆项}
+
+经典线性模型在新设计向量 \(x_0\) 处的均值预测方差估计为：
+
+
+\begin{choices}
+
+\item \(s^2x_0^T(X^TX)^{-1}x_0\)。
+
+\item \(s^2\)且与x\_0无关。
+
+\item \(s^2/n\)在任意x\_0都成立。
+
+\item 恒为0。
+
+\item 只由R²决定。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-7}{等权中亲值的约束}
+
+用 \(Z=(X_f+X_m)/2\) 的单一斜率模型预测Y，相当于对父母两个斜率施加：
+
+
+\begin{choices}
+
+\item 相等的约束。
+
+\item 一正一负的约束。
+
+\item 均为0。
+
+\item 一个为1另一个为0。
+
+\item 不施加任何约束。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\Needspace{7\baselineskip}\subsubsection*{共用资料：生命质量文章的分组均数}
+
+随附《首发原发性脑肿瘤患者生命质量现状及其影响因素研究》使用便利抽样的133名首次确诊住院患者，报告总分均值66.9。其文化程度分组表如下（原数值保留）：
+
+\begin{center}\small\setlength{\tabcolsep}{3.5pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrr@{}}
+\toprule
+文化程度 & 人数 & 平均总分 \\
+\midrule
+
+小学 & 62 & 63.3 \\
+初中 & 21 & 64.1 \\
+高中或中专 & 35 & 66.8 \\
+大专及以上 & 15 & 69.6 \\
+\bottomrule\end{tabular}\end{center}
+
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-23}{分组均数的加权一致性}
+
+按生命质量文化程度分组的人数和均数计算，总均数约为：
+
+
+\begin{choices}
+
+\item 65.06。
+
+\item 66.90。
+
+\item 69.60。
+
+\item 63.30。
+
+\item 133.00。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\Needspace{7\baselineskip}\subsubsection*{共用资料：生命质量文章的回归结果}
+
+同文以生命质量总分为结局，报告如下最终多元回归。焦虑/抑郁用原始得分，病程用月，癫痫0否1是，病理分级与文化程度分别按1---4有序编码。
+
+\begin{center}\small\setlength{\tabcolsep}{3.5pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+变量 & B & SE & 标准化\(\beta\) & t & P \\
+\midrule
+
+截距 & 74.033 & 1.543 & --- & 47.974 & \textless.01 \\
+焦虑 & -0.884 & 0.204 & -0.385 & -4.326 & \textless.01 \\
+抑郁 & -0.655 & 0.225 & -0.263 & -2.906 & \textless.01 \\
+病程 & 0.056 & 0.022 & 0.158 & 2.518 & \textless.05 \\
+癫痫 & -4.902 & 1.301 & -0.233 & -3.768 & \textless.01 \\
+病理分级 & -0.987 & 0.412 & -0.156 & -2.396 & \textless.05 \\
+文化程度 & 0.905 & 0.393 & 0.148 & 2.302 & \textless.05 \\
+\bottomrule\end{tabular}\end{center}
+
+文中报告 \(F=22.554\)、\(R^2=.539\)、调整 \(R^2=.517\)。
+
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-24}{焦虑系数的条件解释}
+
+根据生命质量模型，在其他变量固定时，焦虑得分每增加1分，预测总分平均：
+
+
+\begin{choices}
+
+\item 降低0.884分。
+
+\item 降低0.385分。
+
+\item 增加0.884分。
+
+\item 每个人都必降低0.884分。
+
+\item 证明降低焦虑治疗可使总分必增0.884分。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\subsection{简答题}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{S20-1}{高尔顿的中亲身高与多重回归}
+
+Galton（高尔顿，原稿拼作Gelton）为什么用父母身高之和或平均值预测儿子身高？这种做法与多重线性回归各有什么优劣？
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\subsection{计算与分析题}
+
+\Needspace{7\baselineskip}\subsubsection*{共用资料：数学、语文与智商数据}
+
+以智商为y，数学为x1，语文为x2。原卷data1未独立附上，本包补入同课程``语文数学智商.sav''（18人）作数值复算；若原卷数据有改动，需重新代入。
+
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{C20-1a}{建立智商的多重线性回归}
+
+以data1的y为因变量，x1、x2为自变量，建立多重线性回归方程并简要评价。该大题共20分。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\Needspace{7\baselineskip}\subsubsection*{共用资料：父母与子女身高数据}
+
+y为子女身高，x1为父亲身高，x2为母亲身高。正文同名数据与附带2023 data1逐值一致；以下保留原数据单位，不擅自转换为厘米。
+
+\begin{center}\small\setlength{\tabcolsep}{3.5pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrr@{}}
+\toprule
+观测 & 父x1 & 母x2 & 子y \\
+\midrule
+
+1 & 5.2 & 4.9 & 6.2 \\
+2 & 5.4 & 5.1 & 5.9 \\
+3 & 6.2 & 5.5 & 6.6 \\
+4 & 5.8 & 5.4 & 6 \\
+5 & 5.6 & 5.1 & 6.2 \\
+6 & 5 & 4.9 & 5.6 \\
+7 & 6.4 & 5.6 & 6.6 \\
+8 & 6 & 5.4 & 6.5 \\
+\bottomrule\end{tabular}\end{center}
+
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{C21-1a}{建立父母子身高回归}
+
+以子女身高y为结局，父亲身高x1和母亲身高x2为自变量，建立多重线性回归并简要评价。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+
+
+\clearpage\section{补充练习}
+
+本节为配合正文新编的补充练习，按题型排列，题号接续本章往年题，解析见章末。
+
+\subsection{单项选择题}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{X26-1-1}{标准化指标的线性组合}
+
+三个已标准化指标的样本相关阵为 \[R=\begin{pmatrix}1&0.6&0.3\\0.6&1&0.6\\0.3&0.6&1\end{pmatrix}.\] 令 \(Z=(X_1^*+X_2^*+X_3^*)/3\)，则 \(Z\) 的样本均数和样本方差分别为：
+
+
+\begin{choices}
+
+\item \(0,\,1/3\)。
+
+\item \(0,\,2/3\)。
+
+\item \(0,\,1\)。
+
+\item \(1,\,2/3\)。
+
+\item \(0,\,2\)。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{X26-1-2}{整体F检验检验什么}
+
+对27名研究对象拟合含截距、4个数值自变量的多重线性回归，设计矩阵满列秩，经典模型假设成立。整体回归的 \(F\) 检验在0.05水平显著。以下说法正确的是：
+
+
+\begin{choices}
+
+\item 原假设是截距及4个斜率全部为0。
+
+\item 应以 \(F(4,23)\) 分布确定P值。
+
+\item 4个斜率的双侧t检验一定均显著。
+
+\item 原假设只约束4个斜率，F检验自由度为 \((4,22)\)。
+
+\item 已可判定模型符合全部LINE条件。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{X26-1-3}{逐步前进法的重新检验}
+
+采用逐步前进法，规定 \(\alpha_{\text{入}}=0.05\)、\(\alpha_{\text{出}}=0.10\)。当前方程含 \(X_1,X_2\)；待选变量中 \(X_3\) 的进入检验P值最小，为0.032。引入 \(X_3\) 后，\(X_1,X_2,X_3\) 的偏F检验P值依次为0.18、0.004、0.032。下一步应：
+
+
+\begin{choices}
+
+\item 保留全部变量，因为X1在较早步骤已入选。
+
+\item 删除X3，因为其P值大于0.01。
+
+\item 删除X1，重新拟合并继续检查进出条件。
+
+\item 按原系数直接去掉X1项，其他估计值不必更新。
+
+\item 将退出标准临时改为0.20以保留X1。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\subsection{简答题}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{X26-1-4}{读最优子集比较表}
+
+同一样本、同一结局的三个候选模型如下，均含截距：
+
+\begin{center}\small\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lllll@{}}
+\toprule
+模型 & 自变量 & 普通R平方 & 调整R平方 & AIC \\
+\midrule
+
+M1 & X1、X4 & 0.99339 & 0.99293 & −46.59486 \\
+M2 & X1、X2、X4 & 0.99381 & 0.99314 & −46.69119 \\
+M3 & X1、X2、X3、X4 & 0.99401 & 0.99313 & −45.77377 \\
+\bottomrule\end{tabular}\end{center}
+
+仅按调整 \(R^2\) 与AIC，分别应选哪个模型？说明``普通 \(R^2\) 最大，所以M3必最好''是否合理；表中很小的指标差异又能否说明某模型具有明显优势？
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\subsection{计算与分析题}
+
+\Question{X26-1-5}{肺活量回归的输出填空}
+
+正文例3.1对29名男童的肺活量 \(Y\)（L）、身高 \(X_1\)（cm）和体重 \(X_2\)（kg）作含截距回归。给出摘要（平方和按正文显示精度取值）： \[\hat Y=-0.565664+0.00501684X_1+0.05406059X_2,\] \[SS_{\text{总}}=5.6336,\qquad SS_{\text{残}}=2.5579.\] \((X^TX)^{-1}\) 中对应两个斜率的对角元素分别为0.00113681、0.00259686。仅含体重的模型残差平方和比上述模型多0.02214。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  填出回归与误差的自由度、回归平方和、残差均方及整体F值。
+\item
+  计算剩余标准差、普通 \(R^2\) 和调整 \(R^2\)，保留4位小数。
+\item
+  计算身高和体重斜率的t值。在 \(t_{0.975,26}=2.0555\) 下作双侧检验。
+\item
+  计算在体重基础上加入身高的偏F值，并与身高的t值平方比较。
+\item
+  用一句话解释体重系数，并说明能否据两个原尺度系数直接比较变量的相对重要性。
+\end{enumerate}
+
+
+\worklines{3}
+
+\clearpage\section{习题解析}
+
+\begin{keyidea}[核对方式]题号与前文一一对应。补写范围、原题歧义及数据还原方法列在相应答案中。\end{keyidea}
+
+\Answer{E14-12}{偏相关与简单相关}
+
+\textbf{答案：B。}
+
+调整其他变量后，偏相关绝对值可增大、减小甚至变号，并非始终不超过简单相关。它只调整所指定的线性关系，不能保证消除一切混杂；标准化偏回归系数一般不等于偏相关系数。
+
+
+\Answer{E17-M1}{协方差阵与相关阵}
+
+\textbf{答案：D。}
+
+两者均对称；协方差阵刻画中心化变量的二阶信息，相关阵对应标准化变量。IV声称协方差阵不对称，错误。
+
+
+\Answer{E17-M2}{分层与合并后的相关方向}
+
+\textbf{答案：A（控制分层变量后的关系）。}
+
+这是辛普森反转的表现：各层正相关而合并为负。若分层变量是应控制的混杂因素，应主要解释层内/调整后的关系；但仅凭反转不能独立确证它在因果图中的角色，还需设计与专业知识。
+
+
+\Answer{E17-M4}{模型筛选指标}
+
+\textbf{答案：C（给定选项中）。}
+
+调整R²对增加变量有惩罚，比单纯追求训练R²更适于比较相同结局和样本下的候选模型；还应结合专业依据、信息准则与样本外验证。F或P的最优化不等于最佳预测模型。
+
+
+\Answer{E17-M7}{同量纲变量的贡献大小}
+
+\textbf{答案：C。}
+
+``贡献''可指每增加同一单位的效应、每增加1个标准差的效应或解释变异的增量。同量纲时A可比较单位效应，B可比较标准差尺度的效应；必须先定义目标，不能认为有唯一通用指标。
+
+
+\Answer{E17-M12}{如何理解统计模型}
+
+\textbf{答案：D。}
+
+模型是对现实的近似，可按研究目标判断是否有用；形式选择需要专业判断和检验，而不是寻找脱离假设与用途的唯一真模型。这不表示模型可以随意挑选或结果不可信。
+
+
+\Answer{E21-1}{不同尺度变量的效应比较}
+
+\textbf{答案：B（比较标准差尺度效应时）。}
+
+标准化偏回归系数将变量置于标准差尺度，比较幅度应看绝对值。它并不是因果贡献或解释变异的唯一指标；共线性严重时仍可能不稳定。
+
+
+\Answer{E21-3}{最佳模型的筛选方法}
+
+\textbf{答案：A。}
+
+训练R²随加入自变量不降低，单独最大化它倾向全模型。调整R²、Cp、逐步法可以是候选工具，但仍需专业判断和验证；逐步算法不保证找到唯一最佳模型。
+
+
+\Answer{E21-6}{辛普森反转的解释}
+
+\textbf{答案：A（调整后关系的通常口径）。}
+
+这是辛普森反转的表现：各层正相关而合并为负。若分层变量是应控制的混杂因素，应主要解释层内/调整后的关系；但仅凭反转不能独立确证它在因果图中的角色，还需设计与专业知识。
+
+
+\Answer{E21-7}{简单与复相关的取值范围}
+
+\textbf{答案：E。}
+
+简单相关 \(r\in[-1, 1]\)，复相关通常定义为 \(R=\sqrt{R^2}\in[0, 1]\)。含截距OLS下R等于观测Y与拟合Y的相关（非退化条件下）。
+
+
+\textbf{补写说明。} 原A只记开头、B---D空缺，补齐A---D；E的原意保留。
+
+
+\Answer{E21-10}{预测区间与均值置信区间}
+
+\textbf{答案：A。}
+
+新个体预测还包括个体误差变异，区间中多一项误差方差。
+
+
+\textbf{补写说明。} 原第10题整题未记录，本题新编。
+
+
+\Answer{N19-1}{OLS残差的正交性}
+
+\textbf{答案：A。}
+
+最小二乘正规方程给出设计矩阵各列与残差正交。残差由同一拟合产生，一般彼此相关；它们不等于真实误差。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-2}{决定系数的定义}
+
+\textbf{答案：A。}
+
+它描述训练样本中相对于仅截距模型的平方和改善，不是因果解释比例或外部预测保证。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-3}{自变量改变单位}
+
+\textbf{答案：B。}
+
+为保持bX不变，新斜率应为b/10。正比例单位变换不改变对应标准化斜率。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-4}{偏相关的计算思路}
+
+\textbf{答案：A。}
+
+残差化剔除了所建模的Z线性部分；非线性及未测因素仍需另行考虑。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-5}{偏回归系数的单位效应}
+
+\textbf{答案：A。}
+
+回归描述条件均值，单个观测仍有误差；因果解释还需设计与识别条件。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-6}{均值标准误中的杠杆项}
+
+\textbf{答案：A。}
+
+新个体预测还要再加s²；远离设计中心的x\_0通常有更大估计不确定性。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-7}{等权中亲值的约束}
+
+\textbf{答案：A。}
+
+展开 \(bZ\) 后父母原变量的系数均为b/2；如事先作不同尺度校正，约束也相应改变。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-23}{分组均数的加权一致性}
+
+\textbf{答案：A。}
+
+总加权均数为65.0579，与报告66.9差异远超这些一位小数舍入能解释的范围，应核查分组值或总均值；不能仅据此指定哪一个单元格必定错。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{N19-24}{焦虑系数的条件解释}
+
+\textbf{答案：A。}
+
+使用原尺度B系数，不与标准化\(\beta\)混淆；观察性回归的条件关联不能直接解释为干预效果。
+
+
+\textbf{补写说明。} 2019回忆稿只给出30道选择的总数及大致范围，没有记录本题原文；本题是依课程内容与所附材料新编的补充练习，不冒作恢复的原试卷。
+
+
+\Answer{S20-1}{高尔顿的中亲身高与多重回归}
+
+父母的中亲值把两项相关的遗传背景信息压缩成一个量，等权或预先校正尺度后加权，模型较简洁、参数少，也避免分别估计高度相关的两个斜率。代价是施加了共同权重等限制，可能丢失父母贡献不同的信息。
+
+多重回归允许两个斜率不同，并能纳入其他协变量，更灵活；但在小样本及强共线性下估计容易不稳定。不能只因为多一个参数就断言更优，应明确科学假设并比较验证表现。
+
+
+\Answer{C20-1a}{建立智商的多重线性回归}
+
+按正文同名的18人数据： \[\widehat y=4.591646+0.216856x_1+0.983433x_2.\] \(R^2=0.922034\)、调整 \(R^2=0.911638\)，剩余标准差5.7612。控制语文后数学系数 \(P=0.337\)，控制数学后语文系数 \(P=0.00145\)。两科相关较强，因此单个系数及其显著性不能仅按边际相关解释；还应检查LINE和预测表现。
+
+
+\Answer{C21-1a}{建立父母子身高回归}
+
+正文同名的8条记录给出 \[\widehat y=7.943894+1.976382x_1-2.483871x_2.\] \(R^2=0.920212\)，调整 \(R^2=0.888297\)，剩余标准差0.11984；两个斜率P值约0.00501和0.02075。母亲系数为负是给定父亲身高后的样本条件关联，不能解读为母亲越高会使子女变矮。样本极小且两自变量高度相关，应继续做共线性与敏感性分析。
+
+\clearpage\subsection*{补充练习解析}
+
+以下为补充练习的解析。这些题目为配合正文新编，并非往年试题；题中设定的数值仅供练习。
+
+\Answer{X26-1-1}{标准化指标的线性组合}
+
+\textbf{答案：B。}
+
+标准化后各指标的均数为0，故 \(\bar Z=0\)。令 \(a=(1/3,1/3,1/3)^T\)， \[s_Z^2=a^TRa=\frac{3+2(0.6+0.3+0.6)}9=\frac23.\] 标准化使每个指标的方差为1，并未使它们互不相关；不能忽略协方差项而答 \(1/3\)。
+
+
+
+
+\Answer{X26-1-2}{整体F检验检验什么}
+
+\textbf{答案：D。}
+
+整体检验的原假设为 \(H_0:\beta_1=\beta_2=\beta_3=\beta_4=0\)，不包括截距。回归与误差自由度分别为4和 \(27-4-1=22\)。拒绝原假设说明至少一个斜率不为0，不能推出每个斜率均显著；各变量的条件效应要看相应的 \(t\) 检验。
+
+
+
+
+\Answer{X26-1-3}{逐步前进法的重新检验}
+
+\textbf{答案：C。}
+
+\(X_3\) 满足进入标准。引入后需重新检验在模变量，\(X_1\) 的 \(P=0.18>0.10\)，应删除并重新拟合 \(Y\sim X_2+X_3\)，再复查进出条件。不能沿用删项前的系数或P值，也不能认为变量一旦入选就永不退出。
+
+
+
+
+\Answer{X26-1-4}{读最优子集比较表}
+
+两项标准均选 \textbf{M2}：其调整 \(R^2\) 最大、AIC最小。普通 \(R^2\) 随加入解释变量不降低，单靠它比较会偏向较复杂的M3。
+
+这里调整 \(R^2\) 的差异很小，M1与M2的AIC也十分接近；只能说M2在给定指标中略优，不能据此宣称它具有明显优势或已找到唯一正确模型。还应结合变量的专业意义及模型诊断。
+
+
+
+
+\Answer{X26-1-5}{肺活量回归的输出填空}
+
+\textbf{（1）方差分析填空。} 回归自由度2，误差自由度26；回归平方和 \(5.6336-2.5579=3.0757\)，回归均方1.53785，残差均方 \(2.5579/26=0.09838077\)，整体 \(F=15.6316\)，参考分布为 \(F(2,26)\)。
+
+\textbf{（2）拟合指标。} \[s=\sqrt{2.5579/26}=0.3137,\quad R^2=1-\frac{2.5579}{5.6336}=0.5460,\] \[R^2_{\mathrm{adj}}=1-\frac{2.5579/26}{5.6336/28}=0.5110.\]
+
+\textbf{（3）单个系数。} 用 \(s_{b_j}=s\sqrt{c_{jj}}\)，得 \(t_1=0.4744\)、\(t_2=3.3822\)。按0.05水平，身高的条件效应无统计学意义，体重的条件效应有统计学意义。
+
+\textbf{（4）增量检验。} \[F_{X_1\mid X_2}=\frac{0.02214/1}{2.5579/26}=0.2250\approx t_1^2.\] 同一模型内对一个斜率的偏F检验与双侧t检验等价；末位差异来自摘要舍入。
+
+\textbf{（5）系数解释。} 身高保持不变时，体重每增加1 kg，预测平均肺活量增加约0.0541 L。两个系数的单位不同，不能直接按数值大小比较相对重要性；若比较标准差尺度的效应，应使用标准化偏回归系数。
+\EndExercises

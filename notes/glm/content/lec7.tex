@@ -1,0 +1,1261 @@
+\chapter{泊松回归与负二项回归}
+\sourcepages{8}{1-6}
+计数资料在公共卫生研究中十分常见，如某地每月发病数、队列中的死亡数、一年内哮喘发作次数、门诊就诊次数等。分析此类资料需考虑以下两点。
+
+一是观察量的大小。死亡数较多，可能是死亡率较高，也可能是观察人数较多或观察时间较长。因此计数模型通常通过offset纳入人年数（或人口数），模型描述的是率，系数为率比（IRR）。
+
+二是方差。Poisson分布要求方差等于均数，而实际资料的方差常大于均数（过离散），原因包括个体易感性不同、事件呈聚集性发生等。此时Poisson回归的点估计通常仍可用，但标准误偏小，结论偏于乐观。负二项回归在Poisson回归的基础上增加一个离散参数，以反映额外的变异。两个模型的均值结构相同，方差假设不同。
+\section{泊松回归（Poisson Regression）}
+泊松回归：针对计数资料或列联表资料建模的一种回归分析方法。
+\begin{itemize}
+\item 假设1：给定协变量 $\bm x_i$ 时，计数 $Y_i$ 服从泊松分布，且各观察单位相互独立。
+\item 假设2：条件均值的对数是协变量的线性组合，$\log\mu_i=\log\E(Y_i\mid\bm x_i)=\bm x_i^\top\bm\beta$（log连接）。
+\end{itemize}
+\begin{annotation}连接函数作用于总体条件均值 $\mu_i$，而不是拟合值 $\widehat Y$ 或观察值 $Y$；“$\log(\widehat Y)$ 由线性组合拟合”的写法混淆了二者，且 $Y=0$ 时 $\log Y$ 无定义，这也是不能简单地对 $\log Y$ 作线性回归的原因。泊松分布的均数和方差都为 $\lambda$；在回归中，“均数等于方差”指的是给定协变量后的条件分布，$\Var(Y_i\mid\bm x_i)=\mu_i$，而不是全部观察值的总方差等于总均数。\end{annotation}
+\subsection{泊松分布（Poisson Distribution）}
+一种离散概率分布，用于描述固定时间、空间或人群范围内稀有独立事件的发生次数。二项分布的极限形式（当试验次数 $n\to\infty$、$P\to0$，且均值 $\lambda=nP$ 恒定）。核心关注“事件发生的次数”，而非“单次试验的成败”。
+
+泊松分布的概率函数：
+\[
+P(Y=k)=\frac{\lambda^k}{k!}e^{-\lambda},\qquad k=0,1,2,\ldots.
+\]
+均值与方差相等（若方差远大于均值，存在过离散）；事件独立性；稀有事件假设。
+\begin{annotation}$k$ 是发生次数。三个量要区分：计数 $Y$（随机变量，取非负整数）；条件均值 $\mu=\E(Y\mid\bm x)$（期望发生数）；发生率 $r=\mu/t$（单位观察时间或单位人群的期望发生数，如每千人年死亡数）。发生率不是概率，可以大于1。\end{annotation}
+\textbf{医学中的例子} 罕见遗传病的出生数：某地区每年新生儿中苯丙酮尿症（PKU）、先天性聋哑等罕见遗传病的病例数；癌症的年发病数；药物不良反应的报告数；某地区每月的食物中毒事件数。
+\subsection{例题：职业暴露}
+\sourcepages{8}{7-12}
+一项回顾性队列研究，收集了湖北省某工厂1966年8月18日至1991年12月31日全部工人（共9572人）的有关信息，欲研究职业暴露与死亡情况的关系。该项研究总的观察人年数为114488人年，共有159名工人发生死亡结局。研究目的：推断职业暴露和年龄是否为死亡率的影响因素。
+\begin{annotation}罕见事件。\end{annotation}
+\ctable{表4\quad 湖北省某工厂全死因死亡情况（死亡率单位：每千人年）}{\begin{tabular}{lrrrrrr}\toprule 年龄组（岁）&\multicolumn{3}{c}{非暴露组}&\multicolumn{3}{c}{暴露组}\\\cmidrule(lr){2-4}\cmidrule(lr){5-7}&死亡数&人年数&死亡率&死亡数&人年数&死亡率\\\midrule
+$<40$&39&59141&0.659&30&34995&0.857\\
+40--49&14&6621&2.114&33&9241&3.571\\
+50--59&3&650&4.615&25&3115&8.026\\
+60--69&0&54&0&12&595&20.168\\
+$\ge70$&0&9&0&3&67&44.776\\\bottomrule\end{tabular}}\begin{center}\footnotesize Data from Yu Z and Yu S, et al., Chinese Health Statistics, 1996;13(1):6.\end{center}
+假设不同个体间死亡的发生是相互独立的，则死亡数将服从泊松分布。泊松回归借助对数线性模型在泊松分布的前提假设下，分析结局发生数量及结局发生率与协变量之间的关联。
+\[
+\ln r_{ij}=\ln\frac{\mu_{ij}}{n_{ij}}=\lambda+\lambda_i^X+\lambda_j^Y.
+\]
+$\lambda$ 为常数项；$\lambda_i^X$ 表示变量 $X$ 第 $i$ 个水平效应值的大小；$\lambda_j^Y$ 表示变量 $Y$ 第 $j$ 个水平效应值的大小；$\mu_{ij}$ 为 $X=i,Y=j$ 时死亡数的期望频数；$n_{ij}$ 为观察人年数；$r_{ij}=\mu_{ij}/n_{ij}$ 为死亡率（有的资料记作 $P_{ij}$，但它是发生率而非概率）。
+\[
+\ln\mu_{ij}=\lambda+\lambda_i^X+\lambda_j^Y+\underbrace{\ln n_{ij}}_{\text{偏移量（offset）}}.
+\]
+\begin{derivation}{offset的来历与率比的解释}
+\dpart{假设}第 $i$ 个观察单位（个体或一组人）的观察时间（人年）为 $t_i>0$，在观察期内事件发生率恒为 $r_i$，$\ln r_i=\bm x_i^\top\bm\beta$；事件数 $Y_i\sim\text{Poisson}(\mu_i)$，$\mu_i=t_ir_i$。
+\dpart{关键等式}
+\[
+\ln\mu_i=\ln t_i+\ln r_i=\ln t_i+\bm x_i^\top\bm\beta .
+\]
+$\ln t_i$ 是已知量，作为线性预测量中系数固定为1的项进入模型，即偏移量（offset），不需要估计。
+\dpart{结论}(1) 系数解释为率比：其他协变量不变，$x_j$ 增加1单位，$r$ 乘以 $e^{\beta_j}$，即 $\RR=e^{\beta_j}$（rate ratio，或称IRR）。(2) 时间单位改变（如人年改为千人年，$t_i'=t_i/c$）只改变截距：$\beta_0'=\beta_0+\ln c$，其余系数不变。本例截距为 $-7.390$（每人年），换算为每千人年是 $-7.390+\ln1000=-0.483$。(3) 若把 $\ln t_i$ 当作普通协变量估计系数，就是在检验“事件数与观察时间成正比”这一假设；系数应接近1，本例约为1.29（只有10个格子，估计很不精确）。
+\dpart{解释}offset使不同观察时间、不同人数的单位可以比较：模型描述的是率而不是计数。若不加offset而直接对死亡数建模，暴露组人年较多本身就会使死亡数较多，系数混入了人年差异。
+\end{derivation}
+\begin{annotation}本例关心职业暴露的作用，同时把年龄作为协变量加以调整（各年龄组的人年构成在两组间不同）。\end{annotation}
+\[
+P(Y=k)=\frac{\lambda^k}{k!}e^{-\lambda},\qquad \lambda_i=\exp(X_i\beta).
+\]
+据此可以写出似然函数、对数似然函数，采用极大似然估计方法估计模型参数。
+\begin{annotation}未知的是系数 $\bm\beta$；估计步骤（写似然、求得分方程、IRLS迭代）与Logistic回归相同，只是 $Y$ 的分布和连接函数不同。\end{annotation}
+\sourcepages{8}{13-16}
+\ctable{表5\quad 泊松回归模型的拟合优度检验结果}{\begin{tabular}{lrrrrr}\toprule Model&df&$G^2$&$P$-value&Pearson $\chi^2$&$P$-value\\\midrule
+$\lambda$&9&167.034&$<0.001$&409.636&$<0.001$\\
+$\lambda+\lambda_i^X$&5&7.810&0.167&6.269&0.281\\
+$\lambda+\lambda_j^Y$&8&133.450&$<0.001$&258.986&$<0.001$\\
+$\lambda+\lambda_i^X+\lambda_j^Y$&4&2.475&0.649&1.542&0.819\\
+$\lambda+\lambda_i^X+\lambda_j^Y+\lambda_{ij}^{XY}$&0&0&&0&\\\bottomrule\end{tabular}\par\smallskip\footnotesize R复算（\texttt{glm(y \textasciitilde{} ..., family=poisson, offset=log(人年))}）。原表的 $G^2$ 为167.607、7.862、133.976、2.493，比复算值大0.02--0.57，原因不明（可能是所用软件对0格的处理或人年数的舍入不同）；Pearson $\chi^2$ 与原表一致，结论不变。}
+其中 $X$ 和 $Y$ 分别表示年龄和职业暴露。
+\[
+\Delta G^2=7.810-2.475=5.335,\qquad\Delta df=5-4=1,\qquad P=0.021.
+\]
+（原表为 $7.8617-2.4927=5.3690$，$P=0.0205$。）
+\begin{annotation}第一行是只含常数项的模型（各格死亡率相同），最后一行是饱和模型。$G^2$ 检验的 $H_0$ 是“模型成立”，$P>0.05$ 只说明未发现模型与资料有显著偏离。年龄$+$暴露模型 $G^2=2.48$，$\mathrm{df}=4$，$P=0.65$，可以接受，说明在对数尺度上年龄与暴露的作用可相加（未见年龄与暴露的交互作用）。只含年龄的模型与年龄$+$暴露模型嵌套，$\Delta G^2=5.34>3.84$，说明调整年龄后，职业暴露对死亡率的作用有统计学意义。本例有两个格子的死亡数为0、期望数小于1，$\chi^2$ 近似只是粗略的。\end{annotation}
+\subsubsection{参数解释}
+\[
+\ln r=\beta_0+\beta_1\mathrm{expose}+\beta_2\mathrm{age4}
++\beta_3\mathrm{age5}+\beta_4\mathrm{age6}+\beta_5\mathrm{age7}.
+\]
+\[
+\RR=\frac{r_{i2}}{r_{i1}}
+=\frac{\exp(\lambda+\lambda_i^X+\lambda_2^Y)}{\exp(\lambda+\lambda_i^X+\lambda_1^Y)}
+=\exp(\lambda_2^Y-\lambda_1^Y).
+\]
+\begin{annotation}年龄分为5组，以 $<40$ 岁为参照组，age4--age7依次为40--49、50--59、60--69、$\ge70$ 岁的哑变量。$\RR=\exp(\beta)$ 是死亡率之比（率比），同一年龄组内比较暴露组与非暴露组。\end{annotation}
+\ctable{表6\quad 回归系数及RR估计值}{\begin{tabular}{llrrrrl}\toprule 变量&参数&估计值 $\widehat\beta$&$\SE(\widehat\beta)$&Wald $\chi^2$&$P$-value&RR (95\%CI)\\\midrule
+expose&$\beta_1$&0.409&0.179&5.230&0.022&1.50 (1.06, 2.14)\\
+age4&$\beta_2$&1.311&0.193&46.293&$<0.001$&3.71 (2.54, 5.41)\\
+age5&$\beta_3$&2.140&0.236&82.523&$<0.001$&8.50 (5.36, 13.49)\\
+age6&$\beta_4$&3.020&0.324&86.882&$<0.001$&20.48 (10.85, 38.65)\\
+age7&$\beta_5$&3.790&0.595&40.556&$<0.001$&44.26 (13.79, 142.12)\\\bottomrule\end{tabular}}
+\revnote{原表6的估计值依次为0.35、1.17、1.90、3.40、4.10，RR为1.42、3.22、6.69、29.96、60.34，与同表的标准误、Wald $\chi^2$ 不相容（如 $(0.35/0.179)^2=3.82\ne5.230$），区间也不是 $e^{\widehat\beta\pm1.96\SE}$。用R对表4资料拟合年龄$+$暴露模型，标准误、Wald $\chi^2$ 与原表完全相同，表7的预测死亡率与标准化残差也逐一相同，可见原表只有估计值、RR和区间一列有误，按复算值更正。解释：调整年龄后，暴露组的死亡率是非暴露组的1.50倍（95\%CI 1.06--2.14）；死亡率随年龄组升高而急剧增加。}
+\ctable{表7\quad 死亡率预测值（每千人年）及残差}{\setlength{\tabcolsep}{3pt}\begin{tabular}{lrrrrrr}\toprule 年龄组（岁）&\multicolumn{3}{c}{非暴露组}&\multicolumn{3}{c}{暴露组}\\\cmidrule(lr){2-4}\cmidrule(lr){5-7}&观测值&预测值&标准化残差&观测值&预测值&标准化残差\\\midrule
+$<40$&0.659&0.617&0.887&0.857&0.929&$-0.909$\\
+40--49&2.114&2.29&$-0.448$&3.571&3.445&0.439\\
+50--59&4.615&5.246&$-0.254$&8.026&7.894&0.248\\
+60--69&0&12.641&$-1.216$&20.168&19.021&0.851\\
+$\ge70$&0&27.319&$-0.735$&44.776&41.106&0.512\\\bottomrule\end{tabular}}
+\begin{annotation}表中残差为标准化偏差残差（偏差残差除以 $\sqrt{1-h}$，已用R复算）。表头单位原印作“‰”，应为每千人年。残差都在 $\pm2$ 以内，未见拟合不好的格子；但格子只有10个、部分格子期望死亡数小于1，残差检查的能力有限。\end{annotation}
+表5至表7的结果可由以下代码得到，人年数通过\texttt{offset=log(py)}进入模型：
+\par\noindent
+\begin{coursecode}{R}
+oc <- data.frame(age=factor(rep(c("<40","40-49","50-59","60-69",">=70"),2),
+                            levels=c("<40","40-49","50-59","60-69",">=70")),
+                 expose=rep(0:1,each=5), d=c(39,14,3,0,0, 30,33,25,12,3),
+                 py=c(59141,6621,650,54,9, 34995,9241,3115,595,67))
+fit <- glm(d~expose+age, family=poisson, offset=log(py), data=oc)
+round(summary(fit)$coefficients,3)
+exp(cbind(IRR=coef(fit), confint.default(fit)))["expose",]   # 调整年龄后的率比
+c(deviance(fit), df.residual(fit))                            # G^2与自由度
+fit0 <- glm(d~expose, family=poisson, offset=log(py), data=oc)
+exp(coef(fit0)["expose"])                                     # 不调整年龄
+\end{coursecode}
+\begin{routput}
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)   -7.390      0.147 -50.315    0.000
+expose         0.409      0.179   2.287    0.022
+age40-49       1.311      0.193   6.804    0.000
+age50-59       2.140      0.236   9.084    0.000
+age60-69       3.020      0.324   9.321    0.000
+age>=70        3.790      0.595   6.368    0.000
+   IRR  2.5 % 97.5 % 
+ 1.505  1.060  2.136 
+[1] 2.474513 4.000000
+  expose 
+2.546529 
+\end{routput}
+\begin{sikao}[粗率比与调整率比]
+未考虑年龄时，暴露组死亡率为非暴露组的2.55倍；调整年龄后为1.50倍。由表4的人年构成可知：非暴露组86\%的人年集中在40岁以下（59141/66475），暴露组仅为73\%（34995/48013），暴露组中老年人的比例较高，而死亡率随年龄增长急剧上升。因此粗率比中有相当一部分来自两组年龄构成的差异。
+
+这一问题与流行病学中的率的标准化相同。直接标准化法以共同的年龄构成重新加权；Poisson回归则假定暴露的率比在各年龄组相同（模型不含交互项，$G^2=2.47$支持这一假定），利用全部资料估计共同的率比。两种方法估计的均为年龄构成相同时两组死亡率之比。
+\end{sikao}
+\subsection{案例分析}
+\sourcepages{8}{17-20}
+\subsubsection{案例介绍}
+\textit{Severe COVID-19 outcomes after full vaccination of primary schedule and initial boosters: pooled analysis of national prospective cohort studies of 30 million individuals in England, Northern Ireland, Scotland, and Wales}。
+
+Lancet. 2022 Oct 15;400(10360):1305--1320. doi:10.1016/S0140-6736(22)01656-7。
+
+标题：全面接种初次疫苗和初始加强疫苗后的严重COVID-19结局：对英格兰、北爱尔兰、苏格兰和威尔士3000万人的全国前瞻性队列研究的汇总分析。
+
+目的：在完成了COVID-19初次疫苗接种计划并接受了初始加强疫苗的人中确定严重COVID-19结局的风险因素。
+\subsubsection{研究设计}
+前瞻性队列研究。本文根据Reporting of Studies Conducted using Observational Routinely-collected Data（RECORD）和Strengthening the Reporting of Observational Studies in Epidemiology（STROBE）清单对各条目内容进行透明报告。
+\begingroup\footnotesize\linespread{1.08}\selectfont\setlength{\tabcolsep}{3pt}
+\begin{longtable}{L{2.1cm}L{.7cm}L{4.0cm}L{5.8cm}L{1.7cm}}
+\caption*{Table S2: STROBE and RECORD checklists}\\\toprule
+&Item No.&STROBE items&RECORD items&Location in manu\-script where items are reported\\\midrule\endfirsthead
+\toprule &Item No.&STROBE items&RECORD items&Location in manu\-script where items are reported\\\midrule\endhead
+\multicolumn{5}{l}{\textbf{Title and abstract}}\\*\addlinespace
+Title and abstract&1&(a) Indicate the study's design with a commonly used term in the title or the abstract. (b) Provide in the abstract an informative and balanced summary of what was done and what was found.&RECORD 1.1: The type of data used should be specified in the title or abstract. When possible, the name of the databases used should be included. RECORD 1.2: If applicable, the geographic region and timeframe within which the study took place should be reported in the title or abstract. RECORD 1.3: If linkage between databases was conducted for the study, this should be clearly stated in the title or abstract.&p. 1--4\\\addlinespace
+\multicolumn{5}{l}{\textbf{Introduction}}\\*\addlinespace
+Background rationale&2&Explain the scientific background and rationale for the investigation being reported.&&p. 5--6\\\addlinespace
+Objectives&3&State specific objectives, including any prespecified hypotheses.&&p. 5--6\\\addlinespace
+\multicolumn{5}{l}{\textbf{Methods}}\\*\addlinespace
+Study Design&4&Present key elements of study design early in the paper.&&p. 6--7\\\addlinespace
+Setting&5&Describe the setting, locations, and relevant dates, including periods of recruitment, exposure, follow-up, and data collection.&&p. 6--10\\\addlinespace
+Participants&6&(a) Cohort study -- Give the eligibility criteria, and the sources and methods of selection of participants. Describe methods of follow-up. Case-control study -- Give the eligibility criteria, and the sources and methods of case ascertainment and control selection. Give the rationale for the choice of cases and controls.&RECORD 6.1: The methods of study population selection (such as codes or algorithms used to identify subjects) should be listed in detail. If this is not possible, an explanation should be provided. RECORD 6.2: Any validation studies of the codes or algorithms used to select the population should be referenced. If validation was conducted for this study and ...&p. 6--9\\\addlinespace
+\multicolumn{5}{l}{\textbf{Results}}\\*\addlinespace
+Participants&13&(a) Report the numbers of individuals at each stage of the study (e.g., numbers potentially eligible, examined for eligibility, confirmed eligible, included in the study, completing follow-up, and analysed). (b) Give reasons for non-participation at each stage. (c) Consider use of a flow diagram.&RECORD 13.1: Describe in detail the selection of the persons included in the study (i.e., study population selection) including filtering based on data quality, data availability and linkage. The selection of included persons can be described in the text and/or by means of the study flow diagram.&p. 10--11\\\addlinespace
+Descriptive data&14&(a) Give characteristics of study participants (e.g., demographic, clinical, social) and information on exposures and potential confounders. (b) Indicate the number of participants with missing data for each variable of interest. (c) Cohort study -- summarise follow-up time (e.g., average and total amount) ...&&p. 10--11\\\addlinespace
+\multicolumn{5}{l}{\textbf{Discussion}}\\*\addlinespace
+Key results&18&Summarise key results with reference to study objectives.&&p. 11--14\\\addlinespace
+Limitations&19&Discuss limitations of the study, taking into account sources of potential bias or ...&RECORD 19.1: Discuss the implications of using data that were not created or collected to answer the specific research question(s). Include discussion of ...&p. 12\\\addlinespace
+\multicolumn{5}{l}{\textbf{Other Information}}\\*\addlinespace
+Funding&22&Give the source of funding and the role of the funders for the present study and, if applicable, for the original study on which the present article is based.&&p. 3410,14,15\\\addlinespace
+Accessibility of protocol, raw data, and pro\-gram\-ming code&..&..&RECORD 22.1: Authors should provide information on how to access any supplemental information such as the study protocol, raw data, or programming code.&p. 14--15\\*
+\bottomrule\end{longtable}\endgroup
+\textbf{数据来源} 融合四个国家的全国医疗保健、RT-PCR检测、疫苗接种、住院和死亡数据，构建了3000万人的前瞻性队列。在各国独立完成伦理审批。
+
+\textbf{研究对象} 纳入：在2020年12月8日至2022年2月28日期间完成了初级疫苗接种计划（两针BNT162b2或ChAdOx1 nCoV-19疫苗），或后续进行了加强接种（BNT162b2或mRNA-1273疫苗）的18岁及以上的个体。随访至：出现与COVID-19相关的住院、死亡结局，或研究结束。
+
+\textbf{分析计划} 研究团队在开始进行分析之前，制定了一份统计分析计划，并发布在EAVE II网站上：Protocol: Common protocol for validation of the QCOVID algorithm across the four UK nations。
+\subsubsection{数据特点}
+\sourcepages{8}{21-22}
+\textbf{结局变量}
+\begin{itemize}
+\item 主要结局：Omicron在2021年12月14日之后占据主导地位。研究结局为纳入对象在2021年12月20日至2022年2月28日之间发生严重COVID-19结局事件。即在完成初级疫苗接种或加强接种后的14天及以上的时间发生与COVID-19相关的住院或死亡。
+\item 与COVID-19相关的住院：在入院前14天内SARS-CoV-2 RT-PCR检测呈阳性并因任何入院原因，或COVID-19不是入院原因但在入院期间SARS-CoV-2 RT-PCR检测结果呈阳性。
+\item 与COVID-19相关的死亡：在SARS-CoV-2 RT-PCR检测呈阳性后的28天内因任何原因死亡，或者在死亡证明上COVID-19被记录为死亡的主要原因。
+\end{itemize}
+\textbf{人口特征和协变量}
+\begin{itemize}
+\item 年龄、性别、种族、BMI、居住地（城市或农村）。
+\item 医疗保健行政区域、社会经济状况。
+\item 首次接种疫苗前的SARS-CoV-2感染情况（接种疫苗前 $<3$ 个月、3--5个月、6--8个月和 $\ge9$ 个月）。
+\item 是否属于高危职业人群（根据既往RT-PCR检测次数定义，0、1、2、3--4、5--9和 $>10$ 次测试）。
+\item 第一次和第二次疫苗接种之间的间隔（3--6周、7--8周、9--10周、11--12周和 $>13$ 周）。
+\item 先前已知与严重COVID-19结局相关的既有合并症的个数。
+\end{itemize}
+\subsubsection{方法应用}
+\sourcepages{8}{23}
+\textbf{描述性分析} 针对所有人口统计和临床因素，对于“完成初级疫苗接种计划”及“后续也完成加强接种”两种人群，分别计算了每1000人年中严重COVID-19结局的发生率。
+
+\textbf{广义线性模型：泊松回归} 得到各人口统计学和临床因素与COVID-19相关住院或死亡之间关联的RR及95\%CI。
+
+\textbf{荟萃分析} 由于数据治理安排不允许在四个国家的数据存储之间共享个人层面的数据，因此本研究首先在每个国家单独进行分析，然后使用Meta分析——固定效应模型进行汇总分析。统计软件：R。
+\subsubsection{结果及解释}
+\sourcepages{8}{24-27}
+\textbf{描述性分析：“完成初级疫苗接种计划”人群}
+\ctable{Table 1\quad Both vaccines}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&12512340 (77.2\%)&48140 (9.4)\\
+Rural&3677090 (22.7\%)&11340 (6.9)\\
+Unknown&19150 (0.1\%)&40 (3.0)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&860170 (5.3\%)&4030 (9.9)\\
+7--8 weeks&3349850 (20.7\%)&5820 (4.5)\\
+9--10 weeks&5431620 (33.5\%)&20080 (7.7)\\
+11--12 weeks&5762820 (35.6\%)&25460 (11.7)\\
+$\ge$13 weeks&804150 (5.0\%)&4070 (14.2)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&13491070 (83.2\%)&52490 (9.7)\\
+1&1266650 (7.8\%)&2430 (3.6)\\
+2&821850 (5.1\%)&1610 (4.2)\\
+3--4&366830 (2.3\%)&1340 (7.2)\\
+5--9&125180 (0.8\%)&960 (13.8)\\
+$\ge$10&137010 (0.8\%)&680 (9.4)\\
+\multicolumn{3}{l}{\textbf{History of SARS-CoV-2 infection}}\\\addlinespace
+No previous infection&15745170 (97.1\%)&58920 (9.0)\\
+$<$3 months&158740 (1.0\%)&210 (3.0)\\
+3--5 months&124400 (0.8\%)&260 (4.1)\\
+6--8 months&105030 (0.6\%)&100 (1.8)\\
+$\ge$9 months&75250 (0.5\%)&60 (1.8)\\
+\bottomrule\end{tabular}}
+\ctable{Table 1\quad ChAdOx1 nCoV-19}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&6517020 (75.6\%)&28640 (10.7)\\
+Rural&2093160 (24.3\%)&6880 (7.5)\\
+Unknown&9330 (0.1\%)&20 (4.3)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&137770 (1.6\%)&840 (14.2)\\
+7--8 weeks&1094000 (12.7\%)&3280 (7.3)\\
+9--10 weeks&3141610 (36.4\%)&12410 (8.4)\\
+11--12 weeks&3879580 (45.0\%)&16380 (11.3)\\
+$\ge$13 weeks&366570 (4.3\%)&2590 (17.5)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&7331710 (85.1\%)&30730 (10.5)\\
+1&644330 (7.5\%)&1760 (5.0)\\
+2&376790 (4.4\%)&1090 (6.1)\\
+3--4&173590 (2.0\%)&920 (10.6)\\
+5--9&59110 (0.7\%)&640 (21.2)\\
+$\ge$10&33980 (0.4\%)&410 (24.7)\\
+\multicolumn{3}{l}{\textbf{History of SARS-CoV-2 infection}}\\\addlinespace
+No previous infection&8406910 (97.5\%)&35170 (10.1)\\
+$<$3 months&64310 (0.7\%)&120 (4.1)\\
+3--5 months&76610 (0.9\%)&200 (5.4)\\
+6--8 months&46120 (0.5\%)&60 (2.4)\\
+$\ge$9 months&25550 (0.3\%)&20 (1.9)\\
+\bottomrule\end{tabular}}
+\ctable{Table 1\quad BNT162b2}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&5995320 (79.0\%)&19500 (8.0)\\
+Rural&1583930 (20.9\%)&4460 (6.1)\\
+Unknown&9820 (0.1\%)&10 (2.0)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&722400 (9.5\%)&3190 (9.1)\\
+7--8 weeks&2255850 (29.7\%)&2550 (3.1)\\
+9--10 weeks&2290010 (30.2\%)&7670 (6.7)\\
+11--12 weeks&1883240 (24.8\%)&9080 (12.4)\\
+$\ge$13 weeks&437580 (5.8\%)&1480 (10.7)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&6159360 (81.2\%)&21760 (8.8)\\
+1&622320 (8.2\%)&670 (2.0)\\
+2&445060 (5.9\%)&520 (2.6)\\
+3--4&193240 (2.5\%)&420 (4.2)\\
+5--9&66080 (0.9\%)&320 (8.2)\\
+$\ge$10&103030 (1.4\%)&260 (4.8)\\
+\multicolumn{3}{l}{\textbf{History of SARS-CoV-2 infection}}\\\addlinespace
+No previous infection&7338260 (96.7\%)&23750 (7.7)\\
+$<$3 months&94430 (1.2\%)&90 (2.2)\\
+3--5 months&47790 (0.6\%)&60 (2.3)\\
+6--8 months&58910 (0.8\%)&40 (1.3)\\
+$\ge$9 months&49700 (0.7\%)&40 (1.7)\\
+\bottomrule\end{tabular}}
+\begin{quote}\footnotesize Rates are per 1000 person-years. $^*$England and Wales. $^\dagger$England, Scotland, and Wales. $^\ddagger$Northern Ireland only.
+
+Combined sample characteristics and rates of severe COVID-19 outcomes for individuals who received primary vaccine doses across England ($N=11.4$ million), Northern Ireland ($N=40\,000$), Scotland ($N=3.1$ million), and Wales ($N=1.6$ million).\end{quote}
+在2020年12月8日至2022年2月28日期间，共16208600名18岁及以上的人完成COVID-19初级疫苗接种计划并被随访，有59510人（0.4\%）出现了严重COVID-19结局。在完成初级疫苗接种的人群中，与接种BNT162b2疫苗（7589080人，发生率7.5/1000人年）的个体相比，接种ChAdOx1 nCoV-19疫苗（8619520人，发生率9.9/1000人年）的个体的严重COVID-19结局发生率更高。针对各人口统计和临床因素的严重COVID-19结局发生率的信息如表所示。
+
+\textbf{描述性分析：“后续也完成加强接种”人群}
+\ctable{Table 2\quad Both vaccines}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Number of risk groups by British National Formulary chapters}}\\\addlinespace
+0&8690 (36.1\%)&90 (1.7)\\
+1&4390 (18.2\%)&80 (2.7)\\
+2&3440 (14.3\%)&150 (6.0)\\
+3&2680 (11.1\%)&160 (8.5)\\
+4&1960 (8.1\%)&170 (12.4)\\
+5&1340 (5.6\%)&180 (20.9)\\
+$\ge$6&1590 (6.6\%)&280 (29.5)\\
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&10519740 (76.0\%)&20590 (7.9)\\
+Rural&3301040 (23.9\%)&5490 (6.5)\\
+Unknown&15620 (0.1\%)&30 (7.7)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&737470 (5.3\%)&1670 (9.3)\\
+7--8 weeks&2744850 (19.8\%)&2500 (4.2)\\
+9--10 weeks&4824110 (34.9\%)&9540 (7.3)\\
+11--12 weeks&5147600 (37.2\%)&11080 (8.6)\\
+$\ge$13 weeks&382380 (2.8\%)&1160 (14.5)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&11642910 (84.1\%)&22410 (7.7)\\
+1&1046660 (7.6\%)&1110 (4.6)\\
+2&637420 (4.6\%)&770 (5.1)\\
+3--4&290460 (2.1\%)&710 (10.6)\\
+5--9&102110 (0.7\%)&510 (18.9)\\
+$\ge$10&116830 (0.8\%)&410 (12.6)\\
+\multicolumn{3}{l}{\textbf{Previous history of SARS-CoV-2 infection}}\\\addlinespace
+No prior infection&13474880 (97.4\%)&25820 (7.7)\\
+$<$3 months&122150 (0.9\%)&110 (4.3)\\
+3--5 months&100480 (0.7\%)&120 (4.7)\\
+6--8 months&80580 (0.6\%)&60 (3.6)\\
+$\ge$9 months&58310 (0.4\%)&50 (4.1)\\
+\bottomrule\end{tabular}}
+\ctable{Table 2\quad mRNA-1273}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Number of risk groups by British National Formulary chapters}}\\\addlinespace
+0&2820 (37.4\%)&20 (1.4)\\
+1&1440 (19.1\%)&20 (2.2)\\
+2&1140 (15.1\%)&20 (2.6)\\
+3&830 (11.0\%)&40 (7.0)\\
+4&560 (7.4\%)&30 (7.7)\\
+5&350 (4.7\%)&30 (14.3)\\
+$\ge$6&410 (5.4\%)&50 (23.6)\\
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&2662240 (78.4\%)&1840 (3.0)\\
+Rural&729930 (21.5\%)&520 (2.9)\\
+Unknown&4400 (0.1\%)&10 (7.8)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&92600 (2.7\%)&50 (2.5)\\
+7--8 weeks&816770 (24.0\%)&340 (2.0)\\
+9--10 weeks&1128170 (33.2\%)&810 (2.9)\\
+11--12 weeks&1252880 (36.9\%)&1000 (3.4)\\
+$\ge$13 weeks&106150 (3.1\%)&160 (7.7)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&2732530 (80.4\%)&1800 (2.8)\\
+1&340690 (10.0\%)&190 (2.8)\\
+2&193230 (5.7\%)&130 (3.1)\\
+3--4&86710 (2.6\%)&110 (6.3)\\
+5--9&25110 (0.7\%)&80 (16.1)\\
+$\ge$10&18300 (0.5\%)&40 (11.5)\\
+\multicolumn{3}{l}{\textbf{Previous history of SARS-CoV-2 infection}}\\\addlinespace
+No prior infection&3280550 (96.6\%)&2320 (3.0)\\
+$<$3 months&34710 (1.0\%)&20 (3.0)\\
+3--5 months&31760 (0.9\%)&20 (2.7)\\
+6--8 months&33080 (1.0\%)&20 (2.8)\\
+$\ge$9 months&16470 (0.5\%)&10 (4.5)\\
+\bottomrule\end{tabular}}
+\ctable{Table 2\quad BNT162b2}{\footnotesize\begin{tabular}{p{5.7cm}rl}\toprule Characteristic&Total vaccination, $n$ (\%)&Severe COVID-19 outcome, $n$ (rate)\\\midrule
+\multicolumn{3}{l}{\textbf{Number of risk groups by British National Formulary chapters}}\\\addlinespace
+0&5870 (35.5\%)&70 (1.8)\\
+1&2950 (17.8\%)&60 (2.9)\\
+2&2300 (13.9\%)&130 (7.5)\\
+3&1850 (11.2\%)&130 (9.0)\\
+4&1400 (8.5\%)&140 (14.1)\\
+5&990 (6.0\%)&150 (23.2)\\
+$\ge$6&1190 (7.2\%)&220 (31.4)\\
+\multicolumn{3}{l}{\textbf{Urban-rural index}}\\\addlinespace
+Urban&7857490 (75.3\%)&18750 (9.4)\\
+Rural&2571110 (24.6\%)&4970 (7.5)\\
+Unknown&11220 (0.1\%)&20 (7.6)\\
+\multicolumn{3}{l}{\textbf{Interval between primary vaccine doses}}\\\addlinespace
+3--6 weeks&644860 (6.2\%)&1620 (10.2)\\
+7--8 weeks&1928080 (18.5\%)&2170 (5.0)\\
+9--10 weeks&3695940 (35.4\%)&8730 (8.6)\\
+11--12 weeks&3894720 (37.3\%)&10070 (10.2)\\
+$\ge$13 weeks&276230 (2.6\%)&1000 (16.8)\\
+\multicolumn{3}{l}{\textbf{Number of previous RT-PCR tests}}\\\addlinespace
+0&8910380 (85.3\%)&20610 (9.1)\\
+1&705970 (6.8\%)&920 (5.4)\\
+2&444190 (4.3\%)&640 (5.9)\\
+3--4&203750 (2.0\%)&610 (12.0)\\
+5--9&77000 (0.7\%)&430 (19.5)\\
+$\ge$10&98530 (0.9\%)&370 (12.7)\\
+\multicolumn{3}{l}{\textbf{Previous history of SARS-CoV-2 infection}}\\\addlinespace
+No prior infection&10194330 (97.6\%)&23500 (9.0)\\
+$<$3 months&87440 (0.8\%)&90 (4.8)\\
+3--5 months&68720 (0.7\%)&100 (5.5)\\
+6--8 months&47500 (0.5\%)&40 (4.1)\\
+$\ge$9 months&41840 (0.4\%)&40 (4.0)\\
+\bottomrule\end{tabular}}
+\begin{quote}\footnotesize Rates are per 1000 person-years. $^*$England and Wales. $^\dagger$England, Scotland, and Wales. $^\ddagger$Northern Ireland only.
+
+Combined sample characteristics and rates of severe COVID-19 outcomes for individuals who received a booster dose, across England ($N=9.7$ million), Northern Ireland ($N=24\,000$), Scotland ($N=2.7$ million), and Wales ($N=1.4$ million).\end{quote}
+完成了疫苗初级接种计划加一剂加强针的人群的一系列样本特征（行）和严重COVID-19结局的发生率（列）。此外，也对加强针是mRNA-1273或BNT162b2的人群分别进行统计描述。
+
+\textbf{泊松回归与荟萃分析} “后续也完成加强接种”人群中，多种人口学及临床特征与严重COVID-19结局的关联：aRRs（95\%CI）。此外，也分别对接种不同类型加强针（mRNA-1273或BNT162b2）的人群进行亚组分析。
+\cfigure{Figure 2. Pooled analyses of Poisson-adjusted rate ratios for demographic and clinical characteristics associated with COVID-19-related hospitalisation or death among individuals who received booster doses}{\begin{tikzpicture}[x=.012cm,y=-.019cm,font=\scriptsize]
+\node[above,text=PlotPrimary,font=\scriptsize\bfseries] at (390,0) {Both vaccines};
+\draw[InkSoft!65,line width=.35pt] (300,12) rectangle (480,61);\draw[InkSoft!70,line width=.4pt,dashed] (324,12)--(324,61);
+\draw[PlotPrimary,line width=.65pt] (324.000,20)--(330.000,20);\fill[PlotPrimary] (327.000,20) circle[radius=1pt];
+\node[anchor=east] at (292,20) {Week $\ge9$};
+\draw[PlotPrimary,line width=.65pt] (322.000,37)--(329.000,37);\fill[PlotPrimary] (325.500,37) circle[radius=1pt];
+\node[anchor=east] at (292,37) {Week 6--8};
+\draw[PlotPrimary,line width=.65pt] (320.000,53)--(327.000,53);\fill[PlotPrimary] (323.500,53) circle[radius=1pt];
+\node[anchor=east] at (292,53) {Week 3--5};
+\node[anchor=east,align=right,text width=29mm] at (90,36.5) {Time since vaccination};
+\draw[InkSoft!65,line width=.35pt] (300,76) rectangle (480,109);\draw[InkSoft!70,line width=.4pt,dashed] (324,76)--(324,109);
+\draw[PlotPrimary,line width=.65pt] (324.000,84)--(331.000,84);\fill[PlotPrimary] (327.500,84) circle[radius=1pt];
+\node[anchor=east] at (292,84) {Male};
+\draw[PlotPrimary,line width=.65pt] (320.000,101)--(327.000,101);\fill[PlotPrimary] (324.000,101) circle[radius=1pt];
+\node[anchor=east] at (292,101) {Female};
+\node[anchor=east,align=right,text width=29mm] at (90,92.5) {Sex};
+\draw[InkSoft!65,line width=.35pt] (300,123) rectangle (480,254);\draw[InkSoft!70,line width=.4pt,dashed] (324,123)--(324,254);
+\draw[PlotPrimary,line width=.65pt] (363.000,131)--(369.000,131);\fill[PlotPrimary] (366.000,131) circle[radius=1pt];
+\node[anchor=east] at (292,131) {$\ge80$ years};
+\draw[PlotPrimary,line width=.65pt] (336.000,148)--(343.000,148);\fill[PlotPrimary] (339.500,148) circle[radius=1pt];
+\node[anchor=east] at (292,148) {75--79 years};
+\draw[PlotPrimary,line width=.65pt] (328.000,164)--(334.000,164);\fill[PlotPrimary] (331.000,164) circle[radius=1pt];
+\node[anchor=east] at (292,164) {70--74 years};
+\draw[PlotPrimary,line width=.65pt] (324.000,180)--(330.000,180);\fill[PlotPrimary] (327.000,180) circle[radius=1pt];
+\node[anchor=east] at (292,180) {65--69 years};
+\draw[PlotPrimary,line width=.65pt] (321.000,197)--(327.000,197);\fill[PlotPrimary] (323.500,197) circle[radius=1pt];
+\node[anchor=east] at (292,197) {60--64 years};
+\draw[PlotPrimary,line width=.65pt] (319.000,213)--(325.000,213);\fill[PlotPrimary] (322.000,213) circle[radius=1pt];
+\node[anchor=east] at (292,213) {55--59 years};
+\draw[PlotPrimary,line width=.65pt] (319.000,229)--(325.000,229);\fill[PlotPrimary] (322.000,229) circle[radius=1pt];
+\node[anchor=east] at (292,229) {50--54 years};
+\draw[PlotPrimary,line width=.65pt] (320.000,246)--(327.000,246);\fill[PlotPrimary] (323.500,246) circle[radius=1pt];
+\node[anchor=east] at (292,246) {18--49 years};
+\node[anchor=east,align=right,text width=29mm] at (90,188.5) {Age};
+\draw[InkSoft!65,line width=.35pt] (300,269) rectangle (480,367);\draw[InkSoft!70,line width=.4pt,dashed] (324,269)--(324,367);
+\draw[PlotPrimary,line width=.65pt] (324.000,277)--(330.000,277);\fill[PlotPrimary] (327.000,277) circle[radius=1pt];
+\node[anchor=east] at (292,277) {Other};
+\draw[PlotPrimary,line width=.65pt] (320.000,293)--(327.000,293);\fill[PlotPrimary] (323.500,293) circle[radius=1pt];
+\node[anchor=east] at (292,293) {Mixed};
+\draw[PlotPrimary,line width=.65pt] (320.000,310)--(327.000,310);\fill[PlotPrimary] (323.500,310) circle[radius=1pt];
+\node[anchor=east] at (292,310) {Black};
+\draw[PlotPrimary,line width=.65pt] (319.000,326)--(325.000,326);\fill[PlotPrimary] (321.500,326) circle[radius=1pt];
+\node[anchor=east] at (292,326) {Asian};
+\draw[PlotPrimary,line width=.65pt] (320.000,342)--(327.000,342);\fill[PlotPrimary] (323.500,342) circle[radius=1pt];
+\node[anchor=east] at (292,342) {White};
+\draw[PlotPrimary,line width=.65pt] (319.000,359)--(326.000,359);\fill[PlotPrimary] (322.500,359) circle[radius=1pt];
+\node[anchor=east] at (292,359) {Unknown};
+\node[anchor=east,align=right,text width=29mm] at (90,318.0) {Ethnicity$^*$};
+\draw[InkSoft!65,line width=.35pt] (300,383) rectangle (480,464);\draw[InkSoft!70,line width=.4pt,dashed] (324,383)--(324,464);
+\draw[PlotPrimary,line width=.65pt] (326.000,391)--(333.000,391);\fill[PlotPrimary] (329.500,391) circle[radius=1pt];
+\node[anchor=east] at (292,391) {1 (most deprived)};
+\draw[PlotPrimary,line width=.65pt] (324.000,407)--(330.000,407);\fill[PlotPrimary] (327.000,407) circle[radius=1pt];
+\node[anchor=east] at (292,407) {2};
+\draw[PlotPrimary,line width=.65pt] (323.000,424)--(329.000,424);\fill[PlotPrimary] (326.000,424) circle[radius=1pt];
+\node[anchor=east] at (292,424) {3};
+\draw[PlotPrimary,line width=.65pt] (322.000,440)--(328.000,440);\fill[PlotPrimary] (324.500,440) circle[radius=1pt];
+\node[anchor=east] at (292,440) {4};
+\draw[PlotPrimary,line width=.65pt] (320.000,456)--(327.000,456);\fill[PlotPrimary] (323.500,456) circle[radius=1pt];
+\node[anchor=east] at (292,456) {5 (least deprived)};
+\node[anchor=east,align=right,text width=29mm] at (90,423.5) {Socioeconomic deprivation status};
+\draw[InkSoft!65,line width=.35pt] (300,479) rectangle (480,592);\draw[InkSoft!70,line width=.4pt,dashed] (324,479)--(324,592);
+\draw[PlotPrimary,line width=.65pt] (329.000,487)--(336.000,487);\fill[PlotPrimary] (332.500,487) circle[radius=1pt];
+\node[anchor=east] at (292,487) {Unknown};
+\draw[PlotPrimary,line width=.65pt] (323.000,503)--(329.000,503);\fill[PlotPrimary] (326.000,503) circle[radius=1pt];
+\node[anchor=east] at (292,503) {$\ge40.0$};
+\draw[PlotPrimary,line width=.65pt] (320.000,520)--(326.000,520);\fill[PlotPrimary] (323.000,520) circle[radius=1pt];
+\node[anchor=east] at (292,520) {35.0--39.9};
+\draw[PlotPrimary,line width=.65pt] (318.000,536)--(325.000,536);\fill[PlotPrimary] (321.500,536) circle[radius=1pt];
+\node[anchor=east] at (292,536) {30.0--34.9};
+\draw[PlotPrimary,line width=.65pt] (318.000,552)--(325.000,552);\fill[PlotPrimary] (321.500,552) circle[radius=1pt];
+\node[anchor=east] at (292,552) {25.0--29.9};
+\draw[PlotPrimary,line width=.65pt] (320.000,568)--(327.000,568);\fill[PlotPrimary] (323.500,568) circle[radius=1pt];
+\node[anchor=east] at (292,568) {18.5--24.9};
+\draw[PlotPrimary,line width=.65pt] (327.000,584)--(334.000,584);\fill[PlotPrimary] (330.500,584) circle[radius=1pt];
+\node[anchor=east] at (292,584) {$<18.5$};
+\node[anchor=east,align=right,text width=29mm] at (90,535.5) {BMI$^\dagger$};
+\draw (307.556,594)--(307.556,599);\node[below] at (307.556,599) {0};
+\draw (324.000,594)--(324.000,599);\node[below] at (324.000,599) {1};
+\draw (340.444,594)--(340.444,599);\node[below] at (340.444,599) {2};
+\draw (373.333,594)--(373.333,599);\node[below] at (373.333,599) {4};
+\draw (406.222,594)--(406.222,599);\node[below] at (406.222,599) {6};
+\draw (439.111,594)--(439.111,599);\node[below] at (439.111,599) {8};
+\draw (472.000,594)--(472.000,599);\node[below] at (472.000,599) {10};
+\node[below,align=center] at (390,620) {Adjusted rate ratio\\(95\%CI)};
+\node[above,text=PlotSecondary,font=\scriptsize\bfseries] at (645,0) {mRNA-1273};
+\draw[InkSoft!65,line width=.35pt] (555,12) rectangle (735,61);\draw[InkSoft!70,line width=.4pt,dashed] (579,12)--(579,61);
+\draw[PlotSecondary,line width=.65pt] (578.000,20)--(586.000,20);\fill[PlotSecondary] (581.500,20) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,37)--(582.000,37);\fill[PlotSecondary] (578.500,37) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,53)--(583.000,53);\fill[PlotSecondary] (579.500,53) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,76) rectangle (735,109);\draw[InkSoft!70,line width=.4pt,dashed] (579,76)--(579,109);
+\draw[PlotSecondary,line width=.65pt] (577.000,84)--(583.000,84);\fill[PlotSecondary] (580.000,84) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,101)--(583.000,101);\fill[PlotSecondary] (579.000,101) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,123) rectangle (735,254);\draw[InkSoft!70,line width=.4pt,dashed] (579,123)--(579,254);
+\draw[PlotSecondary,line width=.65pt] (640.000,131)--(666.000,131);\fill[PlotSecondary] (652.000,131) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (604.000,148)--(621.000,148);\fill[PlotSecondary] (611.500,148) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (590.000,164)--(600.000,164);\fill[PlotSecondary] (594.500,164) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (584.000,180)--(591.000,180);\fill[PlotSecondary] (587.000,180) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,197)--(582.000,197);\fill[PlotSecondary] (578.500,197) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (574.000,213)--(580.000,213);\fill[PlotSecondary] (577.000,213) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (573.000,229)--(579.000,229);\fill[PlotSecondary] (576.000,229) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,246)--(583.000,246);\fill[PlotSecondary] (579.500,246) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,269) rectangle (735,367);\draw[InkSoft!70,line width=.4pt,dashed] (579,269)--(579,367);
+\draw[PlotSecondary,line width=.65pt] (577.000,277)--(600.000,277);\fill[PlotSecondary] (585.500,277) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (577.000,293)--(598.000,293);\fill[PlotSecondary] (585.000,293) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,310)--(592.000,310);\fill[PlotSecondary] (582.500,310) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,326)--(584.000,326);\fill[PlotSecondary] (579.500,326) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,342)--(583.000,342);\fill[PlotSecondary] (579.500,342) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (572.000,359)--(579.000,359);\fill[PlotSecondary] (575.500,359) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,383) rectangle (735,464);\draw[InkSoft!70,line width=.4pt,dashed] (579,383)--(579,464);
+\draw[PlotSecondary,line width=.65pt] (583.000,391)--(590.000,391);\fill[PlotSecondary] (586.500,391) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (582.000,407)--(588.000,407);\fill[PlotSecondary] (584.500,407) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (578.000,424)--(585.000,424);\fill[PlotSecondary] (582.000,424) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (580.000,440)--(586.000,440);\fill[PlotSecondary] (583.000,440) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,456)--(583.000,456);\fill[PlotSecondary] (579.500,456) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,479) rectangle (735,592);\draw[InkSoft!70,line width=.4pt,dashed] (579,479)--(579,592);
+\draw[PlotSecondary,line width=.65pt] (577.000,487)--(585.000,487);\fill[PlotSecondary] (580.500,487) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (577.000,503)--(585.000,503);\fill[PlotSecondary] (581.000,503) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (575.000,520)--(581.000,520);\fill[PlotSecondary] (578.000,520) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (575.000,536)--(581.000,536);\fill[PlotSecondary] (578.000,536) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (573.000,552)--(580.000,552);\fill[PlotSecondary] (576.500,552) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,568)--(583.000,568);\fill[PlotSecondary] (579.500,568) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,584)--(584.000,584);\fill[PlotSecondary] (579.500,584) circle[radius=1pt];
+\draw (563.667,594)--(563.667,599);\node[below] at (563.667,599) {0};
+\draw (580.000,594)--(580.000,599);\node[below] at (580.000,599) {1};
+\draw (596.333,594)--(596.333,599);\node[below] at (596.333,599) {2};
+\draw (629.000,594)--(629.000,599);\node[below] at (629.000,599) {4};
+\draw (661.667,594)--(661.667,599);\node[below] at (661.667,599) {6};
+\draw (694.333,594)--(694.333,599);\node[below] at (694.333,599) {8};
+\draw (727.000,594)--(727.000,599);\node[below] at (727.000,599) {10};
+\node[below,align=center] at (645,620) {Adjusted rate ratio\\(95\%CI)};
+\node[above,text=PlotThird,font=\scriptsize\bfseries] at (900,0) {BNT162b2};
+\draw[InkSoft!65,line width=.35pt] (810,12) rectangle (990,61);\draw[InkSoft!70,line width=.4pt,dashed] (834,12)--(834,61);
+\draw[PlotThird,line width=.65pt] (833.000,20)--(840.000,20);\fill[PlotThird] (836.500,20) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,37)--(840.000,37);\fill[PlotThird] (836.500,37) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,53)--(838.000,53);\fill[PlotThird] (834.500,53) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,76) rectangle (990,109);\draw[InkSoft!70,line width=.4pt,dashed] (834,76)--(834,109);
+\draw[PlotThird,line width=.65pt] (835.000,84)--(842.000,84);\fill[PlotThird] (838.500,84) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,101)--(838.000,101);\fill[PlotThird] (834.500,101) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,123) rectangle (990,254);\draw[InkSoft!70,line width=.4pt,dashed] (834,123)--(834,254);
+\draw[PlotThird,line width=.65pt] (867.000,131)--(874.000,131);\fill[PlotThird] (870.500,131) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (843.000,148)--(850.000,148);\fill[PlotThird] (846.500,148) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (836.000,164)--(843.000,164);\fill[PlotThird] (839.500,164) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,180)--(839.000,180);\fill[PlotThird] (836.000,180) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,197)--(837.000,197);\fill[PlotThird] (834.500,197) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (829.000,213)--(836.000,213);\fill[PlotThird] (832.500,213) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (830.000,229)--(836.000,229);\fill[PlotThird] (833.000,229) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,246)--(838.000,246);\fill[PlotThird] (834.500,246) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,269) rectangle (990,367);\draw[InkSoft!70,line width=.4pt,dashed] (834,269)--(834,367);
+\draw[PlotThird,line width=.65pt] (834.000,277)--(840.000,277);\fill[PlotThird] (837.500,277) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (830.000,293)--(837.000,293);\fill[PlotThird] (833.500,293) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (830.000,310)--(837.000,310);\fill[PlotThird] (833.500,310) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (829.000,326)--(836.000,326);\fill[PlotThird] (832.500,326) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,342)--(838.000,342);\fill[PlotThird] (834.500,342) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (830.000,359)--(837.000,359);\fill[PlotThird] (833.500,359) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,383) rectangle (990,464);\draw[InkSoft!70,line width=.4pt,dashed] (834,383)--(834,464);
+\draw[PlotThird,line width=.65pt] (837.000,391)--(843.000,391);\fill[PlotThird] (840.000,391) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (834.000,407)--(841.000,407);\fill[PlotThird] (837.500,407) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,424)--(840.000,424);\fill[PlotThird] (836.500,424) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (832.000,440)--(839.000,440);\fill[PlotThird] (835.500,440) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,456)--(838.000,456);\fill[PlotThird] (834.500,456) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,479) rectangle (990,592);\draw[InkSoft!70,line width=.4pt,dashed] (834,479)--(834,592);
+\draw[PlotThird,line width=.65pt] (841.000,487)--(848.000,487);\fill[PlotThird] (844.500,487) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,503)--(840.000,503);\fill[PlotThird] (836.500,503) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,520)--(837.000,520);\fill[PlotThird] (834.000,520) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (829.000,536)--(836.000,536);\fill[PlotThird] (832.500,536) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (829.000,552)--(836.000,552);\fill[PlotThird] (832.500,552) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,568)--(838.000,568);\fill[PlotThird] (834.500,568) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (839.000,584)--(845.000,584);\fill[PlotThird] (842.000,584) circle[radius=1pt];
+\draw (818.667,594)--(818.667,599);\node[below] at (818.667,599) {0};
+\draw (835.000,594)--(835.000,599);\node[below] at (835.000,599) {1};
+\draw (851.333,594)--(851.333,599);\node[below] at (851.333,599) {2};
+\draw (884.000,594)--(884.000,599);\node[below] at (884.000,599) {4};
+\draw (916.667,594)--(916.667,599);\node[below] at (916.667,599) {6};
+\draw (949.333,594)--(949.333,599);\node[below] at (949.333,599) {8};
+\draw (982.000,594)--(982.000,599);\node[below] at (982.000,599) {10};
+\node[below,align=center] at (900,620) {Adjusted rate ratio\\(95\%CI)};
+\end{tikzpicture}}
+\cfigure{Figure 2（续）. Pooled analyses of Poisson-adjusted rate ratios for demographic and clinical characteristics associated with COVID-19-related hospitalisation or death among individuals who received booster doses}{\begin{tikzpicture}[x=.012cm,y=-.019cm,font=\scriptsize]
+\node[above,text=PlotPrimary,font=\scriptsize\bfseries] at (390,0) {Both vaccines};
+\draw[InkSoft!65,line width=.35pt] (300,12) rectangle (480,109);\draw[InkSoft!70,line width=.4pt,dashed] (324,12)--(324,109);
+\draw[PlotPrimary,line width=.65pt] (456.000,20)--(470.000,20);\fill[PlotPrimary] (462.500,20) circle[radius=1pt];
+\node[anchor=east] at (292,20) {$\ge5$};
+\draw[PlotPrimary,line width=.65pt] (406.000,36)--(416.000,36);\fill[PlotPrimary] (411.000,36) circle[radius=1pt];
+\node[anchor=east] at (292,36) {4};
+\draw[PlotPrimary,line width=.65pt] (382.000,52)--(389.000,52);\fill[PlotPrimary] (385.500,52) circle[radius=1pt];
+\node[anchor=east] at (292,52) {3};
+\draw[PlotPrimary,line width=.65pt] (359.000,68)--(365.000,68);\fill[PlotPrimary] (362.000,68) circle[radius=1pt];
+\node[anchor=east] at (292,68) {2};
+\draw[PlotPrimary,line width=.65pt] (336.000,85)--(343.000,85);\fill[PlotPrimary] (339.500,85) circle[radius=1pt];
+\node[anchor=east] at (292,85) {1};
+\draw[PlotPrimary,line width=.65pt] (320.000,101)--(327.000,101);\fill[PlotPrimary] (323.500,101) circle[radius=1pt];
+\node[anchor=east] at (292,101) {0};
+\node[anchor=east,align=right,text width=29mm] at (90,60.5) {Number of risk groups$^\dagger$};
+\draw[InkSoft!65,line width=.35pt] (300,125) rectangle (480,238);\draw[InkSoft!70,line width=.4pt,dashed] (324,125)--(324,238);
+\draw[PlotPrimary,line width=.65pt] (386.000,133)--(444.000,133);\fill[PlotPrimary] (410.500,133) circle[radius=1pt];
+\node[anchor=east] at (292,133) {$\ge6$};
+\draw[PlotPrimary,line width=.65pt] (372.000,149)--(422.000,149);\fill[PlotPrimary] (393.500,149) circle[radius=1pt];
+\node[anchor=east] at (292,149) {5};
+\draw[PlotPrimary,line width=.65pt] (353.000,165)--(388.000,165);\fill[PlotPrimary] (367.500,165) circle[radius=1pt];
+\node[anchor=east] at (292,165) {4};
+\draw[PlotPrimary,line width=.65pt] (343.000,182)--(370.000,182);\fill[PlotPrimary] (354.500,182) circle[radius=1pt];
+\node[anchor=east] at (292,182) {3};
+\draw[PlotPrimary,line width=.65pt] (337.000,198)--(359.000,198);\fill[PlotPrimary] (346.500,198) circle[radius=1pt];
+\node[anchor=east] at (292,198) {2};
+\draw[PlotPrimary,line width=.65pt] (323.000,214)--(335.000,214);\fill[PlotPrimary] (328.500,214) circle[radius=1pt];
+\node[anchor=east] at (292,214) {1};
+\draw[PlotPrimary,line width=.65pt] (320.000,230)--(327.000,230);\fill[PlotPrimary] (323.500,230) circle[radius=1pt];
+\node[anchor=east] at (292,230) {0};
+\node[anchor=east,align=right,text width=29mm] at (90,181.5) {Number of risk groups by British National Formulary chapters$^\ddagger$};
+\draw[InkSoft!65,line width=.35pt] (300,254) rectangle (480,286);\draw[InkSoft!70,line width=.4pt,dashed] (324,254)--(324,286);
+\draw[PlotPrimary,line width=.65pt] (319.000,262)--(325.000,262);\fill[PlotPrimary] (322.000,262) circle[radius=1pt];
+\node[anchor=east] at (292,262) {Rural};
+\draw[PlotPrimary,line width=.65pt] (320.000,278)--(327.000,278);\fill[PlotPrimary] (323.500,278) circle[radius=1pt];
+\node[anchor=east] at (292,278) {Urban};
+\node[anchor=east,align=right,text width=29mm] at (90,270.0) {Urban-rural index};
+\draw[InkSoft!65,line width=.35pt] (300,301) rectangle (480,382);\draw[InkSoft!70,line width=.4pt,dashed] (324,301)--(324,382);
+\draw[PlotPrimary,line width=.65pt] (333.000,309)--(340.000,309);\fill[PlotPrimary] (336.500,309) circle[radius=1pt];
+\node[anchor=east] at (292,309) {$\ge13$ weeks};
+\draw[PlotPrimary,line width=.65pt] (322.000,326)--(329.000,326);\fill[PlotPrimary] (325.500,326) circle[radius=1pt];
+\node[anchor=east] at (292,326) {11--12 weeks};
+\draw[PlotPrimary,line width=.65pt] (322.000,342)--(329.000,342);\fill[PlotPrimary] (325.500,342) circle[radius=1pt];
+\node[anchor=east] at (292,342) {9--10 weeks};
+\draw[PlotPrimary,line width=.65pt] (320.000,358)--(327.000,358);\fill[PlotPrimary] (323.500,358) circle[radius=1pt];
+\node[anchor=east] at (292,358) {7--8 weeks};
+\draw[PlotPrimary,line width=.65pt] (320.000,374)--(327.000,374);\fill[PlotPrimary] (323.500,374) circle[radius=1pt];
+\node[anchor=east] at (292,374) {3--6 weeks};
+\node[anchor=east,align=right,text width=29mm] at (90,341.5) {Interval between primary vaccine doses};
+\draw[InkSoft!65,line width=.35pt] (300,397) rectangle (480,495);\draw[InkSoft!70,line width=.4pt,dashed] (324,397)--(324,495);
+\draw[PlotPrimary,line width=.65pt] (374.000,405)--(391.000,405);\fill[PlotPrimary] (382.500,405) circle[radius=1pt];
+\node[anchor=east] at (292,405) {$\ge10$};
+\draw[PlotPrimary,line width=.65pt] (373.000,421)--(386.000,421);\fill[PlotPrimary] (379.000,421) circle[radius=1pt];
+\node[anchor=east] at (292,421) {5--9};
+\draw[PlotPrimary,line width=.65pt] (344.000,438)--(351.000,438);\fill[PlotPrimary] (347.500,438) circle[radius=1pt];
+\node[anchor=east] at (292,438) {3--4};
+\draw[PlotPrimary,line width=.65pt] (325.000,454)--(332.000,454);\fill[PlotPrimary] (328.500,454) circle[radius=1pt];
+\node[anchor=east] at (292,454) {2};
+\draw[PlotPrimary,line width=.65pt] (325.000,470)--(331.000,470);\fill[PlotPrimary] (328.000,470) circle[radius=1pt];
+\node[anchor=east] at (292,470) {1};
+\draw[PlotPrimary,line width=.65pt] (320.000,487)--(327.000,487);\fill[PlotPrimary] (323.500,487) circle[radius=1pt];
+\node[anchor=east] at (292,487) {0};
+\node[anchor=east,align=right,text width=29mm] at (90,446.0) {Number of previous RT-PCR tests};
+\draw[InkSoft!65,line width=.35pt] (300,510) rectangle (480,591);\draw[InkSoft!70,line width=.4pt,dashed] (324,510)--(324,591);
+\draw[PlotPrimary,line width=.65pt] (311.000,518)--(317.000,518);\fill[PlotPrimary] (314.000,518) circle[radius=1pt];
+\node[anchor=east] at (292,518) {$\ge9$ months};
+\draw[PlotPrimary,line width=.65pt] (315.000,534)--(322.000,534);\fill[PlotPrimary] (318.500,534) circle[radius=1pt];
+\node[anchor=east] at (292,534) {6--8 months};
+\draw[PlotPrimary,line width=.65pt] (318.000,550)--(324.000,550);\fill[PlotPrimary] (321.000,550) circle[radius=1pt];
+\node[anchor=east] at (292,550) {3--5 months};
+\draw[PlotPrimary,line width=.65pt] (315.000,566)--(322.000,566);\fill[PlotPrimary] (318.500,566) circle[radius=1pt];
+\node[anchor=east] at (292,566) {$<3$ months};
+\draw[PlotPrimary,line width=.65pt] (320.000,583)--(327.000,583);\fill[PlotPrimary] (323.500,583) circle[radius=1pt];
+\node[anchor=east] at (292,583) {No previous infection};
+\node[anchor=east,align=right,text width=29mm] at (90,550.5) {History of SARS-CoV-2 infection};
+\draw (307.556,593)--(307.556,598);\node[below] at (307.556,598) {0};
+\draw (324.000,593)--(324.000,598);\node[below] at (324.000,598) {1};
+\draw (340.444,593)--(340.444,598);\node[below] at (340.444,598) {2};
+\draw (373.333,593)--(373.333,598);\node[below] at (373.333,598) {4};
+\draw (406.222,593)--(406.222,598);\node[below] at (406.222,598) {6};
+\draw (439.111,593)--(439.111,598);\node[below] at (439.111,598) {8};
+\draw (472.000,593)--(472.000,598);\node[below] at (472.000,598) {10};
+\node[below,align=center] at (390,619) {Adjusted rate ratio\\(95\%CI)};
+\node[above,text=PlotSecondary,font=\scriptsize\bfseries] at (645,0) {mRNA-1273};
+\draw[InkSoft!65,line width=.35pt] (555,12) rectangle (735,109);\draw[InkSoft!70,line width=.4pt,dashed] (579,12)--(579,109);
+\draw[PlotSecondary,line width=.65pt] (701.000,20)--(733.000,20);\fill[PlotSecondary] (727.000,20) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (645.000,36)--(680.000,36);\fill[PlotSecondary] (661.000,36) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (620.000,52)--(640.000,52);\fill[PlotSecondary] (629.000,52) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (604.000,68)--(616.000,68);\fill[PlotSecondary] (609.500,68) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (589.000,85)--(596.000,85);\fill[PlotSecondary] (592.500,85) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,101)--(583.000,101);\fill[PlotSecondary] (579.500,101) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,125) rectangle (735,238);\draw[InkSoft!70,line width=.4pt,dashed] (579,125)--(579,238);
+\draw[PlotSecondary,line width=.65pt] (637.000,133)--(700.000,133);\fill[PlotSecondary] (694.500,133) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (615.000,149)--(700.000,149);\fill[PlotSecondary] (657.000,149) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (594.000,165)--(666.000,165);\fill[PlotSecondary] (619.500,165) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (593.000,182)--(655.000,182);\fill[PlotSecondary] (615.500,182) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (575.000,198)--(603.000,198);\fill[PlotSecondary] (584.500,198) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (575.000,214)--(601.000,214);\fill[PlotSecondary] (584.000,214) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,230)--(583.000,230);\fill[PlotSecondary] (579.500,230) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,254) rectangle (735,286);\draw[InkSoft!70,line width=.4pt,dashed] (579,254)--(579,286);
+\draw[PlotSecondary,line width=.65pt] (576.000,262)--(583.000,262);\fill[PlotSecondary] (579.500,262) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,278)--(583.000,278);\fill[PlotSecondary] (579.500,278) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,301) rectangle (735,382);\draw[InkSoft!70,line width=.4pt,dashed] (579,301)--(579,382);
+\draw[PlotSecondary,line width=.65pt] (584.000,309)--(603.000,309);\fill[PlotSecondary] (592.000,309) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (578.000,326)--(589.000,326);\fill[PlotSecondary] (582.500,326) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (577.000,342)--(586.000,342);\fill[PlotSecondary] (581.000,342) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,358)--(585.000,358);\fill[PlotSecondary] (579.500,358) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,374)--(583.000,374);\fill[PlotSecondary] (579.500,374) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,397) rectangle (735,495);\draw[InkSoft!70,line width=.4pt,dashed] (579,397)--(579,495);
+\draw[PlotSecondary,line width=.65pt] (606.000,405)--(657.000,405);\fill[PlotSecondary] (626.500,405) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (636.000,421)--(689.000,421);\fill[PlotSecondary] (658.500,421) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (592.000,438)--(608.000,438);\fill[PlotSecondary] (599.000,438) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (583.000,454)--(592.000,454);\fill[PlotSecondary] (586.500,454) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (579.000,470)--(586.000,470);\fill[PlotSecondary] (582.000,470) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,487)--(583.000,487);\fill[PlotSecondary] (579.500,487) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (555,510) rectangle (735,591);\draw[InkSoft!70,line width=.4pt,dashed] (579,510)--(579,591);
+\draw[PlotSecondary,line width=.65pt] (565.000,518)--(585.000,518);\fill[PlotSecondary] (568.500,518) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (571.000,534)--(601.000,534);\fill[PlotSecondary] (580.000,534) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (571.000,550)--(595.000,550);\fill[PlotSecondary] (579.000,550) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (567.000,566)--(578.000,566);\fill[PlotSecondary] (570.500,566) circle[radius=1pt];
+\draw[PlotSecondary,line width=.65pt] (576.000,583)--(583.000,583);\fill[PlotSecondary] (579.500,583) circle[radius=1pt];
+\draw (563.667,593)--(563.667,598);\node[below] at (563.667,598) {0};
+\draw (580.000,593)--(580.000,598);\node[below] at (580.000,598) {1};
+\draw (596.333,593)--(596.333,598);\node[below] at (596.333,598) {2};
+\draw (629.000,593)--(629.000,598);\node[below] at (629.000,598) {4};
+\draw (661.667,593)--(661.667,598);\node[below] at (661.667,598) {6};
+\draw (694.333,593)--(694.333,598);\node[below] at (694.333,598) {8};
+\draw (727.000,593)--(727.000,598);\node[below] at (727.000,598) {10};
+\node[below,align=center] at (645,619) {Adjusted rate ratio\\(95\%CI)};
+\node[above,text=PlotThird,font=\scriptsize\bfseries] at (900,0) {BNT162b2};
+\draw[InkSoft!65,line width=.35pt] (810,12) rectangle (990,109);\draw[InkSoft!70,line width=.4pt,dashed] (834,12)--(834,109);
+\draw[PlotThird,line width=.65pt] (964.000,20)--(978.000,20);\fill[PlotThird] (971.000,20) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (916.000,36)--(925.000,36);\fill[PlotThird] (920.500,36) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (893.000,52)--(899.000,52);\fill[PlotThird] (896.000,52) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (870.000,68)--(876.000,68);\fill[PlotThird] (873.000,68) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (847.000,85)--(854.000,85);\fill[PlotThird] (850.500,85) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,101)--(838.000,101);\fill[PlotThird] (834.500,101) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,125) rectangle (990,238);\draw[InkSoft!70,line width=.4pt,dashed] (834,125)--(834,238);
+\draw[PlotThird,line width=.65pt] (890.000,133)--(955.000,133);\fill[PlotThird] (917.500,133) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (881.000,149)--(939.000,149);\fill[PlotThird] (905.000,149) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (862.000,165)--(903.000,165);\fill[PlotThird] (879.500,165) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (851.000,182)--(881.000,182);\fill[PlotThird] (863.500,182) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (851.000,198)--(880.000,198);\fill[PlotThird] (863.500,198) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,214)--(847.000,214);\fill[PlotThird] (838.500,214) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,230)--(838.000,230);\fill[PlotThird] (834.500,230) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,254) rectangle (990,286);\draw[InkSoft!70,line width=.4pt,dashed] (834,254)--(834,286);
+\draw[PlotThird,line width=.65pt] (830.000,262)--(836.000,262);\fill[PlotThird] (833.000,262) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,278)--(838.000,278);\fill[PlotThird] (834.500,278) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,301) rectangle (990,382);\draw[InkSoft!70,line width=.4pt,dashed] (834,301)--(834,382);
+\draw[PlotThird,line width=.65pt] (845.000,309)--(851.000,309);\fill[PlotThird] (848.000,309) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,326)--(840.000,326);\fill[PlotThird] (836.500,326) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (833.000,342)--(839.000,342);\fill[PlotThird] (836.000,342) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,358)--(838.000,358);\fill[PlotThird] (834.500,358) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,374)--(838.000,374);\fill[PlotThird] (834.500,374) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,397) rectangle (990,495);\draw[InkSoft!70,line width=.4pt,dashed] (834,397)--(834,495);
+\draw[PlotThird,line width=.65pt] (886.000,405)--(905.000,405);\fill[PlotThird] (894.500,405) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (883.000,421)--(899.000,421);\fill[PlotThird] (890.500,421) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (856.000,438)--(863.000,438);\fill[PlotThird] (859.500,438) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (836.000,454)--(842.000,454);\fill[PlotThird] (838.500,454) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (836.000,470)--(843.000,470);\fill[PlotThird] (839.500,470) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,487)--(838.000,487);\fill[PlotThird] (834.500,487) circle[radius=1pt];
+\draw[InkSoft!65,line width=.35pt] (810,510) rectangle (990,591);\draw[InkSoft!70,line width=.4pt,dashed] (834,510)--(834,591);
+\draw[PlotThird,line width=.65pt] (821.000,518)--(828.000,518);\fill[PlotThird] (825.000,518) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (827.000,534)--(835.000,534);\fill[PlotThird] (830.500,534) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (829.000,550)--(836.000,550);\fill[PlotThird] (832.500,550) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (826.000,566)--(833.000,566);\fill[PlotThird] (829.500,566) circle[radius=1pt];
+\draw[PlotThird,line width=.65pt] (831.000,583)--(838.000,583);\fill[PlotThird] (834.500,583) circle[radius=1pt];
+\draw (818.667,593)--(818.667,598);\node[below] at (818.667,598) {0};
+\draw (835.000,593)--(835.000,598);\node[below] at (835.000,598) {1};
+\draw (851.333,593)--(851.333,598);\node[below] at (851.333,598) {2};
+\draw (884.000,593)--(884.000,598);\node[below] at (884.000,598) {4};
+\draw (916.667,593)--(916.667,598);\node[below] at (916.667,598) {6};
+\draw (949.333,593)--(949.333,598);\node[below] at (949.333,598) {8};
+\draw (982.000,593)--(982.000,598);\node[below] at (982.000,598) {10};
+\node[below,align=center] at (900,619) {Adjusted rate ratio\\(95\%CI)};
+\end{tikzpicture}}
+与女性相比，男性aRR [95\%CI]：1.23 [1.20--1.26]。与18--49岁者相比，$\ge80$ 岁者的aRR [95\%CI]：9.51 [9.07--9.97]。
+\begin{annotation}男性容易严重新冠；老人容易严重新冠。\end{annotation}
+\textbf{结果描述}
+\begin{quote}
+Individuals with a greater number of comorbidities ($\ge5$ comorbidities vs none; 9.51 [9.07--9.97]), who were older (aged $\ge80$ years vs 18--49 years; 3.60 [3.45--3.75]), or who were male (male vs female; 1.23 [1.20--1.26]) were also associated with increased risk of severe COVID-19 outcomes.
+\end{quote}
+\textbf{结果讨论} 65岁以上人群较18--49岁者发生严重结局的风险高，提示有必要在老年人中接种第二剂加强针。
+\subsubsection{英文表达}
+\sourcepages{8}{28}
+\textbf{Methods}
+\begin{quote}
+We used generalized linear models, assuming a Poisson distribution with person-time as an offset that represented the time at risk, as an approximation to a Cox proportional hazards model to derive rate ratios (RRs) with 95\% CIs for the association between demographic and clinical factors and COVID-19-related hospitalization or death. The adjusted RRs (aRRs) for time since receiving the vaccine dose were estimated for all vaccines combined, as well as for each vaccine separately.
+
+The models were adjusted for age, sex, socioeconomic deprivation status, urban versus rural place of residence, BMI, number of pre-existing comorbidities\ldots.
+
+All statistical analyses were done using the statistical software R.
+\end{quote}
+\subsubsection{注意事项}
+\sourcepages{8}{29}
+\begin{enumerate}
+\item 前瞻性队列研究的报告依据：RECORD、STROBE。
+\item 提前撰写统计分析计划。
+\item 数据共享问题：对各国结果进行Meta分析。
+\item 人年发病率：发生严重COVID-19结局的人数/总的随访人年数 $\times1000$。
+\item 诸多人口统计学和临床特征的选取是基于研究团队在既往工作中确定的高风险因素，同时考虑到数据在每个国家的可用性而确定。
+\end{enumerate}
+\begin{annotation}发病密度。\end{annotation}
+\subsection{思考与练习}
+\sourcepages{8}{30-35}
+某疾控中心拟分析不同因素对儿童接种新型流感疫苗后1个月内发热次数的影响，为疫苗接种后的不良反应监测提供依据。选取500名3--12岁接种新型流感疫苗的儿童，随访1个月记录发热次数。分析年龄组、疫苗剂量、基础疾病对儿童接种疫苗后发热次数的影响。
+\ctable{儿童发热次数研究的变量定义}{\begin{tabularx}{\textwidth}{llX}\toprule 变量类型&变量名称&变量编码/说明\\\midrule
+因变量&发热次数 $Y$&计数型变量，取值为0、1、2、……（随访1个月内的发热次数）\\\addlinespace
+自变量&年龄组 $X_1$&分类变量：1=3--6岁（低龄组），2=7--12岁（高龄组）\\\addlinespace
+自变量&疫苗剂量 $X_2$&分类变量：1=标准剂量，2=高剂量\\\addlinespace
+自变量&基础疾病 $X_3$&二分类变量：0=无基础疾病，1=有基础疾病（如哮喘、过敏性鼻炎）\\\addlinespace
+偏移项&随访天数（offset）&连续型变量，取值为28--31天（因部分儿童随访天数略有差异，以 $\ln(\text{随访天数})$ 作偏移项调整观测时间）\\\bottomrule\end{tabularx}}
+\ctable{儿童发热次数的Poisson回归结果}{\begin{tabular}{lrrrrr}\toprule 变量&系数 $\beta$&标准误&$Z$&$P$&IRR $\exp(\beta)$\\\midrule
+截距（$\beta_0$）&$-2.50$&0.12&$-20.83$&$<0.001$&---\\
+年龄组（$X_1=2$）&$-0.35$&0.10&$-3.50$&$<0.001$&0.70\\
+疫苗剂量（$X_2=2$）&0.42&0.11&3.82&$<0.001$&1.52\\
+基础疾病（$X_3=1$）&0.60&0.13&4.62&$<0.001$&1.82\\
+偏移项 $\ln(\text{随访天数})$&1（固定）&---&---&---&---\\\bottomrule\end{tabular}\par\smallskip\footnotesize 截距是参照组（低龄、标准剂量、无基础疾病）单位随访时间发热率的对数；系数取指数为发热率比（IRR）。}
+\textbf{问题：可否采用Logistic回归模型分析此资料？}
+\ctable{Logistic回归与Poisson回归的结果比较}{\begin{tabularx}{\textwidth}{p{3.2cm}XX}\toprule 变量&Logistic回归：系数 $\beta$&Poisson回归（原结果）：IRR $\exp(\beta)$\\\midrule
+截距（$\beta_0$）&$-1.80$（$P<0.001$）&$-2.50$（$P<0.001$）\\\addlinespace
+年龄组（7--12岁vs3--6岁）&$-0.52$（OR=0.59，95\%CI 0.41--0.85，$P=0.004$）&0.70（95\%CI 0.57--0.86，$P<0.001$）\\\addlinespace
+疫苗剂量（高剂量vs标准剂量）&0.65（OR=1.92，95\%CI 1.32--2.79，$P<0.001$）&1.52（95\%CI 1.22--1.89，$P<0.001$）\\\addlinespace
+基础疾病（有vs无）&0.88（OR=2.41，95\%CI 1.56--3.72，$P<0.001$）&1.82（95\%CI 1.37--2.41，$P<0.001$）\\\addlinespace\bottomrule\end{tabularx}}
+\ctable{Logistic回归与Poisson回归}{\begin{tabularx}{\textwidth}{lXX}\toprule 对比维度&Logistic回归&Poisson回归\\\midrule
+因变量&二分类&计数（次数）\\危险度指标&OR&发病率之比\\关注重点&发热有无（概率）&发热次数（计数率）\\信息利用&少&多（次数）\\结果趋势&一致&一致，估计值偏低\\理论分布&二项分布&Poisson分布（总体均数等于总体方差）\\\bottomrule\end{tabularx}}
+\textbf{问题：可否采用Cox回归分析此资料？} 重复事件的生存分析方法，同时关注事件发生的次数和事件发生的时间。
+\section{负二项回归（Negative binomial regression）}
+\sourcepages{8}{36-41}
+\subsection{负二项回归模型}
+医学研究中，很多事件的发生是非独立的（传染的、原因不明的聚集现象等），这种资料的特点是估计值的方差较Poisson分布的方差大（over-dispersion or extra-Poisson variation）。
+\begin{annotation}此时若仍用Poisson回归，只要均值结构正确，系数的点估计仍然一致，但模型低估了方差，标准误偏小、置信区间偏窄、$P$ 值偏小（见下文）。\end{annotation}
+\textbf{Poisson回归模型} $Y$ 服从Poisson分布，$\lambda$ 为相应的均数。
+\[
+\lambda\ \longleftrightarrow\ \beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,
+\]
+\[
+\ln\lambda=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\qquad
+\lambda=e^{\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m}.
+\]
+\begin{annotation}连接函数。\end{annotation}
+Poisson回归用于描述当观察结果变量服从Poisson分布时的资料，即事件的发生是独立的。但医学研究中，很多事件的发生是非独立的，这种资料可基于负二项分布用负二项回归分析。
+
+负二项分布实际上是当Poisson分布中强度参数 $\lambda$ 服从 $\Gamma$ 分布时所得到的复合分布。在Poisson分布中，$\lambda$ 是一常数；在负二项分布中是一随机变量，并服从 $\Gamma$ 分布，因此负二项分布又称 $\Gamma$--Poisson分布（Gamma--Poisson distribution）。
+
+\textbf{负二项回归模型} $Y$ 服从负二项分布，均数为 $\mu$（有的资料记作 $\lambda$）。
+\[
+\ln\mu=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\qquad
+\mu=e^{\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m}.
+\]
+Poisson分布的方差=均数=$\mu$。本书统一采用NB2参数化：负二项分布的均数 $=\mu$，方差 $=\mu+\alpha\mu^2=\mu(1+\alpha\mu)$，$\alpha\ge0$ 为过离散参数（有的资料记作 $\kappa$；Stata \texttt{nbreg} 输出的alpha即此参数，R \texttt{glm.nb} 输出的是 $\theta=1/\alpha$）。有的资料写的“均数 $=(1+\kappa)\lambda$、方差 $=(1+\kappa)\lambda(1+\lambda)$”两式互相矛盾：若 $\lambda$ 是均数，均数就不应再乘 $(1+\kappa)$；方差式也不是负二项分布的方差函数。下面给出推导。
+\begin{derivation}{NB2模型的Gamma--Poisson推导}
+\dpart{假设}$Y\mid U,\bm x\sim\text{Poisson}(\mu U)$，$\mu=\exp(\bm x^\top\bm\beta)$；未观察到的异质性 $U\sim\Gamma(\text{形状}=1/\alpha,\ \text{率}=1/\alpha)$，与 $\bm x$ 独立，$\E(U)=1$，$\Var(U)=\alpha$。
+\dpart{概率函数}记 $\theta=1/\alpha$。对 $U$ 积分：
+\[
+P(Y=y\mid\bm x)=\int_0^\infty\frac{(\mu u)^ye^{-\mu u}}{y!}\cdot\frac{\theta^\theta u^{\theta-1}e^{-\theta u}}{\Gamma(\theta)}\,du
+=\frac{\Gamma(y+\theta)}{y!\,\Gamma(\theta)}\left(\frac{\theta}{\theta+\mu}\right)^\theta\left(\frac{\mu}{\theta+\mu}\right)^y,
+\]
+$y=0,1,2,\ldots$（积分中出现Gamma函数 $\int_0^\infty u^{y+\theta-1}e^{-(\mu+\theta)u}du=\Gamma(y+\theta)/(\mu+\theta)^{y+\theta}$）。这是负二项分布。
+\dpart{均值与方差}由全期望公式与全方差公式：
+\[
+\E(Y\mid\bm x)=\E\{\E(Y\mid U,\bm x)\}=\E(\mu U)=\mu,
+\]
+\[
+\Var(Y\mid\bm x)=\E\{\Var(Y\mid U,\bm x)\}+\Var\{\E(Y\mid U,\bm x)\}=\E(\mu U)+\Var(\mu U)=\mu+\alpha\mu^2 .
+\]
+\dpart{结论}NB2模型的均值结构与Poisson回归相同（$\ln\mu=\bm x^\top\bm\beta$，$e^{\beta_j}$ 仍是率比IRR），只是方差多了 $\alpha\mu^2$。$\alpha\to0$ 时 $\Var(U)\to0$，$U$ 退化为常数1，负二项分布趋于 $\text{Poisson}(\mu)$。有观察时间时同样加offset：$\ln\mu_i=\ln t_i+\bm x_i^\top\bm\beta$。
+\end{derivation}
+\begin{annotation}$U$ 代表协变量未能解释的个体间差异（如易感性不同），它使事件数在个体间比Poisson分布更分散。$\alpha$ 越大，过离散越严重。\end{annotation}
+\subsection{例题：癫痫发作}
+\sourcepages{8}{42-45}
+为了解某抗癫痫药之作用，对59名癫痫病人进行临床试验。每个病人先观察8周，其间的发作次数作为基线（base line）。再将其随机分为2组，一组服用试验药，一组服用对照药，治疗8周，观察最后两周的发作次数 $Y$。
+
+资料见下表。其中Trt表示治疗方法（0为安慰剂，1为试验药），Base表示试验前8周的基线，Age表示患者的实际年龄，$Y$ 表示发作次数。
+\begin{annotation}分析单位是病人：每人一个计数（治疗期最后两周的发作次数 $Y$），每人一行，59人共59个观察值，基线发作次数（8周）作协变量。判断用Poisson回归还是负二项回归，一是依据专业知识（发作是否在个体内聚集、个体间易感性是否不同）；二是在拟合模型后检查\emph{条件}过离散，即给定协变量后方差是否大于均值，而不是看 $Y$ 的总方差与总均数（本例 $Y$ 的均数7.34、方差92.9，其中很大一部分是基线差异造成的，调整Base后才能判断）。\end{annotation}
+\ctable{59个癫痫病人临床试验观察结果}{\begin{tabular}{rrrrr@{\qquad}rrrrr}\toprule 编号&$Y$&Trt&Base&Age&编号&$Y$&Trt&Base&Age\\\midrule
+1&3&0&11&31&31&4&1&19&18\\
+2&3&0&11&30&32&3&1&24&24\\
+3&5&0&6&25&33&16&1&31&30\\
+4&4&0&8&36&34&4&1&14&35\\
+5&21&0&66&22&35&4&1&11&57\\
+6&7&0&27&29&36&7&1&67&20\\
+7&2&0&12&31&37&5&1&41&22\\
+8&12&0&52&42&38&0&1&7&28\\
+9&5&0&23&37&39&0&1&22&23\\
+10&0&0&10&28&40&3&1&13&40\\
+11&22&0&52&36&41&15&1&46&43\\
+12&5&0&33&24&42&8&1&36&21\\
+13&2&0&18&23&43&7&1&38&35\\
+14&14&0&42&36&44&4&1&7&25\\
+15&9&0&87&26&45&8&1&36&26\\
+16&5&0&50&26&46&0&1&11&25\\
+17&3&0&18&28&*47&63&1&151&22\\
+18&29&0&111&31&48&4&1&22&32\\
+19&5&0&18&32&49&7&1&42&25\\
+20&7&0&20&21&50&5&1&32&35\\
+21&4&0&12&29&51&13&1&56&21\\
+22&4&0&8&21&52&0&1&24&41\\
+23&5&0&17&32&53&3&1&16&32\\
+24&8&0&28&25&54&8&1&22&26\\
+25&25&0&55&30&55&1&1&25&21\\
+26&1&0&9&10&56&0&1&13&36\\
+27&2&0&10&19&57&2&1&12&37\\
+28&12&0&47&22&58&8&1&76&18\\
+29&0&1&19&20&59&4&1&38&32\\
+30&3&1&10&20&&&&&\\
+\bottomrule\end{tabular}}
+\begin{annotation}表中标“*”的47号（试验药组，Base=151，$Y=63$）基线和随访发作次数都远高于其他人，原分析将其作为异常值剔除，分析集为58人。剔除需要有依据：若核实为记录错误，应更正或剔除；若是真实的极端病例，不应仅因数值大而剔除，至少要报告纳入与剔除两种结果（敏感性分析，见下表）。另外，本表与公开的Thall--Vail癫痫资料（R \texttt{MASS::epil} 第4期）有7行在 $Y$ 或年龄上略有出入（本表12、26、30、35、41、44、49号），本表47号即 \texttt{epil} 的49号受试者。下面的结果是按本表计算的，可以复现下表的模型C、D。\end{annotation}
+\ctable{癫痫病人临床资料的两种负二项回归比较}{\footnotesize\begin{tabular}{lrrrrrrrr}\toprule 变量&\multicolumn{4}{c}{模型C}&\multicolumn{4}{c}{模型D}\\\cmidrule(lr){2-5}\cmidrule(lr){6-9}&系数&标准误&$z$&$P$&系数&标准误&$z$&$P$\\\midrule
+Trt&$-0.3003$&0.1675&$-1.793$&0.073&$-0.4001$&0.1496&$-2.675$&0.007\\
+Age&0.0190&0.0109&1.740&0.082&0.0176&0.0099&1.777&0.076\\
+Base/log(Base)&0.0276&0.0040&6.929&0.000&0.9303&0.1081&8.604&0.000\\
+常数项&0.4492&0.3723&1.206&0.228&$-1.5978$&0.4943&$-3.232$&0.001\\
+$\kappa$&0.2053&0.07435&2.761&0.006&0.1280&0.0610&2.098&0.036\\\bottomrule\end{tabular}}\[\text{模型C：}\quad\log L=-146.71662,\quad\chi_G^2=54.8151,\quad P=0.4435.\]\[\text{模型D：}\quad\log L=-143.21707,\quad\chi_G^2=62.4238,\quad P=0.2018.\]
+\begin{annotation}模型C以Base、模型D以 $\log(\text{Base})$ 作协变量（58人，剔除47号）。用 $\log(\text{Base})$ 时，$\log\mu$ 与 $\log(\text{Base})$ 呈线性，系数0.93接近1，意味着发作次数与基线次数大致成比例，比Base的线性项更符合计数资料的特点；模型D的对数似然更大（$-143.2$ 对 $-146.7$，参数个数相同），$\kappa$ 也更小。Pearson $\chi_G^2$ 用于检查NB模型本身的拟合，两个模型的 $P$ 值都大于0.05。用R \texttt{MASS::glm.nb} 复算，系数、$\kappa$ 与上表相差不超过0.03（Stata与R的收敛精度不同），Pearson $\chi^2$ 为54.80和62.36。\end{annotation}
+\textbf{过渡离散检验（overdispersion test）}
+
+$H_0$：$\alpha=0$（Poisson模型足够）；$H_1$：$\alpha>0$（需要负二项模型）。
+
+检验统计量为NB与Poisson模型的似然比 $\mathrm{LR}=2(\ell_{\mathrm{NB}}-\ell_{\mathrm{P}})$。$\alpha$ 不能为负，$H_0$ 中 $\alpha=0$ 位于参数空间的边界上，常规的“$\chi^2_1$”参照分布不再适用；在 $H_0$ 下LR的渐近分布是 $\tfrac12\chi^2_0+\tfrac12\chi^2_1$ 的混合（一半概率恰为0，一半服从 $\chi^2_1$），所以正确的 $P$ 值是按 $\chi^2_1$ 算出的 $P$ 值的一半（Stata \texttt{nbreg} 输出的“chibar2(01)”即此）。
+\ctable{过离散检验与敏感性分析（R复算）}{\small\begin{tabular}{llrrrrr}\toprule 分析集&模型&$\widehat\alpha$&LR&$P$（边界校正）&Trt系数（SE）&Trt的 $P$\\\midrule
+58人（剔除47号）&C（Base）&0.205&30.50&$<0.001$&$-0.299$（0.169）&0.076\\
+&D（log Base）&0.127&12.74&$<0.001$&$-0.397$（0.149）&0.008\\\addlinespace
+59人（全部）&C（Base）&0.193&27.18&$<0.001$&$-0.326$（0.162）&0.044\\
+&D（log Base）&0.173&32.53&$<0.001$&$-0.316$（0.158）&0.045\\\bottomrule\end{tabular}}
+\revnote{原分析称“模型C的卡方值为27.1824，模型D为32.8259”，但模型C、D是在58人中拟合的；按58人复算，过离散LR分别为30.50和12.74。27.18与59人模型C的结果相同，32.83也接近59人模型D的32.53，说明这两个值来自未剔除47号的分析，与上表的系数不是同一分析集。无论哪个分析集，过离散都非常明显（$P<0.001$），宜采用负二项回归。是否剔除47号会改变治疗效应的大小和显著性（模型D：58人IRR $=e^{-0.397}=0.67$，$P=0.008$；59人IRR $=0.73$，$P=0.045$），应同时报告。}
+\begin{annotation}拒绝 $H_0$，说明给定协变量后仍存在过离散。若仍用Poisson回归，系数的点估计变化不大，但标准误被低估：本例58人模型C中，Trt的Poisson标准误为0.111（$P=0.008$），负二项为0.169（$P=0.076$）。Poisson模型低估方差会使检验偏于宽松，第一类错误增大；负二项模型修正了方差，结论更可靠（并非单纯“更保守”）。\end{annotation}
+用R复算58人的模型D，并比较Poisson、准Poisson与负二项三种方法对治疗效应的估计：
+\par\noindent
+\begin{coursecode}{R}
+library(MASS)
+ep <- data.frame(Y,Trt,Base,Age)[-47,]             # 59人资料按上表录入，剔除47号
+nb <- glm.nb(Y~Trt+Age+log(Base), data=ep)         # 负二项（模型D）
+round(summary(nb)$coefficients,4); c(theta=nb$theta, alpha=1/nb$theta)
+po <- glm(Y~Trt+Age+log(Base), family=poisson,      data=ep)
+qp <- glm(Y~Trt+Age+log(Base), family=quasipoisson, data=ep)
+rbind(Poisson=coef(summary(po))["Trt",], quasi=coef(summary(qp))["Trt",],
+      NB=coef(summary(nb))["Trt",])
+sum(residuals(po,type="pearson")^2)/df.residual(po)  # Pearson卡方/自由度
+\end{coursecode}
+\begin{routput}
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)  -1.5978     0.4968 -3.2165   0.0013
+Trt          -0.4001     0.1497 -2.6728   0.0075
+Age           0.0176     0.0099  1.7829   0.0746
+log(Base)     0.9303     0.1080  8.6133   0.0000
+    theta     alpha 
+7.8115482 0.1280156 
+
+          Estimate Std. Error   z value     Pr(>|z|)
+Poisson -0.3839868  0.1085021 -3.538981 0.0004016749
+quasi   -0.3839868  0.1525623 -2.516918 0.0148403213
+NB      -0.4001300  0.1497037 -2.672813 0.0075218248
+[1] 1.977053
+\end{routput}
+\texttt{glm.nb}给出$\theta=7.81$，换算为$\alpha=1/\theta=0.128$，与上表的$\kappa$一致。三种方法对Trt的点估计在$-0.38$至$-0.40$之间，差别在于标准误：Poisson回归为0.109，另两种方法约为0.15。Pearson $\chi^2/\mathrm{df}=1.98$，即实际方差约为Poisson假定的2倍，准Poisson法将标准误乘以$\sqrt{1.98}=1.41$。若采用Poisson回归，$P=0.0004$会高估疗效证据的强度。负二项模型的IRR为$e^{-0.400}=0.67$，即调整年龄与基线后，试验药使发作次数平均减少约33\%。
+
+\textbf{过离散的来源与诊断}
+\begin{itemize}
+\item \textbf{均值异质性（遗漏协变量）}：重要协变量没有进入模型，或函数形式不对（如本例Base与 $\log$ Base），会表现为过离散。先改进均值模型，再判断剩余的过离散。
+\item \textbf{条件过离散}：均值模型正确，但给定协变量后个体间仍有未观察到的差异，$\Var(Y\mid\bm x)>\E(Y\mid\bm x)$，即NB2中的Gamma异质性。
+\item \textbf{观察不独立}：同一个体的重复计数、同一家庭或社区的成员彼此相关，也会使方差变大。这不是“过离散参数”能解决的问题，普通的独立NB模型仍把每条记录当作独立观察，标准误依然有偏；应使用GEE、随机效应（混合）负二项模型，或以个体为单位汇总。
+\item \textbf{诊断}：拟合Poisson模型后看Pearson $\chi^2/\mathrm{df}$ 或偏差/df（远大于1提示过离散）、Pearson残差对拟合值作图，并作上面的LR检验；只比较 $Y$ 的总方差与总均数是不够的。
+\item \textbf{后果}：若均值模型设定正确，方差设定错误不影响系数估计的一致性，主要影响标准误和检验；此时也可保留Poisson点估计、改用稳健（夹心）标准误或准Poisson方法。
+\end{itemize}
+\subsection{思考题}
+\sourcepages{8}{46-50}
+\textbf{思考题1} 某疾控中心拟分析不同因素对儿童接种新型流感疫苗后1个月内发热次数的影响。选取500名3--12岁接种新型流感疫苗的儿童，随访1个月记录发热次数。分析年龄组、疫苗剂量、基础疾病对儿童接种疫苗后发热次数的影响。变量定义同前。
+\begin{itemize}
+\item 发热次数均值：0.826。
+\item 发热次数方差：1.485。
+\item 方差/均值：1.798（Poisson分布时应约为1.0；这是未调整协变量的总方差与总均数之比，只能作初步参考）。
+\item Poisson回归过离散检验：残差偏差/残差自由度=1.812（常用的经验界限约1.5；这是调整协变量后的指标，更有参考价值）。
+\item 过离散存在。
+\end{itemize}
+\ctable{Poisson回归与负二项回归的比较}{\begin{tabular}{llrlr}\toprule 变量&Poisson\_IRR&$P$&NB\_IRR&$P$\\\midrule
+年龄组&0.701 (0.550--0.894)&0.004&0.718 (0.552--0.934)&0.013\\
+疫苗剂量&1.518 (1.190--1.939)&0.001&1.476 (1.135--1.919)&0.004\\
+基础疾病&1.819 (1.403--2.359)&$<0.001$&1.748 (1.317--2.323)&$<0.001$\\\bottomrule\end{tabular}}
+\textbf{思考题2} 研究影响急诊科患者一年内住院次数的因素。自变量：年龄、慢性病数量、是否吸烟、性别；因变量：一年内的住院次数（计数数据）。如何分析？考虑负二项回归的理由？
+\subsection{案例分析}
+\sourcepages{8}{51-55}
+\subsubsection{案例介绍}
+\textit{Impact and effectiveness of mRNA BNT162b2 vaccine against SARS-CoV-2 infections and COVID-19 cases, hospitalisations, and deaths following a nationwide vaccination campaign in Israel: an observational study using national surveillance data}。
+
+Lancet. 2021 May 15;397(10287):1819--1829. doi:10.1016/S0140-6736(21)00947-8. Epub 2021 May 5。
+
+标题：在以色列开展全国疫苗接种运动后，mRNA BNT162b2疫苗接种对SARS-CoV-2感染、与COVID-19相关的住院和死亡的影响和有效性：一项使用国家监测数据的观察性研究。
+
+目的：对两剂mRNA BNT162b2疫苗接种对SARS-CoV-2感染的一系列结局的有效性进行全国性估计，并评估疫苗广泛接种后对全国公共卫生的影响。
+\subsubsection{研究设计}
+观察性研究。本文根据Strengthening the Reporting of Observational studies in Epidemiology guidelines（STROBE）清单对各条目内容进行透明报告。
+
+数据来源：2021年1月24日至4月3日的全国监测数据。本分析仅使用了无个人身份识别信息的汇总数据，故没有必要进行全面的伦理审查。
+
+研究对象：16岁及以上的以色列居民（即普查人口）中，未接种疫苗或接种两剂疫苗者。如果只接受了一剂疫苗，或接受了两剂但距第二次接种不到7天，则研究对象被排除。
+
+分析计划：本研究的统计分析计划由以色列卫生部公共卫生服务部门的高级管理人员进行内部审查。
+\subsubsection{数据特点}
+结局变量：SARS-CoV-2感染后的6种结局。
+\begin{enumerate}
+\item 所有SARS-CoV-2感染，包括有症状和无症状感染（all SARS-CoV-2 infections）。
+\item 有症状的COVID-19病例（symptomatic COVID-19 cases）。
+\item 与COVID-19相关的住院（COVID-19-related hospitalisations）。
+\item 与COVID-19相关的严重住院（COVID-19-related severe hospitalisations）。
+\item 与COVID-19相关的危重住院（COVID-19-related critical hospitalisations）。
+\item 与COVID-19相关的死亡（COVID-19-related deaths）。
+\end{enumerate}
+协变量：年龄、性别、地区（Arab、Ultra-Orthodox、General Jewish [non-ultra-Orthodox]）、日历周（Jan 17 to 23, 2021--March 28 to April 3, 2021）。
+
+研究对象：未接种疫苗，如果个人没有接受任何剂量的BNT162b2，则他们被定义为未接种疫苗。完全接种疫苗，如果自接受第二剂BNT162b2以来至少已过去7天，则被定义为完全接种疫苗。
+\subsubsection{方法应用}
+\sourcepages{8}{56}
+描述性分析：以色列16岁及以上人口中完全接种BNT162b2疫苗的人数及比例。对“未接种疫苗”及“完全接种疫苗”两种人群，计算各年龄层的每种SARS-CoV-2结局的发生率（每10万人年）。
+
+广义线性模型——负二项回归：使用比传统的泊松回归方法更适合于方差过离散的负二项回归模型，得到每种结局的发生率比（IRR）及其95\%CI。疫苗有效性估计值的计算公式为 $(1-\mathrm{IRR})\times100$。模型中调整了年龄、性别和日历周。
+\begin{annotation}若接种疫苗相于未接种者，$\RR=0.4$，则保护率=60\%。\end{annotation}
+敏感性分析：分别将“完全接种疫苗”人群换成以下人群，用同样的方法进行疫苗有效性估计：接种了两剂BNT162b2且距第二次接种后至少14天；接种了一剂BNT162b2且距第一次接种后14--21天。统计软件：STATA。
+\subsubsection{结果及解释}
+\sourcepages{8}{57-59}
+描述性分析：“完全接种疫苗”的人数及比例。
+\ctable{Table 1. Numbers and proportions of people fully vaccinated with BNT162b2 in the Israel population aged 16 years and older (Jan 24 to April 3, 2021)}{\begin{tabular}{lrr}\toprule &Population&Fully vaccinated$^*$\\\midrule
+\multicolumn{3}{l}{\textbf{Age-groups, years}}\\\addlinespace
+16--44&3646848&2290820 (62.8\%)\\
+45--64&1764098&1408492 (79.8\%)\\
+$\ge$65&1127965&1015620 (90.0\%)\\
+\multicolumn{3}{l}{\textbf{Sex}}\\\addlinespace
+Female&3337693&2398547 (71.9\%)\\
+Male&3201218&2310788 (72.2\%)\\
+\multicolumn{3}{l}{\textbf{Sector}}\\\addlinespace
+Arab&1226788&669542 (54.6\%)\\
+Ultra-Orthodox&534146&228479 (42.8\%)\\
+General Jewish (non-ultra-Orthodox)&4777977&3816911 (79.9\%)\\
+\multicolumn{3}{l}{\textbf{Calendar week in 2021}}\\\addlinespace
+Jan 17 to 23&..&248196\\
+Jan 24 to 30&..&773331\\
+Jan 31 to Feb 6&..&767416\\
+Feb 7 to 13&..&285272\\
+Feb 14 to 20&..&412001\\
+Feb 21 to 27&..&443542\\
+Feb 28 to March 6&..&408882\\
+March 7 to 13&..&391983\\
+March 14 to 20&..&415510\\
+March 21 to 27&..&382569\\
+March 28 to April 3&..&186230\\
+Overall&6538911&4714932 (72.1\%)\\
+\bottomrule\end{tabular}\par\smallskip\begin{minipage}{\linewidth}\footnotesize Data are $n$ or $n$ (\%). $^*$Defined as people for whom at least 7 days had passed after the second dose of BNT162b2 vaccine. $^\dagger$Sex was not recorded for 5597 fully vaccinated individuals.\end{minipage}}
+总体而言，72.1\%的16岁及以上的以色列居民完全接种疫苗，90.0\%的65岁及以上的以色列居民完全接种疫苗。针对年龄、性别，各亚组人群中的疫苗完全接种率的具体信息见表。“完全接种疫苗”人群的中位随访时长为48天（IQR 30--60）。
+
+描述性分析与负二项回归：两种人群中各结局的发生率及疫苗有效性估计。
+\Needspace{12\baselineskip}
+\begingroup\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{L{1.7cm}r r r r L{3cm}L{3cm}}
+\caption*{Table 2. Estimated effectiveness of two doses of BNT162b2 ($\ge7$ days after the second dose) against laboratory-confirmed SARS-CoV-2 outcomes by age group (Jan 24 to April 3, 2021)}\\\toprule
+\multirow{2}{=}{Age (years)}&\multicolumn{2}{c}{Unvaccinated}&\multicolumn{2}{c}{Fully vaccinated$^*$}&\multicolumn{2}{c}{\shortstack[c]{Vaccine effectiveness,\\\% (95\%CI)}}\\\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+&Cases&Incidence rate&Cases&Incidence rate&Unadjusted&Adjusted$^\S$\\\midrule\endfirsthead
+\toprule Age (years)&\multicolumn{2}{c}{Unvaccinated}&\multicolumn{2}{c}{Fully vaccinated$^*$}&\multicolumn{2}{c}{\shortstack[c]{Vaccine effectiveness,\\\% (95\%CI)}}\\
+&Cases&Incidence rate&Cases&Incidence rate&Unadjusted&Adjusted$^\S$\\\midrule\endhead
+\multicolumn{7}{l}{\textbf{SARS-CoV-2 infection}}\\\addlinespace
+16--44&84611&95.1&1801&2.3&95.4 (94.0--96.5)&96.1 (95.7--96.5)\\
+45--64&18579&86.1&2264&3.4&93.6 (91.4--95.3)&94.9 (94.2--95.5)\\
+$\ge$65&5686&67.7&2201&3.8&93.4 (91.3--95.0)&94.8 (93.9--95.5)\\
+All ages&109876&91.5&6266&3.1&94.2 (93.2--95.1)&95.3 (94.9--95.7)\\
+\multicolumn{7}{l}{\textbf{Asymptomatic SARS-CoV-2 infection}}\\\addlinespace
+16--44&40088&45.1&1174&1.5&92.8 (90.3--94.7)&93.6 (92.8--94.4)\\
+45--64&7414&32.6&1343&2.0&89.1 (84.7--92.3)&90.8 (89.6--91.9)\\
+$\ge$65&1636&19.5&1115&1.9&85.9 (80.2--89.9)&88.5 (86.4--90.3)\\
+All ages&49138&40.9&3632&1.8&90.1 (88.0--91.8)&91.5 (90.7--92.2)\\
+\multicolumn{7}{l}{\textbf{Symptomatic COVID-19}}\\\addlinespace
+16--44&28196&31.7&352&0.5&97.8 (97.0--98.3)&97.6 (97.3--97.8)\\
+45--64&7790&34.3&560&0.8&96.3 (95.0--97.3)&96.7 (96.3--97.0)\\
+$\ge$65&3079&36.6&780&1.4&96.1 (94.8--97.1)&96.4 (95.9--97.0)\\
+All ages&39065&32.5&1692&0.8&96.6 (95.8--97.2)&97.0 (96.7--97.2)\\
+\multicolumn{7}{l}{\textbf{COVID-19-related hospitalisation}}\\\addlinespace
+16--44&2043&2.3&33&$<$0.01&98.1 (97.1--98.8)&98.1 (97.3--98.7)\\
+45--64&1687&7.4&112&0.2&97.6 (96.9--98.2)&97.6 (97.1--98.1)\\
+$\ge$65&1826&21.7&451&0.8&96.6 (95.3--97.6)&96.8 (96.2--97.3)\\
+All ages&5526&4.6&596&0.3&96.7 (95.5--97.6)&97.2 (96.8--97.5)\\
+\multicolumn{7}{l}{\textbf{Severe or critical COVID-19-related hospitalisation}}\\\addlinespace
+16--44&644&0.7&7&0.01&98.8 (97.3--99.5)&98.9 (97.6--99.5)\\
+45--64&1132&5.0&62&0.1&98.1 (97.2--98.6)&98.1 (97.5--98.5)\\
+$\ge$65&1425&17.0&295&0.5&97.2 (95.9--98.1)&97.3 (96.8--97.8)\\
+All ages&3201&2.7&364&0.2&97.2 (95.9--98.1)&97.5 (97.1--97.8)\\
+\multicolumn{7}{l}{\textbf{COVID-19-related death}}\\\addlinespace
+16--44&36&0.04&0&0.0&100&100\\
+45--64&125&0.5&14&$<$0.01&96.2 (92.6--98.0)&95.8 (92.6--97.6)\\
+$\ge$65&554&6.6&124&0.2&96.8 (94.6--98.1)&96.9 (96.0--97.6)\\
+All ages&715&0.6&138&0.1&96.6 (93.9--98.1)&96.7 (96.0--97.3)\\
+\bottomrule\end{longtable}
+Numbers and incidence rates of outcomes are shown for unvaccinated and fully vaccinated individuals. Incidence rates are per 100000 person-days. Vaccine effectiveness estimates are \% (95\%CI).
+
+$^*$Defined as people for whom at least 7 days had passed after the second dose of BNT162b2 vaccine. $^\dagger$Total person-days for all outcomes were 88938455 for age 16--44 years, 22734025 for age 45--64 years, 8403760 for age $\ge65$ years, and 120076240 for all ages. $^\ddagger$Total person-days for all outcomes were 77280720 for age 16--44 years, 67027505 for age 45--64 years, 57573640 for age $\ge65$ years, and 201881865 for all ages. $^\S$Model is adjusted for age group (16--24, 25--34, 35--44, 45--54, 55--64, 65--74, 75--84, and $\ge85$ years), sex, and calendar week. Includes asymptomatic and symptomatic infections, as well as cases with positive SARS-CoV-2 tests for which the symptom interview portion of the epidemiological investigation was not completed.
+\endgroup
+\ctable{Table 3. Estimated effectiveness of two doses of BNT162b2 ($\ge7$ days after the second dose) against laboratory-confirmed SARS-CoV-2 outcomes in the oldest age groups (Jan 24 to April 3, 2021)}{\footnotesize\begin{tabularx}{\linewidth}{Xlll}\toprule &\multicolumn{3}{c}{Vaccine effectiveness, \% (95\%CI)}\\\cmidrule(lr){2-4}Outcome&Age $\ge65$ years&Age $\ge75$ years&Age $\ge85$ years\\\midrule
+SARS-CoV-2 infection&94.8 (93.9--95.5)&95.1 (93.9--96.0)&94.1 (91.9--95.7)\\\addlinespace
+Asymptomatic SARS-CoV-2 infection&88.5 (86.4--90.3)&87.5 (84.2--90.1)&83.2 (76.3--88.1)\\\addlinespace
+Symptomatic COVID-19&96.4 (95.9--97.0)&96.7 (95.9--97.4)&96.6 (95.2--97.6)\\\addlinespace
+COVID-19-related hospitalisation&96.8 (96.2--97.3)&97.0 (96.2--97.7)&96.9 (95.5--97.9)\\\addlinespace
+Severe or critical COVID-19-related hospitalisation&97.3 (96.8--97.8)&97.6 (96.8--98.1)&97.4 (95.9--98.3)\\\addlinespace
+COVID-19-related death&96.9 (96.0--97.6)&97.1 (96.0--97.9)&97.0 (94.9--98.3)\\\addlinespace\bottomrule\end{tabularx}\par\smallskip\begin{minipage}{\linewidth}\footnotesize Estimates are \% (95\%CI). Model is adjusted for age group (16--24, 25--34, 35--44, 45--54, 55--64, 65--74, 75--84, and $\ge85$ years), sex, and calendar week. Includes asymptomatic and symptomatic infections, as well as cases with positive SARS-CoV-2 tests for which the symptom interview portion of the epidemiological investigation was not completed.\end{minipage}}
+\begin{annotation}有效率/保护率。\end{annotation}
+\textbf{结果描述}
+\begin{quote}Adjusted vaccine effectiveness estimates against all COVID-19 outcomes were higher than 96\% among people aged 75 years and older and people aged 85 years and older (table 3).\end{quote}
+在老龄人群中，两剂疫苗接种对于各种COVID-19相关结局的有效性均较高（$>80\%$）。
+\subsubsection{英文表达}
+\sourcepages{8}{60}
+\textbf{Methods}
+\begin{quote}
+Using STATA (version 15), a negative binomial regression model (nbreg command), which is better suited for over-dispersion of variance than the traditional Poisson regression method, was used to derive incidence rate ratios (IRRs) with 95\% CIs for each outcome adjusted for age group, sex, and calendar week. The exposure command was used to account for varying patient-days across strata.
+
+Vaccine effectiveness estimates were calculated as $(1-\mathrm{IRR})\times100$.
+
+In sensitivity analyses, vaccine effectiveness estimates were also calculated with the same method for people who had received two BNT162b2 doses and for whom at least 14 days had passed after the second dose, as well as for those who had received one dose and for whom 14--21 days had passed after the first dose.
+\end{quote}
+\subsubsection{注意事项}
+\sourcepages{8}{61}
+\begin{enumerate}
+\item 观察性研究的报告依据：STROBE。
+\item 提前撰写统计分析计划。
+\item 发病率：本研究以人日为分母，发生各COVID-19结局的人数/总的随访人日数 $\times100000$（表2注）。
+\item 在对“完全接种疫苗”人群的定义中，距第二次接种后的时间有不同的设定。本研究基于“距第二次接种后至少7天”这一定义进行主分析，同时基于“距第二次接种后至少14天”进行敏感性分析（见上文英文方法与表2标题；有的转述把主分析与敏感性分析写反了）。
+\item 数据存在过离散情况时，宜采用负二项回归，而非泊松回归。
+\end{enumerate}
+\subsection{练习与思考}
+\sourcepages{8}{62-64}
+\textbf{1.} 1977/1978年澳大利亚健康调查共收集了5190人的就诊次数数据（DoctorVisits），该数据可直接在R中通过“AER”包获取。原题为使数据“满足泊松回归要求的等离散条件”，将就诊次数为0的观测行删除，只保留1049人（df.ps2）。这一处理不可取，见下文说明。数据获取、调整的命令及数据样例如下：
+\Needspace{13\baselineskip}
+\par\noindent
+\begin{coursecode}{R}
+#安装、加载AER包
+install.packages("AER")
+library(AER)
+#读取DoctorVisits数据集
+data("DoctorVisits")
+#查看数据集中的变量描述
+help("DoctorVisits")
+#删除就诊次数为0的观测行（原题做法，不推荐，见下文）
+df.ps2 <- DoctorVisits[which(DoctorVisits$visits>0), ]
+\end{coursecode}
+\par
+\revnote{为了满足模型假设而删除观察值，会改变研究总体并造成选择偏倚。删除 $\text{visits}=0$ 后，研究总体变成“两周内至少就诊一次的人”，回答的是另一个问题；剩下的计数从1开始，不再是Poisson分布（而是零截断分布），仍用普通Poisson回归会得到有偏的系数。用AER包数据复算（自变量取gender、age、income、illness、reduced、health）：
+\begin{itemize}
+\item 全部5190人：$\text{visits}$ 均数0.302、方差0.637；Poisson回归Pearson $\chi^2/\mathrm{df}=1.32$，负二项回归 $\widehat\alpha=1.08$，过离散LR $=316.8$；观察到的0次就诊4141人，Poisson模型预测4012人、负二项模型预测4171人，说明零计数多于Poisson分布，负二项模型拟合更好。
+\item 只用1049名就诊者作普通Poisson回归：Pearson $\chi^2/\mathrm{df}=0.60$，呈“欠离散”，并非等离散；例如illness的系数为0.027，而零截断Poisson模型为0.075、全样本Poisson为0.198，三者差别很大。
+\end{itemize}
+建议：以全部5190人为研究总体，从Poisson回归开始，检查过离散后改用负二项回归，必要时考虑零膨胀或hurdle模型（\texttt{pscl} 包）。若研究问题确实只针对至少就诊一次的人，应明确说明研究总体，并使用零截断Poisson或零截断负二项模型（如 \texttt{countreg::zerotrunc}、\texttt{VGAM::vglm(..., family=pospoisson)}）。}
+\ctable{DoctorVisits数据样例}{\begin{tabular}{rrlrrrrr}\toprule 行号&visits&gender&age&income&illness&reduced&health\\\midrule
+76&2&female&0.19&0.45&3&3&4\\
+77&1&female&0.19&0.55&2&2&0\\
+78&4&male&0.19&0.35&1&14&1\\
+79&2&male&0.19&0.75&1&8&1\\
+80&4&female&0.19&0.15&1&3&0\\
+81&4&female&0.19&0.45&2&14&6\\
+82&1&female&0.19&0.15&2&0&1\\
+83&1&female&0.19&0.25&1&0&9\\\bottomrule\end{tabular}}\ctable{DoctorVisits数据样例（续）}{\begin{tabular}{rlllll}\toprule 行号&private&freepoor&freerepat&nchronic&lchronic\\\midrule
+76&no&no&no&no&no\\
+77&yes&no&no&no&no\\
+78&no&no&no&no&no\\
+79&no&no&no&no&no\\
+80&no&no&no&yes&no\\
+81&yes&no&no&no&yes\\
+82&no&yes&no&yes&no\\
+83&no&no&yes&no&no\\\bottomrule\end{tabular}}
+问题：请以全部5190人构建泊松回归模型，使用一个或多个解释变量来解释就诊次数的差异，检查过离散，并对模型结果进行解读。
+
+\textbf{2.} 现有10个高等教育机构（学院或大学）的所在地区、学生数量及暴力犯罪数量等信息，具体数据如下：
+\ctable{高等教育机构的学生数量与暴力犯罪数量}{\begin{tabular}{rlrrrl}\toprule Enrollment&type&nv&nvrate&enroll1000&region\\\midrule
+5590&U&30&5.37&5.59&SE\\
+1040&C&0&0&1.04&SE\\
+35747&U&23&0.643&35.7&W\\
+28176&C&1&0.0355&28.2&W\\
+10568&U&1&0.0946&10.6&SW\\
+3127&U&0&0&3.13&SW\\
+20675&U&7&0.339&20.7&W\\
+12548&C&0&0&12.5&W\\
+30063&U&19&0.632&30.1&C\\
+4429&C&4&0.903&4.43&C\\\bottomrule\end{tabular}}
+\begin{itemize}
+\item Enrollment = enrollment at the school。
+\item type = college (C) or university (U)。
+\item nv = the number of violent crimes for that institution for the given year。
+\item nvrate = number of violent crimes per 1000 students。
+\item enroll1000 = enrollment at the school, in thousands。
+\item region = region of the country (C = Central, MW = Midwest, NE = Northeast, SE = Southeast, SW = Southwest, and W = West)。
+\end{itemize}
+问题：请构建负二项回归模型，探究在控制学校类型差异的情况下，校园暴力犯罪是否存在地区差异。
+
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（推导与诊断题）}
+\question{上题中，研究者先用 \texttt{nvrate}（每千名学生暴力犯罪数）作因变量做线性回归，后改用 \texttt{nv} 作因变量、\texttt{log(enroll1000)} 作offset的Poisson回归，得到Pearson $\chi^2/\mathrm{df}=3.6$。(1) 说明offset的含义及其系数为何固定为1；(2) 把学生数的单位由“千人”改为“人”，系数如何变化？(3) $\chi^2/\mathrm{df}=3.6$ 说明什么？应如何处理？}
+\answer{(1) 设第 $i$ 校学生数为 $t_i$（千人），犯罪率为 $r_i$，则期望犯罪数 $\mu_i=t_ir_i$，$\ln\mu_i=\ln t_i+\bm x_i^\top\bm\beta$。$\ln t_i$ 的系数为1表示犯罪数与学生数成正比，模型描述的是每千名学生的犯罪率；若不确定比例关系，可把 $\ln t_i$ 作为协变量估计系数来检验。(2) 只有截距改变，$\beta_0'=\beta_0-\ln1000$，其余系数（率比）不变。(3) 给定协变量后方差约为均值的3.6倍，存在明显过离散（或均值模型有遗漏）。先检查是否遗漏重要变量、观察是否独立，再改用负二项回归（加同样的offset），以边界校正的LR检验 $\alpha=0$，或至少使用稳健标准误；继续用Poisson回归会低估标准误。本例只有10所学校，各模型的估计都很不精确。}
+\section*{小结}
+\sourcepages{8}{65-66}
+Poisson回归：泊松分布。负二项回归：非独立、过离散、负二项分布。分析步骤：模型构建、参数估计、假设检验、拟合优度、残差分析、模型选择、结果解释、注意事项。
+\section{附1：泊松回归的软件实现}
+\sourcepages{8}{67-68}
+\Needspace{11\baselineskip}
+\subsection{R语言实现}
+\par\noindent
+\begin{coursecode}{R}
+##模型拟合：Y为计数，观察时间t取对数作offset
+fit <- glm(Y ~ X1+X2+X3 + offset(log(t)), family=poisson(link='log'), data=mydata)
+summary(fit)                       ##模型拟合结果
+exp(cbind(RR=coef(fit), confint.default(fit)))   ##率比及95%CI
+##过离散检查：Pearson卡方/自由度
+sum(residuals(fit, type="pearson")^2) / df.residual(fit)
+##qcc包的检验只看Y本身的方差/均数，未调整协变量，仅供参考
+library(qcc)
+qcc.overdispersion.test(mydata$Y, type='poisson')
+\end{coursecode}
+\par
+\subsection{SPSS软件实现}
+\sourcepages{8}{69-70}
+Analyze $\to$ Generalized Linear Models $\to$ Generalized Linear Models。
+\ctable{SPSS泊松回归设置}{\begin{tabularx}{\textwidth}{lX}\toprule 选项卡/项目&设置及批注\\\midrule
+Type of Model&Counts：Poisson loglinear；模型选择\\
+Response&因变量\\
+Predictors&因子型自变量、连续型自变量；Offset：偏移量\\
+Model&Build Terms：Main effects；以主效应纳入模型；Include intercept in model\\
+Statistics&Model Effects：Type III；Chi-square Statistics：Wald；Confidence Interval Type：Wald；Confidence Interval Level：95\\
+Print&Case processing summary、Descriptive statistics、Model information、Goodness of fit statistics、Model summary statistics、Parameter estimates；Include exponential parameter estimates：输出RR\\\bottomrule\end{tabularx}}
+\Needspace{5\baselineskip}
+\subsection{SAS及Stata实现}
+\sourcepages{8}{71}
+Stata命令：
+\par\noindent
+\begin{coursecode}{Stata}
+poisson y x1 x2 x3, irr exposure(t)      // t为观察时间，自动取对数作offset
+poisson y x1 x2 x3, irr offset(ln_t)     // 等价写法：ln_t=ln(t)
+\end{coursecode}
+\par
+\Needspace{8\baselineskip}
+SAS软件：
+\par\noindent
+\begin{coursecode}{SAS}
+data mydata; set mydata; ln_t = log(t); run;
+proc genmod data=mydata;
+  class x1 (ref='0') / param=ref;
+  model y = x1 x2 x3 / dist=poisson link=log offset=ln_t
+        lrci obstats residuals type1 type3;
+run;
+\end{coursecode}
+\par
+Poisson回归的响应应是计数 \texttt{y}，观察时间（人年）取对数后以 \texttt{offset=} 指定。原代码的 \texttt{model y/n=...} 是二项资料的“事件/试验”写法，用于Poisson分布不正确；\texttt{offset=ln} 也需先在数据步算出 \texttt{ln\_t=log(t)}。\texttt{scale=deviance} 会按偏差/df放大标准误（准Poisson），属于处理过离散的选项，不是标准Poisson模型的一部分。\texttt{class} 语句中用 \texttt{ref=} 明确参照组。以职业暴露资料验证：exposure系数0.409，RR 1.50。
+\section{附2：负二项回归的软件实现}
+\sourcepages{8}{72-73}
+\Needspace{7\baselineskip}
+\subsection{R语言实现}
+过离散检验同Poisson模型对应代码。
+\par\noindent\begin{minipage}{\linewidth}
+\begin{coursecode}{R}
+library(MASS)
+fit <- glm.nb(Y ~ X1+X2+X3 + offset(log(t)), data=mydata)
+summary(fit)          ##模型拟合结果；Theta = 1/alpha
+1/fit$theta           ##过离散参数alpha
+##过离散的似然比检验（边界问题：P值取一半）
+fp <- glm(Y ~ X1+X2+X3 + offset(log(t)), family=poisson, data=mydata)
+LR <- 2*(logLik(fit) - logLik(fp)); 0.5*pchisq(LR, 1, lower.tail=FALSE)
+\end{coursecode}
+以癫痫资料（58人）验证：\texttt{glm.nb(Y \textasciitilde{} Trt + Age + log(Base))} 得Trt系数 $-0.397$，$1/\theta=0.127$，过离散LR $=12.74$，与正文表格一致。
+\end{minipage}\par
+\subsection{SPSS软件实现}
+\sourcepages{8}{74}
+Analyze $\to$ Generalized Linear Models $\to$ Generalized Linear Models；Type of Model $\to$ Counts $\to$ Negative binomial with log link。
+\Needspace{5\baselineskip}
+\subsection{Stata及SAS实现}
+\sourcepages{8}{75}
+Stata命令：
+\par\noindent\begin{minipage}{\linewidth}
+\begin{coursecode}{Stata}
+nbreg y x1 x2 x3, irr exposure(t)    // 输出alpha及“LR test of alpha=0: chibar2(01)”
+\end{coursecode}
+\texttt{exposure()} 接观察时间本身，\texttt{offset()} 接已取对数的观察时间，二者不能混用。加选项 \texttt{r}（稳健标准误）后，Stata不再报告alpha $=0$ 的似然比检验。
+\end{minipage}\par
+\Needspace{7\baselineskip}
+SAS命令：
+\par\noindent\begin{minipage}{\linewidth}
+\begin{coursecode}{SAS}
+proc genmod data=mydata;
+  model y = x1 x2 / dist=negbin link=log offset=ln_t type3;   /* dist指定负二项分布 */
+run;
+\end{coursecode}
+SAS输出的“Dispersion”即NB2的 $\alpha$。
+\end{minipage}\par
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 说明Poisson回归中加入offset的作用，以及其系数固定为1的含义。\\
+\textit{答：使模型描述率而非计数；系数为1表示期望事件数与观察人年成正比。}
+\item 人年单位由“人年”改为“千人年”，说明系数的变化。\\
+\textit{答：仅截距改变（增加$\ln1000$），率比不变。}
+\item 拟合Poisson回归后Pearson $\chi^2/\mathrm{df}=3.6$，说明其含义及对系数与标准误的影响。\\
+\textit{答：存在过离散（或均值模型遗漏重要变量）；若均值结构正确，系数估计仍具一致性，但标准误被低估，$P$值偏小。}
+\item 写出NB2负二项回归的方差函数，并说明$\alpha\to0$时的情形。\\
+\textit{答：$\Var(Y)=\mu+\alpha\mu^2$；$\alpha\to0$时退化为Poisson回归。}
+\item 说明过离散检验中$P$值取$\chi^2_1$结果一半的原因。\\
+\textit{答：$H_0:\alpha=0$位于参数空间边界，似然比统计量渐近服从$\frac12\chi^2_0+\frac12\chi^2_1$的混合分布。}
+\item 说明为满足等离散而删除计数为0的观察所存在的问题。\\
+\textit{答：改变了研究总体，造成选择偏倚；剩余资料服从零截断分布，普通Poisson回归的系数有偏。}
+\end{enumerate}
+\end{fuxi}

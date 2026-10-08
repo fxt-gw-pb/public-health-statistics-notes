@@ -1,0 +1,32 @@
+% !TeX program = xelatex
+\AddToHook{package/projlib-language/before}{\RequirePackage{fvextra}}
+\documentclass[11pt,a4paper,oneside,plain,CN,colored-proof=false,
+  load-custom-latin-font-file=pku-font-latin.tex,
+  load-custom-math-font-file=pku-font-math.tex,
+  load-custom-cjk-font-file=pku-font-cjk.tex]{einfart}
+\input{settings}
+\usepackage{pku-notes}
+\input{../common/zbstyle.tex}
+\input{macros.tex}
+\renewcommand{\BookShortTitle}{广义线性模型}
+\hypersetup{pdftitle={广义线性模型·学习总笔记},pdfauthor={},pdfsubject={公共卫生统计}}
+\graphicspath{{assets/}}
+\begin{document}
+\MakeCover{广义线性模型}{Generalized Linear Models}
+\frontmatter
+\ZBTableOfContents
+\mainmatter
+\input{content/lec1.tex}
+\ExerciseNumber{1}\input{content/ex1.tex}
+\input{content/lec2.tex}
+\input{content/lec3.tex}
+\ExerciseNumber{3}\input{content/ex2.tex}
+\input{content/lec4.tex}
+\input{content/lec5.tex}
+\ExerciseNumber{5}\input{content/ex3.tex}
+\input{content/lec6.tex}
+\input{content/lec7.tex}
+\ExerciseNumber{7}\input{content/ex4.tex}
+\input{content/lec8.tex}
+\input{content/appendix.tex}
+\end{document}

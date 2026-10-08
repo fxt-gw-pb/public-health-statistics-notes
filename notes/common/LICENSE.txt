@@ -1,0 +1,60 @@
+MIT License — original PKU Notes template code
+
+Copyright (c) 2026 Pengbo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+Scope and third-party notices
+-----------------------------
+
+The MIT license above applies only to the original theme, configuration,
+example source, scripts and documentation created for this PKU Notes project.
+It does not claim ownership of, or relicense, third-party software, document
+classes, packages, font programs or upstream documentation.
+
+Einfart, minimalist, ProjLib, the other TeX packages, and the fonts used by this
+project retain their respective upstream licenses and copyright notices.
+They are external dependencies supplied by the user's TeX distribution; this
+project does not redistribute their source files or font installation files.
+Consult each installed package's accompanying license documentation for its
+terms. Pygments, NumPy, SciPy, Matplotlib, Python and R likewise retain their
+respective licenses.
+
+Compiled PDF examples may contain embedded font subsets. Such embedding does
+not change ownership or licensing of the font software, nor does this notice
+extend the MIT license to the embedded fonts. Applicable font terms remain
+those distributed with the original font packages.
+
+The template name and use of a color referenced in Peking University's public
+visual identity material do not imply university authorship, sponsorship,
+approval or endorsement. No university logo is supplied as part of this theme.
+
+Upstream project references:
+    https://ctan.org/pkg/einfart
+    https://github.com/Jinwen-XU/minimalist
+
+
+许可范围中文说明
+----------------
+
+上方 MIT 许可只适用于本项目新增的模板主题、配置、示例源码、脚本和说明文件。
+Einfart、相关 TeX 宏包、字体，以及 Python/R 依赖保持各自原有许可，不因本项目
+引用而归属于本项目。生成 PDF 中可能嵌入字体子集，这不改变字体的权利归属或
+许可性质。请保留原始依赖的相关声明，并按其原有条款使用。

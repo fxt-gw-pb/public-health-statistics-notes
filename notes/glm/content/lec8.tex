@@ -1,0 +1,310 @@
+\chapter{总复习与模型比较}
+\sourcepages{9}{1-2}
+\subsection*{主要内容}
+广义线性模型概述、多重线性回归模型；Logistic回归；生存分析与Cox回归；对数线性模型；Poisson回归、负二项回归。
+\section{广义线性模型概述}
+\sourcepages{9}{3-5}
+GLM是一般线性模型的推广、普遍化（generalized）。Nelder \& Wedderburn于1972年提出。
+\[
+\text{随机部分（因变量部分）：}\quad Y_i\mid\bm x_i\ \text{相互独立，属于指数族},\quad \mu_i=\E(Y_i\mid\bm x_i),
+\]
+\[
+\text{系统部分（自变量部分）：}\quad\eta_i=\sum_{j=0}^m\beta_jx_{ij},\qquad
+\text{连接函数：}\quad g(\mu_i)=\eta_i.
+\]
+$\E(Y_i\mid\bm x_i)=b'(\theta_i)$，$\Var(Y_i\mid\bm x_i)=a_i(\phi)b''(\theta_i)$；拟合值 $\widehat\mu_i=g^{-1}(\bm x_i^\top\widehat{\bm\beta})$ 是条件均值的估计（见第1章）。
+连接函数：GLM关心一组自变量的线性组合预测因变量的条件均数，或者条件均数的某种函数。连接函数连接因变量的均数与自变量的线性组合。连接函数是因变量均数的转化，转化后的变量为回归参数的一个线性函数。
+\ctable{几种常见分布的典型连接（$\eta=\theta$）}{\small\begin{tabular}{llllll}\toprule
+分布&取值集合&均数&方差函数 $V(\mu)$&自然参数 $\theta$&典型连接\\\midrule
+正态 $N(\mu,\sigma^2)$&$(-\infty,\infty)$&$\mu$&$1$（方差 $\sigma^2$）&$\mu$&恒等\\
+二项计数 $B(n,\pi)$&$\{0,1,\ldots,n\}$&$n\pi$&$\mu(1-\mu/n)$&$\logit\pi$&$\log\{\mu/(n-\mu)\}$\\
+二项比例&$\{0,\tfrac1n,\ldots,1\}$&$\pi$&$\mu(1-\mu)$（再除以 $n$）&$\logit\pi$&$\logit(\pi)$\\
+Poisson $P(\lambda)$&$\{0,1,2,\ldots\}$&$\lambda$&$\mu$&$\log\lambda$&log\\\bottomrule\end{tabular}}
+\subsection{常用参数估计方法}
+\sourcepages{9}{6-10}
+最小二乘估计（least squared estimation, LS）、加权最小二乘估计（weighted least squared, WLS）、极大似然估计（maximum likelihood estimation, MLE）。
+\subsubsection{最小二乘估计}
+\[
+\sum_{i=1}^n(y_i-\widehat y_i)^2\ \longrightarrow\
+\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^m\beta_jX_{ij}\right)^2.
+\]
+满足一般线性模型的条件（LINE）的资料，可以用最小二乘法估计参数：
+\[\widehat{\bm\beta}=(\bm X^\top\bm X)^{-1}\bm X^\top\bm y .\]
+Gauss--Markov定理：在设计矩阵列满秩、$\E(\bm\varepsilon\mid\bm X)=\bm 0$、$\Cov(\bm\varepsilon\mid\bm X)=\sigma^2\bm I$ 的条件下（不要求正态），LS估计在\emph{线性无偏}估计中方差最小（BLUE），且唯一。异方差时OLS仍无偏，但不再最有效，常规标准误也不正确。
+\subsubsection{加权最小二乘估计}
+其权重是方差的倒数，方差越大权重越小，方差越小权重越大。
+\[
+\sum_{i=1}^n\frac1{V_i}(y_i-\widehat y_i)^2,\qquad \widehat{\bm\beta}_{\mathrm{WLS}}=(\bm X^\top\bm W\bm X)^{-1}\bm X^\top\bm W\bm y,\quad\bm W=\diag(1/V_i).
+\]
+权重含未知参数时需迭代（IRLS）；四格表例中WLS与MLE一致，是因为模型饱和，不能推广。
+\subsubsection{极大似然估计}
+根据样本数据，极大似然估计会找到最有可能产生样本观察值的参数值。极大似然估计需要指明假设被用来描绘样本数据的一个概率密度函数。
+
+我们可以估计最大化似然函数 $L(\bm\beta,\sigma^2\mid\bm y)$ 的回归参数 $\bm\beta$，以 $\widehat{\bm\beta}$ 表示。似然函数 $L(\bm\beta,\sigma^2\mid\bm y)=f(\bm y\mid\bm\beta,\sigma^2)$ 是把样本联合密度看作参数的函数，不是参数的概率密度。正态线性模型的对数似然为 $-\frac n2\ln(2\pi\sigma^2)-\frac{(\bm y-\bm X\bm\beta)^\top(\bm y-\bm X\bm\beta)}{2\sigma^2}$，$\bm\beta$ 的MLE与LS估计相同，$\widehat\sigma^2_{\mathrm{MLE}}=\mathrm{SSE}/n$，而无偏估计为 $\mathrm{SSE}/(n-p)$（$p$ 含截距）。
+\section{Logistic回归}
+\sourcepages{9}{11-15}
+Logistic回归的基本概念、非条件Logistic回归；配比设计资料的条件Logistic回归分析；多分类结局资料的Logistic回归分析；有序分类结局资料的Logistic回归分析。
+\subsection{Logistic回归模型}
+\begin{align*}
+\ln\frac{P}{1-P}&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+\logit(P)&=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\\
+P&=\frac{e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}{1+e^{\beta_0+\beta_1x_1+\cdots+\beta_mx_m}}
+ =\frac1{1+e^{-(\beta_0+\beta_1x_1+\cdots+\beta_mx_m)}}.
+\end{align*}
+分布族family：二项分布binomial。连接函数link：logit。
+\[
+\eta=g(\mu)=\logit(P),\qquad\logit(P)=\ln\frac{P}{1-P}.
+\]
+参数的估计方法：因为资料不满足“方差齐性”的条件，故LSE不适宜。加权最小二乘估计，其权重是方差的倒数；极大似然估计，构建似然函数，根据样本数据，找到使似然最大的参数值。得分 $\bm U=\bm X^\top(\bm y-\bm\pi)$，信息阵 $\bm I=\bm X^\top\bm W\bm X$，$\bm W=\diag\{\pi_i(1-\pi_i)\}$，用IRLS求解；完全分离或准完全分离时有限的MLE不存在。
+\subsection{回归系数的意义与假设检验}
+\sourcepages{9}{16-17}
+$\beta_i$ 表示当其它因素被控制后，$X$ 每改变一个单位，优势比的对数值（LnOR）。
+\[
+\beta=\ln\left[\frac{P(D=1\mid X^*)/P(D=0\mid X^*)}{P(D=1\mid X)/P(D=0\mid X)}\right]=\ln\OR,\qquad e^\beta=\OR.
+\]
+OR是条件OR，对所有个体相同；概率的改变量 $\partial\pi/\partial x=\beta\pi(1-\pi)$ 随基线概率而变。病例对照抽样不改变斜率，只改变截距。
+
+检验模型中一个或者几个总体回归系数是否等于0：$H_0:\beta_i=0$。Wald检验、似然比检验、比分检验，三者大样本下渐近等价，自由度等于独立约束个数。
+\subsection{拟合优度检验与建模策略}
+\sourcepages{9}{18-19}
+模型拟合结果与实际数据的比较分析（goodness of fit）。零模型（null model）：只包含一个参数（常数项）的模型，对应于 $y$ 的均数。饱和模型（saturated model，也有称全模型的）：每个观察单位对应一个参数，估计值与观察值完全相等。好的模型应该是用尽量少的参数达到最大的拟合。偏差、Pearson $\chi^2$ 的 $\chi^2$ 近似只适用于分组资料；个体Bernoulli资料改用Hosmer--Lemeshow检验、校准与区分度。
+\begin{enumerate}
+\item 从单因素分析开始：统计描述、统计推断。
+\item 部分多因素分析：变量的类型、变量的变换。
+\item 多因素分析：自变量的筛选、模型的选择（通过对比、嵌套）。
+\item 深入思考：交互作用项、共线性、条件的检验、拟合优度。
+\end{enumerate}
+统计学意义与专业意义。最优模型：不同的角度、不同的目的、不同的条件。
+\subsection{条件Logistic回归}
+\sourcepages{9}{20-21}
+\begin{align*}
+&P(A_i\text{发生不良反应}\mid A_i\text{和}B_i\text{之一发生不良反应})\\
+&=\frac1{1+\exp[-\sum\beta_j(x_{jA_i}-x_{jB_i})]}.
+\end{align*}
+模型为 $\logit P=\alpha_i+\sum\beta_jx_j$，以“每对中恰有1例病例”为条件消去对子截距 $\alpha_i$。只有暴露不一致的对子提供信息，对子内恒定的变量无法估计。用途：估计调整匹配因素后的OR，不能直接估计绝对风险。优点：节约样本量，提高研究的效率。缺点：若需控制的因素较多，则实施难度大。
+
+条件Logistic回归模型假设：自变量在各个配比组对结局变量（因变量）的作用是相同的，即自变量的回归系数与匹配组无关。模型中的常数项 $\beta_{0i}$ 与该匹配组的因素有关，是该匹配组特有的，指该匹配组的自变量均为0时的基线风险。常数项对自变量的解释没有帮助，且不包含在似然函数中，故常不考虑。
+\subsection{多分类结局的Logistic回归模型}
+\sourcepages{9}{22-25}
+结局变量是无序多分类的情形。例如疾病的不同类型、同一种肿瘤的不同病理分型、一种病例与多种对照。Multinomial logistic model（Anderson，1972年）。一般地：
+\begin{align*}
+\logit P_k&=\ln\frac{P(y=k)}{P(y=0)}
+ =\alpha_k+\beta_{k1}x_1+\beta_{k2}x_2+\cdots+\beta_{kp}x_p=g_k(\bm x),\\
+P_k&=\frac{\exp(g_k)}{1+\sum_{k=1}^K\exp(g_k)}
+ =\frac{\exp(g_k)}{\sum_{k=0}^K\exp(g_k)},\qquad g_0=0.
+\end{align*}
+\ctable{表8\quad 无序多分类结局Logistic回归分析结果}{\begin{tabular}{llrrrrr}\toprule
+Variable&Parameter&估计值&Standard error&Wald $\chi^2$&$P$-value&RRR $\exp(\beta)$\\\midrule
+Intercept&$\widehat\beta_0^{(1)}$&$-0.9826$&0.5707&2.96&0.0851&\\
+&$\widehat\beta_0^{(2)}$&$-0.3461$&0.5413&0.41&0.5226&\\
+$X_1$&$\widehat\beta_1^{(1)}$&0.6281&0.1799&12.19&0.0005&1.874\\
+&$\widehat\beta_1^{(2)}$&0.3454&0.1728&4.00&0.0456&1.413\\
+$X_2$&$\widehat\beta_2^{(1)}$&$-0.6494$&0.2833&5.26&0.0219&0.522\\
+&$\widehat\beta_2^{(2)}$&$-0.6352$&0.2725&5.43&0.0197&0.530\\\bottomrule\end{tabular}}
+\[
+\ln\frac{P_1}{P_3}=-0.9826+0.6281x_1-0.6494x_2,\qquad
+\ln\frac{P_2}{P_3}=-0.3461+0.3454x_1-0.6352x_2.
+\]
+$e^{\beta_{kj}}$ 是相对风险比（RRR）：其他协变量固定，$x_j$ 每增加1个单位，“属于类别 $k$ 与属于参照类别的概率之比”乘以 $e^{\beta_{kj}}$。更换参照类别时系数相减。$x_j$ 的总体作用应作跨方程的联合检验（$\mathrm{df}=K$）。注意事项：不同的回归方程，自变量的偏回归系数不同。多分类结局变量的Logistic回归（联合似然）与分别做两类比较的回归模型存在差异。
+\subsection{有序多分类结局的Logistic回归模型}
+\sourcepages{9}{26-29}
+结局变量是有序多分类的情形。例如临床疗效（无效、好转、显效、治愈）、疾病的严重程度（轻、中、重）、考试成绩的等级（A、B、C）。Cumulative logistic regression model。
+\[
+\logit P_j=\logit(y>j)=\ln\frac{P(y>j)}{1-P(y>j)}
+=-\alpha_j+\sum_{i=1}^m\beta_ix_i,\quad j=1,2,\ldots,K-1,
+\]
+\[
+P(y\le j)=\frac1{1+\exp(-\alpha_j+\sum_{i=1}^m\beta_ix_i)}.
+\]
+估计参数的个数：$(K-1)+m$。
+
+$-\alpha_j$ 是自变量均为0时，“等级高于 $j$”对“不高于 $j$”的对数优势，阈值满足 $\alpha_1<\cdots<\alpha_{K-1}$。$\beta_i$：$x_i$ 每增加一个单位，对任一分界点 $j$，“等级高于 $j$”相对于“不高于 $j$”的优势比的对数值。$\beta_i$ 与 $j$ 无关（比例优势假设，用平行线检验考察；$P>0.05$ 只表示未发现违背的证据）。
+\ctable{表10\quad 儿童智力等级与母亲文化程度的累积优势Logistic回归}{\begin{tabular}{lrrrr}\toprule
+变量&回归系数&标准误&$Z$&$P$\\\midrule
+$x$&0.6373&0.0934&6.824&0.000\\
+常数项 $\alpha_1$&$-1.4578$&0.1454&&\\
+常数项 $\alpha_2$&1.2254&0.1358&&\\
+常数项 $\alpha_3$&3.5630&0.1935&&\\\bottomrule\end{tabular}}
+\[
+\logit P_j=-\alpha_j+0.6373x,\qquad\OR=e^{0.6373}=1.89.
+\]
+母亲的文化程度每提高一个等级，无论以哪个智商等级为分界，儿童智商等级高于该分界的优势均乘以1.89（平行线检验 $P=0.92$）。
+\section{生存分析}
+\sourcepages{9}{30-31}
+在许多医学研究中，我们不仅关心终点事件（terminal event）是否发生，还关心发生终点事件经历了多长时间。恶性肿瘤治疗随访：复发与否、死亡与否（5年生存率）。生存分析（survival analysis）是将终点事件的发生与否和到达终点所经历的时间结合起来分析的一类统计方法。源于古老的寿命表，是现代统计学的一个重要分支。
+
+主要内容：生存分析的目的、资料特点（删失）、基本概念（生存率、函数）；生存率的估计方法（寿命表法、Kaplan--Meier）；生存曲线比较的方法（log-rank法）；多因素分析，Cox回归。
+
+要点：观察到的是 $\widetilde T=\min(T,C)$ 与 $\delta=I(T\le C)$；在独立删失下个体似然贡献为 $f(\tilde t)^\delta S(\tilde t)^{1-\delta}$。$h=f/S$，$H(t)=\int_0^th(u)du$，$S=e^{-H}$，$F=1-e^{-H}$（$F$ 是累积发生概率，不是累积风险）。KM估计 $\widehat S(t)=\prod(1-d_i/n_i)$，Greenwood方差由Delta方法得到。log-rank统计量 $(A_1-T_1)^2/\sum V_{1i}$ 来自各风险集的超几何分布，对各事件时点等权；曲线交叉时效能下降，但不是检验的禁忌。
+\subsection{Cox回归}
+\sourcepages{9}{32-35}
+Cox比例风险回归模型（Cox's proportional hazards regression model），简称Cox回归。以生存结局和生存时间为因变量，可同时分析众多因素对生存期的影响，分析带有删失生存时间的资料，且不要求资料服从特定的分布类型。英国统计学家D. R. Cox于1972年提出。
+\[
+\underbrace{h(t)}_{t\text{时刻的风险函数}}=
+\underbrace{h_0(t)}_{t\text{时刻的基线风险函数}}
+\times\exp(\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p).
+\]
+半参数模型（semi-parametric model）。
+\[
+h(t)=h_0(t)\times\exp(\beta_1X_1)\exp(\beta_2X_2)\cdots\exp(\beta_pX_p).
+\]
+乘法模型。
+
+任两个个体风险函数之比，即风险比（hazard ratio, HR；不同于固定时点累积风险之比RR）。
+\begin{align*}
+\HR&=\frac{h_i(t)}{h_j(t)}
+=\frac{h_0(t)\exp(\beta_1X_{i1}+\beta_2X_{i2}+\cdots+\beta_pX_{ip})}
+ {h_0(t)\exp(\beta_1X_{j1}+\beta_2X_{j2}+\cdots+\beta_pX_{jp})}\\
+&=\exp[\beta_1(X_{i1}-X_{j1})+\beta_2(X_{i2}-X_{j2})+\cdots+\beta_p(X_{ip}-X_{jp})].
+\end{align*}
+自变量的效应不随时间而改变，称为比例风险（proportional hazard）假定，简称PH假定。
+\[
+\ln h_i(t)-\ln h_j(t)=\beta_1(X_{i1}-X_{j1})+\beta_2(X_{i2}-X_{j2})+\cdots+\beta_p(X_{ip}-X_{jp}).
+\]
+$\beta_j$：在其它自变量不变条件下，变量 $X_j$ 每增加一个单位所引起的风险比的自然对数。
+\[
+\ln\HR_j=\beta_j,\qquad\HR_j=\exp(\beta_j).
+\]
+参数用部分似然估计（风险集取事件前一瞬间，并列事件用Breslow/Efron近似），得分是“事件者协变量减风险集加权均值”之和。$S(t\mid\bm x)=S_0(t)^{\exp(\bm x^\top\bm\beta)}$，绝对生存预测需要基线风险。PH假定用log--log图与Schoenfeld残差检查；随访中发生的事件（如复发）应作时依协变量。竞争风险下，原因别Cox模型针对病因，Fine--Gray模型针对累积发生率；$1-\mathrm{KM}$ 会高估CIF。
+\section{对数线性模型}
+\sourcepages{9}{36-38}
+对数线性模型（Log-linear model）通常用于分析高维列联表数据。描述和确定高维列联表中分类变量间的相关关系；可在不歪曲变量间相关关系的情况下探讨合并列表数据的可能性。
+
+饱和模型（Saturated model）：
+\begin{align*}
+\ln F_{ijk}={}&u+u_1(i)+u_2(j)+u_3(k)\\
+&+u_{12}(i,j)+u_{13}(i,k)+u_{23}(j,k)+u_{123}(i,j,k).
+\end{align*}
+$u$：$\ln F_{ijk}$ 的总体均值；$u_1(i)$：变量1第 $i$ 级的主效应；$u_2(j)$：变量2第 $j$ 级的主效应；$u_3(k)$：变量3第 $k$ 级的主效应。
+\[
+\sum_i u_1(i)=\sum_j u_2(j)=\sum_k u_3(k)=0.
+\]
+层次模型（Hierarchical models）：如果 $u_{123}=0$，则提示不存在二阶交互效应。
+\[
+\ln F_{ijk}=u+u_1(i)+u_2(j)+u_3(k)+u_{12}(i,j)+u_{23}(j,k)+u_{13}(i,k).
+\]
+其表明每一对变量均可存在相关关系，且任一对变量的条件OR在第三个变量各层相同（两两关联模型，homogeneous association model）。$u_{12}=u_{123}=0$ 等价于给定变量3时1与2条件独立。条件独立模型、部分独立模型、互相独立模型。列联表可以来自Poisson、多项或乘积多项抽样，含相应边际项时用Poisson GLM拟合结果相同。若 $X\perp Z\mid Y$ 或 $Y\perp Z\mid X$（且 $u_{123}=0$），$X$ 与 $Y$ 的OR关于 $Z$ 可折叠。偏差 $G^2=2\sum O\ln(O/E)$；调整残差超出 $\pm2$ 用于筛查。解释变量边际取饱和时，对数线性模型中含结局的项与Logistic回归系数相同。
+\section{泊松回归（Poisson Regression）}
+\sourcepages{9}{39-41}
+泊松回归：针对计数资料或列联表资料建模的一种回归分析方法。假设1：给定协变量时，计数 $Y$ 服从泊松分布且相互独立；假设2：条件均值的对数 $\log\mu$ 是协变量的线性组合。
+\[
+\ln r_{ij}=\ln\frac{\mu_{ij}}{n_{ij}}=\lambda+\lambda_i^X+\lambda_j^Y.
+\]
+$\lambda$ 为常数项；$\lambda_i^X$ 表示变量 $X$ 第 $i$ 个水平效应值的大小；$\lambda_j^Y$ 表示变量 $Y$ 第 $j$ 个水平效应值的大小；$\mu_{ij}$ 为 $X=i,Y=j$ 时死亡数的期望频数；$n_{ij}$ 为观察人年数。
+\[
+\ln\mu_{ij}=\lambda+\lambda_i^X+\lambda_j^Y+\underbrace{\ln n_{ij}}_{\text{偏移量}}.
+\]
+参数解释：
+\[
+\ln r=\beta_0+\beta_1\mathrm{expose}+\beta_2\mathrm{age4}+\beta_3\mathrm{age5}+\beta_4\mathrm{age6}+\beta_5\mathrm{age7},
+\]
+（$r$ 为发生率，不是概率；由 $\mu=tr$ 得 $\ln\mu=\ln t+\bm x^\top\bm\beta$，offset系数固定为1，时间单位改变只影响截距。职业暴露例：调整年龄后RR $=e^{0.409}=1.50$，95\%CI 1.06--2.14。）
+\[
+\RR=\frac{r_{i2}}{r_{i1}}
+=\frac{\exp(\lambda+\lambda_i^X+\lambda_2^Y)}{\exp(\lambda+\lambda_i^X+\lambda_1^Y)}
+=\exp(\lambda_2^Y-\lambda_1^Y).
+\]
+\section{负二项回归模型}
+\sourcepages{9}{42-43}
+医学研究中，很多事件的发生是非独立的（传染的、原因不明的聚集现象等），这种资料的特点是估计值的方差较Poisson分布的方差大（over-dispersion or extra-Poisson variation）。存在过离散情况，负二项回归。
+
+$Y$ 服从负二项分布，$\mu$ 为相应的均数。
+\[
+\ln\mu=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\qquad
+\mu=e^{\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m}.
+\]
+Poisson分布的方差=均数=$\mu$。NB2：$Y\mid U\sim\text{Poisson}(\mu U)$，$U\sim\Gamma(1/\alpha,\text{率}=1/\alpha)$，得 $\E(Y\mid\bm x)=\mu$，$\Var(Y\mid\bm x)=\mu+\alpha\mu^2$；$\alpha\to0$ 时退化为Poisson。检验 $\alpha=0$ 的似然比统计量服从 $\tfrac12\chi^2_0+\tfrac12\chi^2_1$。过离散可能来自遗漏协变量、个体异质性或观察不独立，后者需GEE或混合模型。不能为满足等离散而删除零计数。
+
+\begin{sikao}[模型选择的一般步骤]
+针对具体研究问题选择分析模型时，可依次考虑以下几方面：
+\begin{enumerate}
+\item \textbf{结局变量的类型。}连续变量$\to$线性回归；二分类$\to$logistic回归；无序多分类$\to$多项logit模型；有序分类$\to$累积logit模型；计数（有观察人年）$\to$Poisson或负二项回归；生存时间与删失$\to$KM法、log-rank检验、Cox回归；多个分类变量的关联结构$\to$对数线性模型。
+\item \textbf{观察的独立性。}配对或匹配设计$\to$条件logistic回归；同一个体的重复测量$\to$重复测量方差分析、混合模型或GEE；家庭、社区等聚集资料同样需考虑观察间的相关。
+\item \textbf{研究设计可估计的效应。}病例对照研究只能估计OR，截距无实际意义；队列研究可估计率、RR与HR；横断面研究估计的是与患病率的关联。
+\item \textbf{模型的主要假设。}logistic回归：logit尺度线性、无分离、事件数充足；有序logit模型：比例优势；Cox回归：比例风险、独立删失；Poisson回归：无过离散。
+\item \textbf{效应量的解释。}写明效应指标为OR、RR、HR或IRR，注明“其他因素相同的条件下”及自变量的单位，并给出95\%置信区间。
+\end{enumerate}
+综合分析题的作答可按以下顺序组织：研究设计、结局类型、模型（写出模型表达式与连接函数）、假设检查、结果解释、局限性。
+\end{sikao}
+\section{模型比较总表}
+\ctable{本课程各模型的比较}{\scriptsize\setlength{\tabcolsep}{2.5pt}\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.45cm}>{\raggedright\arraybackslash}p{1.4cm}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{1.4cm}X}\toprule
+模型&分析单位&给定协变量的条件分布&连接与线性预测量&似然&效应量&主要假设\\\midrule
+线性回归&个体&$N(\mu,\sigma^2)$&恒等：$\mu=\bm x^\top\bm\beta$&正态似然（$\bm\beta$ 的MLE即LS）&均数差 $\beta$&独立、线性、同方差；精确推断需正态\\\addlinespace
+二分类Logistic&个体或协变量组合&$B(1,\pi)$ 或 $B(n,\pi)$&$\logit\pi$&二项似然&OR&独立；logit尺度线性；无分离；EPV足够\\\addlinespace
+条件Logistic&配对/匹配组&组内恰有1例病例的条件分布&$\logit\pi=\alpha_i+\bm x^\top\bm\beta$&条件似然（消去 $\alpha_i$）&OR&各组OR相同；组间独立\\\addlinespace
+多项Logistic&个体&多项分布&$\ln(P_k/P_0)=g_k(\bm x)$&多项似然&RRR&独立；IIA\\\addlinespace
+累积Logit&个体&有序多项分布&$\logit P(Y\le j)=\alpha_j-\bm x^\top\bm\beta$&多项似然&累积OR&比例优势；阈值递增\\\addlinespace
+Cox回归&个体（时间、删失）&$h(t)=h_0(t)e^{\bm x^\top\bm\beta}$（半参数）&$\ln h-\ln h_0$ 线性&部分似然&HR&比例风险；给定协变量独立删失；协变量在起点已知\\\addlinespace
+对数线性&列联表格子&Poisson（或多项）&$\ln\mu$ 为主效应与交互项之和&Poisson/多项似然&条件OR（含交互项）&格子独立；层次性；期望频数不过小\\\addlinespace
+Poisson回归&个体或单位（有观察时间）&Poisson$(\mu)$&$\ln\mu=\ln t+\bm x^\top\bm\beta$&Poisson似然&率比RR/IRR&独立；条件均值=条件方差；率在观察期内恒定\\\addlinespace
+负二项回归&同上&NB2：均值 $\mu$，方差 $\mu+\alpha\mu^2$&同Poisson&负二项似然&IRR&独立；Gamma异质性；均值结构正确\\\bottomrule\end{tabularx}}
+\section*{总结}
+\sourcepages{9}{44}
+多重线性回归模型、广义线性模型概述；Logistic回归；生存分析与Cox回归；对数线性模型；Poisson回归、负二项回归。
+\section{期末考试安排}
+\sourcepages{9}{45-46}
+\ctable{期末考试}{\begin{tabular}{lrrr}\toprule 题型&题数&分值&总分\\\midrule
+选择题（单选题）&15&2分/题&30分\\
+名词解释&4&3分/题&12分\\
+简答题&4&&18分\\
+综合分析题&4&10分/题&40分\\\bottomrule\end{tabular}}
+闭卷考试。时间：2025年1月8日上午8--10点；地点。
+\subsection{样题}
+\sourcepages{9}{47-51}
+\textbf{1.} 进行生存分析时，下列情况不属于删失数据的是（\quad）。
+\begin{enumerate}[label=\Alph*.]
+\item 随访期内死于本病者。
+\item 随访期内死于其他病因者。
+\item 随访结束时仍存活。
+\item 随访期内失访者。
+\item 随访期内死于意外。
+\end{enumerate}
+\textbf{2.} 假设有M、N、P三个分类变量，且M与N在给定P时条件独立，请问以下哪一对数线性模型可以描述上述三个变量之间的关系（\quad）？
+\begin{enumerate}[label=\Alph*.]
+\item $\ln F_{ijk}=u+u_{Mi}+u_{Nj}+u_{Pk}$。
+\item $\ln F_{ijk}=u+u_{Mi}+u_{Nj}+u_{Pk}+u_{MNij}+u_{MPik}$。
+\item $\ln F_{ijk}=u+u_{Mi}+u_{Nj}+u_{Pk}+u_{MPik}+u_{NPjk}$。
+\item $\ln F_{ijk}=u+u_{Mi}+u_{Nj}+u_{Pk}+u_{MNij}+u_{NPjk}$。
+\item $\ln F_{ijk}=u+u_{Mi}+u_{Nj}+u_{Pk}+u_{MNij}+u_{MPik}+u_{NPjk}$。
+\end{enumerate}
+\textbf{名词解释} 加权最小二乘估计、中位生存期。
+
+\textbf{简答题} 什么是连接函数（Link function）？它在广义线性模型中起到什么作用？
+\sourcepages{9}{52-53}
+\textbf{综合分析题} 在某农村队列研究团队发表的一篇文章中，研究者探讨了空气污染暴露、肥胖与中风的关联，结果如下表所示。请根据此结果回答下列有关问题。
+\ctable{Table 1. Combined associations of high exposure of ambient air pollutants and BMI with stroke}{\begin{tabular}{lll}\toprule
+Air pollution&Normal BMI, OR (95\%CI)&High BMI, OR (95\%CI)\\\midrule
+$\mathrm{PM}_1$&&\\
+\quad Low exposure&1&1.28 (1.13, 1.46)\\
+\quad High exposure&1.52 (1.39, 1.66)&2.23 (1.94, 2.55)\\\addlinespace
+$\mathrm{PM}_{2.5}$&&\\
+\quad Low exposure&1&1.25 (1.09, 1.42)\\
+\quad High exposure&1.93 (1.75, 2.12)&3.08 (2.67, 3.54)\\\bottomrule\end{tabular}\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize Models were adjusted for marital status, education level, average monthly income, drinking status, high fat diet, vegetables and fruits intake, and physical activity.\end{minipage}}
+\begin{enumerate}
+\item 这个研究的设计类型是什么？
+\item 这个研究所用的统计分析方法是什么，并请写出其连接函数及表达式。
+\item 请解释表中关于 $\mathrm{PM}_{2.5}$、肥胖与中风的分析结果。
+\end{enumerate}
+\begin{fuxi}[样题答题要点]
+\begin{itemize}
+\item \textbf{第1题}选A。死于本病者观察到终点事件，属完全数据；死于其他病因、随访结束时仍存活、失访与死于意外均属删失（死于其他病因时，若关注实际累积发生率，应按竞争风险处理）。
+\item \textbf{第2题}选C。M与N在给定P时条件独立，模型应含$u_{MP}$、$u_{NP}$，不含$u_{MN}$与三阶交互项。
+\item \textbf{名词解释}　加权最小二乘估计：以各观察值方差的倒数为权重，使加权残差平方和最小的估计方法，适用于方差不齐的资料；权重依赖未知参数时需迭代求解（IRLS）。中位生存期：生存率降至50\%时对应的生存时间；有删失时由KM曲线读出，曲线未降至0.5时记为“未达到”。
+\item \textbf{简答题}　连接函数$g$将结局的条件均数$\mu$变换至可与线性预测量相等的尺度，即$g(\mu)=\bm x^\top\bm\beta$。其作用为：保证均数位于合理范围内（概率在0与1之间，计数为正数），并决定系数的含义（logit连接$\to$对数OR，log连接$\to$对数RR或对数IRR）。
+\item \textbf{综合分析题}　表中报告OR，分析方法为二分类logistic回归，$\logit P=\beta_0+\beta_1E+\beta_2B+\beta_3E\times B+\bm\gamma^\top\bm z$。各OR以低暴露、BMI正常组为共同参照：PM$_{2.5}$高暴露单独存在时OR为1.93，BMI偏高单独存在时OR为1.25，二者同时存在时为3.08。相乘尺度上$3.08/(1.93\times1.25)=1.28>1$；相加尺度上$\mathrm{RERI}=3.08-1.93-1.25+1=0.90>0$，提示二者存在正向协同作用。判断交互作用是否有统计学意义，还需交互项的检验或RERI的置信区间。详细解答见第3章后习题与解析中的题\ref*{q:P2-L1}。
+\end{itemize}
+\end{fuxi}
+\subsection{严守考纪，诚信应考}
+\sourcepages{9}{54-57}
+医学部教育处，2024年。
+
+\textbf{医学部考场守则}
+\begin{itemize}
+\item 学生考试前要做好考前的一切准备，要按规定的考试时间提前5分钟到考场，服从监考人员的安排隔位就座，将学生证（校园卡）放在桌面，无学生证（校园卡）者不准参加考试。迟到15分钟以上不得入场；与考试无关的人员不得进入考场。考试开始30分钟后方可交卷离场，未交卷擅自离开考场，不得重新进入考场继续答题，考生交卷后应离开考场，不得在考场内逗留或在考场附近高声交谈。
+\item 除必要的文具和主考教师允许的工具书、参考书、计算器以外，其它所有物品（包括空白纸张、手机、智能手表等）不得带入座位，已经带入考场的必须放在监考人员指定的位置，并关闭手机等一切电子设备。
+\item 考试使用的试题、答卷、草稿纸由监考人员统一发放，考试结束后收回，一律不准带出考场。考生在规定时间前答完试卷，应举手示意监考人员收卷后方可离开；考试结束监考人员宣布收卷时，考生应立即停止答卷，在座位上等待监考人员收卷清点后方可离开考场。
+\item 考生要严格遵守考场规则，应认真、诚实地在规定时间内独立完成答卷。凡违反考场纪律或作弊者，按学籍管理规定给予相应的纪律处分。
+\end{itemize}
+医学部对考试违纪零容忍！所有处分决定均放入学生个人档案！请同学们勤奋求实，严守考纪，诚信应考！
+\sourcepages{9}{58}

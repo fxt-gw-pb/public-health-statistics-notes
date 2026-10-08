@@ -1,0 +1,40 @@
+% 应用线性回归：讲解部分所用宏（按总笔记版式重新定义）
+\colorlet{TextInk}{Ink}
+\colorlet{NoteGray}{Muted}
+\colorlet{RuleGray}{Rule}
+\colorlet{ChartForest}{PKURed}
+\colorlet{ChartBrick}{black!65}
+\colorlet{ChartOchre}{black!40}
+\colorlet{CodePaper}{CodeBackground}
+\pgfplotsset{every axis/.append style={font=\small,axis line style={draw=Ink!70,line width=.55pt},
+  tick style={draw=Ink!60,line width=.45pt},tick align=outside,clip marker paths=false,
+  tick label style={font=\footnotesize,color=Ink},label style={font=\small,color=Ink},
+  title style={font=\small\bfseries\sffamily,color=Ink},grid=major,major grid style={draw=Ink!12,line width=.25pt},
+  legend style={draw=none,fill=white,fill opacity=.96,text opacity=1,font=\footnotesize,inner sep=3pt,row sep=2pt},
+  legend cell align=left,every axis plot/.append style={line width=.8pt},every mark/.append style={line width=.65pt}}}
+\lstdefinelanguage{CourseR}{sensitive=true,alsoletter={._0123456789},
+  morekeywords=[1]{if,else,repeat,while,function,for,in,next,break,TRUE,FALSE,NULL,NA,NaN,Inf},
+  morekeywords=[2]{AIC,aggregate,anova,apply,as.data.frame,as.factor,c,cbind,contr.poly,cor,cov,data.frame,det,diag,ezANOVA,library,list,lm,log,matrix,mauchly.test,mean,model.matrix,pchisq,plot,print,regsubsets,rep,resid,solve,step,sum,summary,t,which.max},
+  morecomment=[l]\#,morestring=[b]",morestring=[b]'}
+\lstdefinestyle{courseR}{language=CourseR,basicstyle=\ttfamily\fontsize{9.3}{12.8}\selectfont\color{Ink},
+  keywordstyle=[1]\color{CodeKeyword}\bfseries,keywordstyle=[2]\color{CodeFunction}\bfseries,
+  commentstyle=\color{CodeComment}\itshape,stringstyle=\color{CodeString},
+  numbers=left,numberstyle=\ttfamily\fontsize{7.3}{10}\selectfont\color{Muted!80},numbersep=9pt,
+  backgroundcolor=\color{CodeBackground},frame=single,rulecolor=\color{CodeRule},framerule=.4pt,framesep=6pt,
+  xleftmargin=25pt,xrightmargin=7pt,aboveskip=10pt,belowskip=10pt,breaklines=true,breakatwhitespace=false,
+  breakindent=14pt,columns=fullflexible,keepspaces=true,showstringspaces=false,tabsize=2,upquote=true,
+  literate={<-}{{{\color{Muted}\textless-}}}2 {\%*\%}{{{\color{Muted}\%*\%}}}3}
+\lstnewenvironment{rcode}{\lstset{style=courseR}}{}
+\newcommand{\ann}[1]{\begin{zbnote}#1\end{zbnote}}
+\newenvironment{derivation}[1]{\begin{zbderive}{#1}}{\end{zbderive}}
+\DeclareMathOperator{\tr}{tr}
+\let\Var\relax
+\DeclareMathOperator{\Var}{Var}
+\let\Cov\relax
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\rank}{rank}
+\newcommand{\SSq}[1]{\mathrm{SS}_{\text{#1}}}
+\newcommand{\ms}[1]{\mathrm{MS}_{\text{#1}}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\tbltitle}[1]{\par\smallskip\begin{center}\small\sffamily\bfseries\color{black}#1\end{center}\vspace{-5pt}}
+\newcommand{\figtitle}[1]{\par\vspace{3pt}{\small\sffamily\color{Muted}\centering #1\par}\smallskip}

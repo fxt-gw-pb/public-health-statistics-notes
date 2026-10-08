@@ -1,0 +1,678 @@
+\chapter{判别分析}
+判别分析的思路与临床诊断相似：根据已确诊的胃癌、萎缩性胃炎和非胃病患者的若干生化指标建立判别规则，用于根据同样的指标判断新患者最可能所属的类别。
+
+本章三种方法的基本思想如下：
+\begin{itemize}
+\item 距离判别：将样品判归距其最近的类别中心所对应的类。
+\item Fisher判别：先求若干最能区分各类的综合指标（线性组合），再在这些指标上比较样品与各类中心的距离。
+\item Bayes判别：计算样品属于各类的后验概率，判归后验概率最大的类；可同时考虑先验概率（人群中的患病比例）与误判代价。
+\end{itemize}
+在各类协方差阵相等、服从正态分布且先验概率相等的条件下，三种方法的判别结果完全相同，详见本章各节。
+
+判别规则的评价应以新样品为对象。用建立规则的同一批样品进行检验（回代），正确率必然偏高；留一法与交叉验证估计的是规则用于新样品时的表现。这一原则适用于各类统计建模。
+\section{判别分析}
+判别分析（discriminant analysis）是在已知研究对象分为若干类型，并取得各类型一批已知样品观测数据的基础上，根据某准则建立判别式，对未知类型的新样品进行分类。常用方法有距离判别、Fisher判别和Bayes判别。
+\Note{判别分析是有监督的，提前有训练样本。}
+\section{距离判别}\label{sec:distdisc}
+首先根据已知分类的数据，分别计算各类重心，即各类各指标均值。判别准则是就近归类：若某观测到第$k$类重心的距离（如马氏距离）最近，认为其来自第$k$类。这种做法即最近重心判别（nearest-centroid rule）。它与按最近的单个训练样品归类的最近邻法（$k$-NN）不同。距离判别对各类总体分布无特定要求，但使用合并协方差阵时，隐含各类协方差阵相等。
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\raggedright
+\Example{胃癌鉴别数据}
+\centering
+\small
+\captionof{table}{三类样本的四项生化指标}\label{tab:gastric}
+\begin{tabular}{lrrrrr}\toprule
+{\bfseries 组别 }&{\bfseries  编号 }&{\bfseries  $x_1$ }&{\bfseries  $x_2$ }&{\bfseries  $x_3$ }&{\bfseries  $x_4$}\\\midrule
+1 & 1 & 228 & 134 & 20 & 11\\
+1 & 2 & 245 & 134 & 10 & 40\\
+1 & 3 & 200 & 167 & 12 & 27\\
+1 & 4 & 170 & 150 & 7 & 8\\
+1 & 5 & 100 & 167 & 20 & 14\\
+2 & 6 & 255 & 125 & 7 & 14\\
+2 & 7 & 130 & 100 & 6 & 12\\
+2 & 8 & 150 & 117 & 7 & 6\\
+2 & 9 & 120 & 133 & 10 & 26\\
+2 & 10 & 160 & 100 & 5 & 10\\
+3 & 11 & 185 & 115 & 5 & 19\\
+3 & 12 & 170 & 125 & 6 & 4\\
+3 & 13 & 165 & 142 & 5 & 3\\
+3 & 14 & 135 & 108 & 2 & 12\\
+3 & 15 & 100 & 117 & 7 & 2\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+\Source{组1：胃癌；组2：萎缩性胃炎；组3：非胃病者。}
+\begin{code}
+d \ROperator{<-} \RFunction{data.frame}(g \ROperator{=} \RFunction{rep}(\RNumber{1}\ROperator{:}\RNumber{3}, each \ROperator{=} \RNumber{5}), id \ROperator{=} \RNumber{1}\ROperator{:}\RNumber{15},
+  x1 \ROperator{=} \RFunction{c}(\RNumber{228, 245, 200, 170, 100, 255, 130, 150, 120, 160, 185, 170, 165, 135, 100}),
+  x2 \ROperator{=} \RFunction{c}(\RNumber{134, 134, 167, 150, 167, 125, 100, 117, 133, 100, 115, 125, 142, 108, 117}),
+  x3 \ROperator{=} \RFunction{c}(\RNumber{20, 10, 12, 7, 20, 7, 6, 7, 10, 5, 5, 6, 5, 2, 7}),
+  x4 \ROperator{=} \RFunction{c}(\RNumber{11, 40, 27, 8, 14, 14, 12, 6, 26, 10, 19, 4, 3, 12, 2}))
+\RFunction{attach}(d)                       \RComment{\# 下文直接使用 g, id, x1--x4}
+\end{code}
+
+\subsection{具体步骤}
+推断各类总体协方差阵是否相等：$\Sigma_1=\Sigma_2=\Sigma_3=\Sigma$。若$P>\alpha$（且专业上可以接受协方差阵相等），用合并样本协方差阵$S$估计$\Sigma$：
+\begin{equation}
+D_M^2(X_i,G_k)=(X_i-\bar X_k)\trans S^{-1}(X_i-\bar X_k).
+\end{equation}
+否则，
+\begin{equation}
+D_M^2(X_i,G_k)=(X_i-\bar X_k)\trans S_k^{-1}(X_i-\bar X_k).
+\end{equation}
+样本归入距离最小的类别。
+\subsection{总体协方差矩阵相等的检验}
+设有$K$组，$p$个变量。
+\[
+H_0:\Sigma_1=\Sigma_2=\cdots=\Sigma_K.
+\]
+在$H_0$条件下，合并样本协方差矩阵为
+\[
+S=\frac{\sum_{i=1}^K(n_i-1)S_i}{\sum_{i=1}^Kn_i-K}.
+\]
+令$\nu_i=n_i-1$，$\nu_e=\sum_{i=1}^Kn_i-K$，则
+\begin{align}
+M&=\nu_e\log|S|-\sum_{i=1}^K\nu_i\log|S_i|,\\
+C&=\frac{2p^2+3p-1}{6(p+1)(K-1)}\left(\sum_{i=1}^K\frac1{\nu_i}-\frac1{\nu_e}\right),\\
+\chi^2&=(1-C)M\ \dot\sim\ \chi^2\left(df=\frac{p(p+1)(K-1)}{2}\right).\label{eq:boxm}
+\end{align}
+式\eqref{eq:boxm}是近似分布。检验要求各组独立抽样、组内服从多元正态分布（Box M检验对非正态很敏感），且每个$S_i$可逆，即$n_i-1\geqslant p$。$n_i>20$且$p$、$K$均不超过5时近似较好（Box，1949、1950）。
+\subsubsection{胃癌数据的Box M检验}
+\begin{code}
+p \ROperator{<-} \RNumber{4}; K \ROperator{<-} \RNumber{3}; n1 \ROperator{<-} \RNumber{5}; n2 \ROperator{<-} \RNumber{5}; n3 \ROperator{<-} \RNumber{5}
+n \ROperator{<-} \RFunction{sum}(n1 \ROperator{+} n2 \ROperator{+} n3)
+nu1 \ROperator{<-} n1 \ROperator{-} \RNumber{1}; nu2 \ROperator{<-} n2 \ROperator{-} \RNumber{1}; nu3 \ROperator{<-} n3 \ROperator{-} \RNumber{1}
+nue \ROperator{<-} n \ROperator{-} K
+S1 \ROperator{<-} \RFunction{cov}(d[g \ROperator{==} \RNumber{1}, \RNumber{3}\ROperator{:}\RNumber{6}])
+S2 \ROperator{<-} \RFunction{cov}(d[g \ROperator{==} \RNumber{2}, \RNumber{3}\ROperator{:}\RNumber{6}])
+S3 \ROperator{<-} \RFunction{cov}(d[g \ROperator{==} \RNumber{3}, \RNumber{3}\ROperator{:}\RNumber{6}])
+S \ROperator{<-} (nu1 \ROperator{*} S1 \ROperator{+} nu2 \ROperator{*} S2 \ROperator{+} nu3 \ROperator{*} S3) \ROperator{/} nue; S
+M \ROperator{<-} nue \ROperator{*} \RFunction{log}(\RFunction{det}(S)) \ROperator{-}
+  (nu1 \ROperator{*} \RFunction{log}(\RFunction{det}(S1)) \ROperator{+} nu2 \ROperator{*} \RFunction{log}(\RFunction{det}(S2)) \ROperator{+} nu3 \ROperator{*} \RFunction{log}(\RFunction{det}(S3)))
+C \ROperator{<-} (\RNumber{2}\ROperator{*}p\ROperator{\textasciicircum{}}\RNumber{2} \ROperator{+} \RNumber{3}\ROperator{*}p \ROperator{-} \RNumber{1}) \ROperator{/} (\RNumber{6}\ROperator{*}(p \ROperator{+} \RNumber{1})\ROperator{*}(K \ROperator{-} \RNumber{1})) \ROperator{*}
+  (\RNumber{1}\ROperator{/}nu1 \ROperator{+} \RNumber{1}\ROperator{/}nu2 \ROperator{+} \RNumber{1}\ROperator{/}nu3 \ROperator{-} \RNumber{1}\ROperator{/}nue)
+chisq \ROperator{<-} (\RNumber{1} \ROperator{-} C) \ROperator{*} M
+df \ROperator{<-} p \ROperator{*} (p \ROperator{+} \RNumber{1}) \ROperator{*} (K \ROperator{-} \RNumber{1}) \ROperator{/} \RNumber{2}
+P.value \ROperator{<-} \RNumber{1} \ROperator{-} \RFunction{pchisq}(chisq, df)
+\end{code}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{合并协方差阵 $S$}
+\begin{tabular}{lrrrr}\toprule
+ &{\bfseries  $x_1$ }&{\bfseries  $x_2$ }&{\bfseries  $x_3$ }&{\bfseries  $x_4$}\\\midrule
+$x_1$ & 2434.100000 & -133.933333 & -44.866667 & 145.333333\\
+$x_2$ & -133.933333 & 220.366667 & 14.200000 & -7.000000\\
+$x_3$ & -44.866667 & 14.200000 & 14.066667 & -6.833333\\
+$x_4$ & 145.333333 & -7.000000 & -6.833333 & 95.933333\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\begin{center}\begin{tabular}{lr}\toprule
+{\bfseries 统计量}&{\bfseries 结果}\\\midrule
+$M$&43.62428\\$C$&0.4777778\\$\chi^2$&22.78157\\$df$&20\\$P$&0.2996469\\\bottomrule
+\end{tabular}\end{center}
+取$\alpha=0.2$，不拒绝$H_0$。但本例每组仅5例、4个变量，$n_i-1=4=p$，各组$S_i$刚好可逆，远没有达到上述$n_i>20$的条件，$\chi^2$近似不可靠，检验效能也很低。$P>\alpha$只表示未能拒绝$H_0$，不能据此确认协方差阵相等。本例采用合并$S$，更多是因为每组5例估计的$S_i$极不稳定（见下文）。
+\subsection{各组重心}
+\begin{code}
+m1 \ROperator{<-} \RFunction{tapply}(x1, g, mean)
+m2 \ROperator{<-} \RFunction{tapply}(x2, g, mean)
+m3 \ROperator{<-} \RFunction{tapply}(x3, g, mean)
+m4 \ROperator{<-} \RFunction{tapply}(x4, g, mean)
+ct \ROperator{<-} \RFunction{rbind}(m1, m2, m3, m4)
+\RFunction{colnames}(ct) \ROperator{<-} \RFunction{c}(\RString{"ct1"}, \RString{"ct2"}, \RString{"ct3"}); ct
+\end{code}
+\begin{center}\begin{tabular}{lrrr}\toprule
+&{\bfseries $G_1$}&{\bfseries $G_2$}&{\bfseries $G_3$}\\\midrule
+$x_1$&188.6&163.0&151.0\\$x_2$&150.4&115.0&121.4\\$x_3$&13.8&7.0&5.0\\$x_4$&20.0&13.6&8.0\\\bottomrule
+\end{tabular}\end{center}
+\subsection{回代判别}
+\begin{code}
+d1 \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n); d2 \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n); d3 \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n)
+g.p \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n); acc \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n)
+dx \ROperator{<-} \RFunction{cbind}(x1, x2, x3, x4)
+e.cov \ROperator{<-} \RNumber{1}                       \RComment{\# 本例用合并S；若用各组S_k，设 e.cov = 0}
+\RKeyword{for} (i \RKeyword{in} \RNumber{1}\ROperator{:}n) \{
+  \RKeyword{if} (e.cov \ROperator{==} \RNumber{1}) \{
+    d1[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{1}])) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{1}])))
+    d2[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{2}])) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{2}])))
+    d3[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{3}])) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{3}])))
+  \} \RKeyword{else} \{
+    d1[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{1}])) \ROperator{\%*\%} \RFunction{solve}(S1) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{1}])))
+    d2[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{2}])) \ROperator{\%*\%} \RFunction{solve}(S2) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{2}])))
+    d3[i] \ROperator{<-} \RFunction{sqrt}((dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{3}])) \ROperator{\%*\%} \RFunction{solve}(S3) \ROperator{\%*\%}
+                  \RFunction{t}(dx[i, ] \ROperator{-} \RFunction{t}(ct[, \RNumber{3}])))
+  \}
+  \RKeyword{if} (d1[i] \ROperator{==} \RFunction{min}(d1[i], d2[i], d3[i])) g.p[i] \ROperator{<-} \RNumber{1}
+  \RKeyword{if} (d2[i] \ROperator{==} \RFunction{min}(d1[i], d2[i], d3[i])) g.p[i] \ROperator{<-} \RNumber{2}
+  \RKeyword{if} (d3[i] \ROperator{==} \RFunction{min}(d1[i], d2[i], d3[i])) g.p[i] \ROperator{<-} \RNumber{3}
+  \RKeyword{if} (g[i] \ROperator{==} g.p[i]) acc[i] \ROperator{<-} \RNumber{1} \RKeyword{else} acc[i] \ROperator{<-} \RNumber{0}
+\}
+da \ROperator{<-} \RFunction{cbind}(g, id, d1, d2, d3, g.p, acc); da
+\RFunction{sum}(acc) \ROperator{/} n
+\end{code}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{距离判别回代结果（合并协方差阵$S$）}\label{tab:dist-resub}
+\begin{tabular}{lrrrrrr}\toprule
+{\bfseries $g$ }&{\bfseries  id }&{\bfseries  $d_1$ }&{\bfseries  $d_2$ }&{\bfseries  $d_3$ }&{\bfseries  预测组 }&{\bfseries  一致}\\\midrule
+1 & 1 & 2.6818910 & 4.1849985 & 4.7923988 & 1 & 1\\
+1 & 2 & 2.3349370 & 3.4728157 & 4.1259777 & 1 & 1\\
+1 & 3 & 1.5155710 & 4.0602974 & 4.2105857 & 1 & 1\\
+1 & 4 & 2.4814910 & 2.5882443 & 2.0803232 & 3 & 0\\
+1 & 5 & 2.2571570 & 4.4643853 & 4.7368135 & 1 & 1\\
+2 & 6 & 2.6548380 & 2.2087790 & 2.4042689 & 2 & 1\\
+2 & 7 & 4.2606070 & 1.3462864 & 1.8054116 & 2 & 1\\
+2 & 8 & 3.3278160 & 0.8030230 & 0.7095564 & 3 & 0\\
+2 & 9 & 2.4831650 & 2.1894749 & 2.6906627 & 2 & 1\\
+2 & 10 & 4.1893900 & 1.1688083 & 1.5064565 & 2 & 1\\
+3 & 11 & 3.1370960 & 0.7547364 & 1.2791578 & 2 & 0\\
+3 & 12 & 3.2153310 & 1.4099995 & 0.7823324 & 3 & 1\\
+3 & 13 & 3.2632470 & 2.4654895 & 1.6570242 & 3 & 1\\
+3 & 14 & 4.4715170 & 1.6477411 & 1.3289560 & 3 & 1\\
+3 & 15 & 3.9721640 & 1.5859607 & 1.2449610 & 3 & 1\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+总一致率为0.8。表\ref{tab:dist-resub}由合并协方差阵$S$得到（\texttt{e.cov <- 1}），回代正确率为$12/15=80\%$。
+\Note{若设\texttt{e.cov <- 0}，改用各组自己的$S_k$，回代一致率为14/15，但这是假象。本例$n_k-1=p=4$，每个样品到本组重心的平方马氏距离恒为$(n_k-1)^2/n_k=3.2$（距离1.789），与数据无关；它到其他组的距离则往往很大，于是几乎总被判回本组。}
+\subsection{判别效果的评价：回代与留一法}\label{sec:loo}
+回代（resubstitution）用建立判别规则的同一批样品来评价规则，得到的正确率偏乐观；预测误判率是规则用于新样品时的误判率，应当用留一法、交叉验证或独立验证样本来估计。回代结果的混淆矩阵如下：
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+&\multicolumn{3}{c}{\bfseries 回代判为}&\\\cmidrule(lr){2-4}
+{\bfseries 真实组别}&$G_1$&$G_2$&$G_3$&{\bfseries 正确率}\\\midrule
+$G_1$&4&0&1&80\%\\$G_2$&0&4&1&80\%\\$G_3$&0&1&4&80\%\\\midrule
+合计&&&&$12/15=80\%$\\\bottomrule
+\end{tabular}\end{center}
+留一法（leave-one-out）：每次删去一例，用其余14例重新估计各组均值和合并协方差阵，再判别被删去的这一例；15例轮流一遍。
+\begin{code}
+pooled \ROperator{<-} \RKeyword{function}(X, g) \{          \RComment{\# 合并协方差阵}
+  K \ROperator{<-} \RFunction{sort}(\RFunction{unique}(g))
+  \RFunction{Reduce}(`+`, \RFunction{lapply}(K, \RKeyword{function}(k) \RFunction{cov}(X[g \ROperator{==} k, ]) \ROperator{*} (\RFunction{sum}(g \ROperator{==} k) \ROperator{-} \RNumber{1}))) \ROperator{/} (\RFunction{nrow}(X) \ROperator{-} \RFunction{length}(K))
+\}
+g.loo \ROperator{<-} \RFunction{rep}(\RKeyword{NA}, n)
+\RKeyword{for} (i \RKeyword{in} \RNumber{1}\ROperator{:}n) \{
+  Xt \ROperator{<-} dx[\ROperator{-}i, ]; gt \ROperator{<-} g[\ROperator{-}i]
+  St \ROperator{<-} \RFunction{pooled}(Xt, gt)                       \RComment{\# 删去第i例后重新估计}
+  ctt \ROperator{<-} \RFunction{sapply}(\RNumber{1}\ROperator{:}\RNumber{3}, \RKeyword{function}(k) \RFunction{colMeans}(Xt[gt \ROperator{==} k, ]))
+  dd \ROperator{<-} \RFunction{sapply}(\RNumber{1}\ROperator{:}\RNumber{3}, \RKeyword{function}(k) \RFunction{mahalanobis}(dx[i, ], ctt[, k], St))
+  g.loo[i] \ROperator{<-} \RFunction{which.min}(dd)
+\}
+\RFunction{table}(g, g.loo); \RFunction{mean}(g.loo \ROperator{==} g)
+\end{code}
+\begin{center}\small\begin{tabular}{lcccc}\toprule
+&\multicolumn{3}{c}{\bfseries 留一法判为}&\\\cmidrule(lr){2-4}
+{\bfseries 真实组别}&$G_1$&$G_2$&$G_3$&{\bfseries 正确率}\\\midrule
+$G_1$&2&2&1&40\%\\$G_2$&2&1&2&20\%\\$G_3$&0&3&2&40\%\\\midrule
+合计&&&&$5/15=33.3\%$\\\bottomrule
+\end{tabular}\end{center}
+四个变量、固定等先验时，回代正确率为80\%，留一法只有33.3\%，接近三组随机猜测的水平。15例要估计3个均值向量和一个$4\times4$协方差阵，规则对训练样品“过拟合”，回代正确率严重高估了预测能力。\texttt{MASS::lda(..., prior = rep(1/3, 3), CV = TRUE)}给出同样的5/15。若需要筛选变量，筛选也必须在每一折的训练样品内完成，否则留一法的结果同样偏乐观。
+\subsection{应用}
+现有样本$x_1=150$、$x_2=140$、$x_3=10$、$x_4=10$，判定其类别。
+\begin{code}
+dx0 \ROperator{<-} \RFunction{c}(\RNumber{150}, \RNumber{140}, \RNumber{10}, \RNumber{10})
+d1 \ROperator{<-} \RFunction{sqrt}(\RFunction{t}(dx0 \ROperator{-} ct[, \RNumber{1}]) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} (dx0 \ROperator{-} ct[, \RNumber{1}]))
+d2 \ROperator{<-} \RFunction{sqrt}(\RFunction{t}(dx0 \ROperator{-} ct[, \RNumber{2}]) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} (dx0 \ROperator{-} ct[, \RNumber{2}]))
+d3 \ROperator{<-} \RFunction{sqrt}(\RFunction{t}(dx0 \ROperator{-} ct[, \RNumber{3}]) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} (dx0 \ROperator{-} ct[, \RNumber{3}]))
+\end{code}
+\[
+d_1=1.853082,\qquad d_2=1.752024,\qquad d_3=1.728286.
+\]
+\subsection{优缺点}
+\begin{enumerate}
+\item 马氏距离不受量纲影响，排除变量间相关性的干扰。数据标化与否，马氏距离相同。
+\item 方法较粗糙，未能评价各变量在分类中的作用大小，也未能去除与分类关系不大的变量。
+\item 可能夸大方差很小的变量的作用。
+\end{enumerate}
+\section{Fisher判别}
+Fisher判别又称典则（canonical）判别，寻找$p$个指标的少数几个线性组合（综合指标），使同类的点尽可能聚在一起，不同类的点尽可能分开，即分离度尽可能大，从而达到分类目的。
+\[
+y_1=a_1\trans x=a_{11}x_1+\cdots+a_{1p}x_p,\qquad
+y_2=a_2\trans x=a_{21}x_1+\cdots+a_{2p}x_p,\qquad\ldots
+\]
+设共$K$组，第$k$组有$n_k$例，组均值为$\bar x_k$，总均值为$\bar x$。组内离差阵与组间离差阵分别为
+\[
+W=\sum_{k=1}^K\sum_{i\in G_k}(x_i-\bar x_k)(x_i-\bar x_k)\trans,\qquad
+B=\sum_{k=1}^Kn_k(\bar x_k-\bar x)(\bar x_k-\bar x)\trans.
+\]
+对$y=a\trans x$，组间离差平方和为$\sum_kn_k(\bar y_k-\bar y)^2=a\trans Ba$，组内离差平方和为$\sum_k\sum_{i\in G_k}(y_i-\bar y_k)^2=a\trans Wa$。分子、分母都用离差平方和，分离度定义为
+\[
+J(a)=\frac{a\trans Ba}{a\trans Wa}.
+\]
+（若分母改用合并组内方差$a\trans Wa/(n-K)$，$J$只差常数倍，最优方向不变。）
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=9.5cm,height=8.5cm,grid=none,axis lines=left,xmin=0,xmax=5.52,ymin=0,ymax=4.6,ticks=none]
+\addplot[only marks,mark=triangle*,mark size=2.8pt,Brick] coordinates {(2.887778,4.405556) (2.187778,4.238889) (3.137778,4.172222) (1.704444,4.155556) (3.804444,4.088889) (2.637778,3.938889) (1.954444,3.788889) (1.337778,3.755556) (3.587778,3.688889) (3.037778,3.672222) (4.321111,3.538889) (2.471111,3.488889) (1.754444,3.155556) (3.904444,3.155556) (1.271111,3.005556) (2.321111,2.922222) (1.737778,2.588889) (2.904444,2.538889) (1.271111,2.522222) (3.571111,2.505556) (2.354444,1.872222)};
+\addplot[only marks,mark=*,mark size=2pt,Forest] coordinates {(4.718627,3.577451) (2.956731,3.435256) (2.643711,3.064465) (4.690705,3.061859) (3.437654,2.948148) (4.033333,2.950000) (4.973899,2.890881) (4.429739,2.637908) (2.043827,2.521605) (4.148077,2.407051) (4.715705,2.379808) (3.678986,2.266425) (1.730769,2.238782) (2.810909,2.181212) (3.153086,1.894136) (4.261635,1.838050) (4.545833,1.839103) (2.669811,1.809434) (1.929739,1.721895)  (2.301307,1.522549) (3.607051,1.522756) (2.843030,1.496970) (4.190152,1.376768) (3.879167,1.208073) (3.154242,1.094545) (2.513846,0.954615) };
+\addplot[Muted,line width=.8pt] coordinates {(.9833,1.2833) (4.20,3.8667)} node[pos=.05,above] {$c$};
+\addplot[Ink,line width=1.1pt,->] coordinates {(.25,3.5667) (2.61,.3333)} node[pos=.95,left] {$z$};
+\end{axis}\end{tikzpicture}
+\caption{Fisher判别的基本思想（两类、两个判别指标）}
+\end{figure}\FloatBarrier
+
+\subsection{判别函数系数}
+矩阵$W^{-1}B$的第一特征向量是第一个判别函数$y_1$的系数，其中$W$与$B$分别为原始数据的组内和组间离差阵。第一特征值为最大分离度$\lambda_1$。
+
+同理，第二特征向量是第二个判别函数$y_2$的系数，第二特征值为次大分离度$\lambda_2$。
+\begin{zm}
+设$W$正定（要求$n-K\geqslant p$且无完全共线）。$J(a)$与$a$的长度无关，可限定$a\trans Wa=1$，求$a\trans Ba$的最大值。令$\mathcal L=a\trans Ba-\lambda(a\trans Wa-1)$，由$\partial\mathcal L/\partial a=2Ba-2\lambda Wa=0$得
+\[
+Ba=\lambda Wa,\quad\text{即}\quad W^{-1}Ba=\lambda a,
+\]
+且此时$J(a)=a\trans Ba=\lambda$。故最大分离度是$W^{-1}B$的最大特征值，相应特征向量为$a_1$。第二个方向在$a_2\trans Wa_1=0$（$W$-正交，即两个判别得分在组内不相关）的约束下再求最大，得到第二特征值和特征向量，依此类推。
+\end{zm}
+\subsection{判别函数的分类能力}
+判别函数$F_k$的分类能力由其对应的特征值$\lambda_k$占总特征值的比例给出：
+\begin{equation}
+\lambda_k=\frac{R_{k,\mathrm{Can}}^2}{1-R_{k,\mathrm{Can}}^2},\qquad
+\operatorname{Power}(F_k)=\frac{\lambda_k}{\sum_{i=1}^r\lambda_i}\times100\%,\qquad r=\min(K-1,p).
+\end{equation}
+\Note{有的资料写作“分类数为$\min(g-1,m)$”，应为：非零判别函数最多有$\min(K-1,p)$个（$K$为组数，$p$为变量数）。因为$B$是$K$个秩为1的矩阵之和，且$\sum_kn_k(\bar x_k-\bar x)=0$，所以$\operatorname{rank}(B)\leqslant K-1$；又$\operatorname{rank}(B)\leqslant p$。$W^{-1}B$的非零特征值个数等于$\operatorname{rank}(B)$。}
+$R_{k,\mathrm{Can}}$是第$k$个判别得分与组别之间的典型相关系数，$R_{k,\mathrm{Can}}^2=\lambda_k/(1+\lambda_k)$是该得分的总离差平方和中组间部分所占的比例。本例$K=3$、$p=4$，有2个判别函数：$\lambda_1=2.864$、$\lambda_2=0.201$，典型相关系数为0.861和0.409，贡献比例为93.4\%和6.6\%。这些量描述各组在判别得分上分离的程度，不是预测正确率；后者要单独评价（见\ref{sec:loo}节）。
+\begin{center}\begin{tabular}{lrr}\toprule
+&{\bfseries LD1}&{\bfseries LD2}\\\midrule
+Proportion of trace&0.9344&0.0656\\\bottomrule
+\end{tabular}\end{center}
+\subsection{判别函数与得分}
+\begin{code}
+\RFunction{library}(MASS)
+out \ROperator{<-} \RFunction{lda}(g \ROperator{~} x1 \ROperator{+} x2 \ROperator{+} x3 \ROperator{+} x4, data \ROperator{=} d, prior \ROperator{=} \RFunction{rep}(\RNumber{1}\ROperator{/}\RNumber{3}, \RNumber{3}))
+out\ROperator{\$}scaling                          \RComment{\# 判别函数系数}
+out\ROperator{\$}svd\ROperator{\textasciicircum{}}\RNumber{2} \ROperator{/} \RFunction{sum}(out\ROperator{\$}svd\ROperator{\textasciicircum{}}\RNumber{2})        \RComment{\# Proportion of trace}
+\RFunction{predict}(out)\ROperator{\$}x                     \RComment{\# 判别得分}
+\end{code}
+\texttt{lda()}对系数的归一化约定是：每个判别得分的合并组内方差为1，即$a\trans Sa=1$（$S=W/(n-K)$）。判别得分是中心化后的得分，\texttt{predict()}先减去按先验加权的各组均值之和；本例等先验、各组例数相等，即减去总均值，15例得分的均数为0。\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{Fisher线性判别函数系数}
+\begin{tabular}{lrr}\toprule
+{\bfseries 变量 }&{\bfseries  LD1 }&{\bfseries  LD2}\\\midrule
+$x_1$ & 0.007438797 & -0.000084246\\
+$x_2$ & 0.038594818 & -0.056251470\\
+$x_3$ & 0.177856904 & 0.156929600\\
+$x_4$ & 0.035595971 & 0.054214160\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{15例样本的判别得分（中心化）}
+\begin{tabular}{lrr}\toprule
+{\bfseries 观测 }&{\bfseries  LD1 }&{\bfseries  LD2}\\\midrule
+1 & 2.5708732 & 1.343481860\\
+2 & 1.9510469 & 1.344964476\\
+3 & 2.7828962 & -0.898467808\\
+4 & 0.3380125 & -1.754382482\\
+5 & 2.9991242 & -0.339390591\\
+6 & 0.2190156 & -0.029971738\\
+7 & -1.9247533 & 1.121487805\\
+8 & -1.1555844 & -0.004827448\\
+9 & 0.4842589 & 0.652748444\\
+10 & -1.9506383 & 0.853602512\\
+11 & -0.8653823 & 0.495651796\\
+12 & -0.9470988 & -0.721882023\\
+13 & -0.5416337 & -1.888879494\\
+14 & -2.2902284 & 0.043336480\\
+15 & -1.6699082 & -0.217471790\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\subsection{回代分类与各类别重心}
+求各组在判别空间中的重心，按欧氏距离把每个样品归入最近的重心。
+\begin{code}
+\RFunction{aggregate}(\RFunction{predict}(out)\ROperator{\$}x, by \ROperator{=} \RFunction{list}(g), mean)
+\end{code}
+\begin{center}\begin{tabular}{crr}\toprule
+{\bfseries 组别}&{\bfseries LD1}&{\bfseries LD2}\\\midrule
+1&2.1283906&-0.06075891\\2&-0.8655403&0.51860792\\3&-1.2628503&-0.45784901\\\bottomrule
+\end{tabular}\end{center}
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=11cm,height=9.1cm,xlabel={LD1},ylabel={LD2},xmin=-2.6,xmax=3.3,ymin=-2.1,ymax=1.6,grid=major,grid style={Grid,line width=.3pt},legend style={at={(1.02,.5)},anchor=west}]\addplot[only marks,mark=*,mark size=2.5pt,Brick] coordinates {(2.5708732,1.3434819) (1.9510469,1.3449645) (2.7828962,-0.89846781) (0.3380125,-1.7543825) (2.9991242,-0.33939059)};\addlegendentry{$G_1$}\addplot[only marks,mark=triangle*,mark size=2.8pt,Forest] coordinates {(0.2190156,-0.029971738) (-1.9247533,1.1214878) (-1.1555844,-0.004827448) (0.4842589,0.65274844) (-1.9506383,0.85360251)};\addlegendentry{$G_2$}\addplot[only marks,mark=square*,mark size=2.5pt,Plum] coordinates {(-0.8653823,0.4956518) (-0.9470988,-0.72188202) (-0.5416337,-1.8888795) (-2.2902284,0.04333648) (-1.6699082,-0.21747179)};\addlegendentry{$G_3$}\addplot[only marks,mark=oplus,mark size=6.3pt,Ink,line width=.7pt] coordinates {(2.1283906,-0.06075891) (-0.8655403,0.51860792) (-1.2628503,-0.45784901)};\addlegendentry{重心}\end{axis}\end{tikzpicture}
+\caption{判别得分及各类重心}
+\end{figure}\FloatBarrier
+
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{Fisher回代判别结果与评价}\label{tab:fisher-resub}
+\begin{tabular}{lrrrrr}\toprule
+{\bfseries 观测 }&{\bfseries  $d_1$ }&{\bfseries  $d_2$ }&{\bfseries  $d_3$ }&{\bfseries  最小值 }&{\bfseries  预测组}\\\midrule
+1 & 1.47230530 & 3.53402819 & 4.23582680 & 1.47230530 & 1\\
+2 & 1.41686590 & 2.93530729 & 3.68500640 & 1.41686590 & 1\\
+3 & 1.06307750 & 3.91397406 & 4.06966950 & 1.06307750 & 1\\
+4 & 2.46451110 & 2.57196902 & 2.06003900 & 2.06003900 & 3\\
+5 & 0.91422780 & 3.95876154 & 4.26362040 & 0.91422780 & 1\\
+6 & 1.90962320 & 1.21540163 & 1.54240250 & 1.21540163 & 2\\
+7 & 4.22204730 & 1.21876840 & 1.71243110 & 1.21876840 & 2\\
+8 & 3.28445130 & 0.59842306 & 0.46554750 & 0.46554750 & 3\\
+9 & 1.79227840 & 1.35644816 & 2.07022150 & 1.35644816 & 2\\
+10 & 4.18025520 & 1.13563153 & 1.48086370 & 1.13563153 & 2\\
+11 & 3.04504010 & 0.02295666 & 1.03302690 & 0.02295666 & 2\\
+12 & 3.14574610 & 1.24316816 & 0.41159740 & 0.41159740 & 3\\
+13 & 3.23590090 & 2.42917910 & 1.60249850 & 1.60249850 & 3\\
+14 & 4.41984500 & 1.50187188 & 1.14310660 & 1.14310660 & 3\\
+15 & 3.80153030 & 1.09033066 & 0.47273390 & 0.47273390 & 3\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+表\ref{tab:fisher-resub}的判别结果与表\ref{tab:dist-resub}完全相同（误判第4、8、11例，回代正确率12/15）。这不是巧合：使用全部$\min(K-1,p)=2$个判别函数时，样品到各组重心在判别空间中的平方欧氏距离，与原空间中以合并$S$计算的平方马氏距离只差一个与组别无关的常数（各组均值之差全部落在判别空间内）。例如第1例，$2.682^2-1.472^2=4.185^2-3.534^2=5.02$。因此两者的回代与留一法正确率也相同。
+\section{Bayes判别}
+\subsection{Bayes理论}
+\begin{description}[style=nextline,leftmargin=0pt,labelwidth=0pt,labelsep=0pt]
+\item[经典统计学派：频率学派]代表人物为R. A. Fisher、Karl Pearson。以抽样频率作为概率估计，通过样本统计量估计总体参数，总体参数为未知常数，用抽样分布评价估计的好坏。
+\item[Bayes统计学派]把未知参数看作随机变量，用先验分布表达分析前对参数的不确定性，再结合数据得到参数的后验分布。
+\end{description}
+判别分析中的“先验概率”$q_k$是另一回事：它是待判对象来自第$k$类的概率，即各类在目标人群中的构成比（如就诊人群中胃癌所占比例），可以按频率来理解。用Bayes公式把$q_k$与类条件密度结合得到后验概率，频率学派同样接受。本章的“Bayes判别”指这种利用类别先验的判别；各类的参数（$\mu_k$、$\Sigma$）直接用样本估计值代入，并没有对参数的不确定性建模。
+\Note{Bayes分类对总体分布无硬性要求。正态分布与等协方差是为使判别函数线性且易算而额外增加的条件。}
+\subsection{先验概率与后验概率}
+先验概率（prior probability）：将$K$个总体完全混合后，随机抽取一个观测，来自第$k$个总体的概率$q_k$，$q_1+\cdots+q_K=1$。先验概率往往未知。缺乏目标人群构成的信息时常取等先验$q_k=1/K$，此时最大后验判别就是按类条件密度$f_k(x)$最大来判别。只有训练样本是目标人群的随机样本时，才能用样本中各类的比例估计$q_k$；若各类例数由研究设计决定（如下例胃癌46例、非胃癌94例），样本比例并不反映目标人群的构成，不宜直接作先验。
+
+后验概率（posterior probability）：特定指标为$X$的观测属于第$k$个总体的概率$P(k\mid X)$。
+\begin{sikao}[先验概率对判别结论的影响]
+以下文一元胃癌鉴别的参数（非胃癌$\mu_1=0.24$，胃癌$\mu_2=0.42$，共同方差$0.025$）为例。两类均为正态分布且方差相等时，判为胃癌的界值为
+\[
+x^*=\frac{\mu_1+\mu_2}2+\frac{\sigma^2}{\mu_2-\mu_1}\log\frac{q_1}{q_2}.
+\]
+\par\noindent\begin{rcode}
+mu1 <- 0.24; mu2 <- 0.42; s2 <- 0.025
+cut   <- function(q2) (mu1+mu2)/2 + s2*log((1-q2)/q2)/(mu2-mu1)
+post2 <- function(x,q2){ f1 <- dnorm(x,mu1,sqrt(s2)); f2 <- dnorm(x,mu2,sqrt(s2))
+                         q2*f2/(q2*f2+(1-q2)*f1) }
+for(q2 in c(0.5,46/140,0.05))
+  cat(sprintf("q2=%.3f  界值=%.3f  x=0.45时P(胃癌|x)=%.3f\n",q2,cut(q2),post2(0.45,q2)))
+\end{rcode}
+\begin{routput}
+q2=0.500  界值=0.330  x=0.45时P(胃癌|x)=0.703
+q2=0.329  界值=0.429  x=0.45时P(胃癌|x)=0.537
+q2=0.050  界值=0.739  x=0.45时P(胃癌|x)=0.111
+\end{routput}
+同一检测值0.45，等先验时胃癌的后验概率为70\%；若用于胃癌仅占5\%的门诊人群，后验概率仅为11\%。这与筛检试验中阳性预测值依赖患病率的原理相同：患病率低时，即使指标偏高，多数人仍未患病。
+
+因此，先验概率应反映判别规则拟应用人群的构成，不能任意设定。训练样本按病例、对照分别收集时（如本例46例与94例），样本中的比例不代表目标人群的患病率。若漏诊的代价远高于误诊，还应按\ref{sec:loss}节的方法考虑误判代价，此时界值将进一步降低。
+\end{sikao}
+\subsection{贝叶斯判别准则}
+设$K$个总体$G_1,\ldots,G_K$的先验概率为$q_1,\ldots,q_K$，$q_k>0$且$\sum q_k=1$，各类的类条件密度为$f_1(x),\ldots,f_K(x)$（不必是正态），则
+\begin{equation}
+P(k\mid X)=\frac{q_kf_k(X)}{\sum_{j=1}^Kq_jf_j(X)},\qquad k=1,\ldots,K.
+\end{equation}
+若样品$X$属于第$g$类的后验概率最大，判$X$属于第$g$类。再假定$f_k$为多元正态密度，就得到下面的线性或二次判别函数。
+\subsection{误判代价与最小风险判别}\label{sec:loss}
+不同的误判后果往往不同：把胃癌判为非胃癌，比反过来严重得多。记$L(j,k)\geqslant0$为真实类别为$k$的样品被判为$j$的损失，$L(k,k)=0$。把$X$判为$j$的条件风险（期望损失）为
+\[
+R(j\mid X)=\sum_{k=1}^KL(j,k)P(k\mid X),
+\]
+最优判别把$X$判给使$R(j\mid X)$最小的类别$j$。
+\begin{zm}[0--1损失下即最大后验准则]
+取$L(j,k)=1$（$j\ne k$）、$L(k,k)=0$，则$R(j\mid X)=\sum_{k\ne j}P(k\mid X)=1-P(j\mid X)$。使$R(j\mid X)$最小，就是使$P(j\mid X)$最大。
+\end{zm}
+两类时，判为1类的条件是$R(1\mid X)<R(2\mid X)$，即$L(1,2)P(2\mid X)<L(2,1)P(1\mid X)$，也即
+\[
+\frac{f_1(X)}{f_2(X)}>\frac{q_2\,L(1,2)}{q_1\,L(2,1)}.
+\]
+提高漏诊胃癌的损失，判为胃癌的门槛就相应降低。
+\subsection{Bayes线性判别函数}
+由后验概率公式取对数，
+\[
+\log P(k\mid X)=\log q_k+\log f_k(X)-\log\sum_{j=1}^Kq_jf_j(X).
+\]
+最后一项对所有类别相同，比较后验概率只需比较$\log q_k+\log f_k(X)$。总体协方差阵相等时，再舍弃对各类相同的项，可得到线性判别函数。线性判别函数值最大的类别为判定类别。
+\subsubsection{多元正态密度的展开}
+\begin{align*}
+f_k(x)&=\frac{1}{(2\pi)^{p/2}|\Sigma_k|^{1/2}}
+\exp\left[-\frac12(x-\mu_k)\trans\Sigma_k^{-1}(x-\mu_k)\right],\\
+\log f_k(x)&=-\frac p2\log(2\pi)-\frac12\log|\Sigma_k|
+-\frac12(x-\mu_k)\trans\Sigma_k^{-1}(x-\mu_k),\\
+G_k(x)&=\log f_k(x)+\log q_k\\
+&=-\frac12(x-\mu_k)\trans\Sigma_k^{-1}(x-\mu_k)-\frac12\log|\Sigma_k|+\log q_k+C.
+\end{align*}
+$C=-\tfrac p2\log(2\pi)$为可忽略常数。展开平方项：
+\begin{align*}
+(x-\mu_k)\trans\Sigma_k^{-1}(x-\mu_k)
+&=x\trans\Sigma_k^{-1}x-2\mu_k\trans\Sigma_k^{-1}x+\mu_k\trans\Sigma_k^{-1}\mu_k,\\
+G_k(x)&=-\frac12x\trans\Sigma_k^{-1}x+\mu_k\trans\Sigma_k^{-1}x
+-\frac12\mu_k\trans\Sigma_k^{-1}\mu_k-\frac12\log|\Sigma_k|+\log q_k.
+\end{align*}
+\subsubsection{协方差阵相等}
+若$\Sigma_1=\cdots=\Sigma_K=\Sigma$，则
+\[
+G_k(x)=-\frac12x\trans\Sigma^{-1}x+\mu_k\trans\Sigma^{-1}x
+-\frac12\mu_k\trans\Sigma^{-1}\mu_k-\frac12\log|\Sigma|+\log q_k.
+\]
+$-\tfrac12x\trans\Sigma^{-1}x$与$-\tfrac12\log|\Sigma|$对所有类相同，在分类比较中抵消。
+\begin{align*}
+G_k(x)-G_j(x)&=\left(\mu_k\trans\Sigma^{-1}x-\frac12\mu_k\trans\Sigma^{-1}\mu_k+\log q_k\right)\\
+&\quad-\left(\mu_j\trans\Sigma^{-1}x-\frac12\mu_j\trans\Sigma^{-1}\mu_j+\log q_j\right).
+\end{align*}
+判别函数简化为
+\begin{equation}
+G_k(x)=w_k\trans x+w_{k0},\qquad
+w_k=\Sigma^{-1}\mu_k,\qquad
+w_{k0}=-\frac12\mu_k\trans\Sigma^{-1}\mu_k+\log q_k.
+\end{equation}
+在各类协方差矩阵相等、数据服从多元正态分布的假设下，贝叶斯最优分类器为线性判别函数（LDA）。
+\paragraph{与距离判别的联系} 协方差阵相等时，$G_k(x)=-\frac12D_M^2(x,\mu_k)+\log q_k+(\text{与$k$无关的项})$，其中$D_M^2(x,\mu_k)=(x-\mu_k)\trans\Sigma^{-1}(x-\mu_k)$。再取等先验，最大后验判别就是按马氏距离归入最近的重心，也就是\ref{sec:distdisc}节的距离判别（合并$S$）。先验不等时，要在距离上加上$-2\log q_k$的修正。
+
+若$\Sigma_k\ne\Sigma_j$，二次项依赖类别，无法抵消，判别函数保留二次项，形成二次判别分析（QDA），决策边界为二次曲面。此时除马氏距离外，还要比较行列式项$-\frac12\log|\Sigma_k|$和先验项$\log q_k$，不能简单地用各组$S_k$算马氏距离、取最近者。
+\subsection{一元胃癌鉴别}
+\Example{例10.2-1}
+某医院调查140例患者的生化指标吲哚乙酸$x_4$。46名经临床确诊为胃癌，94名为非胃癌患者（包括萎缩性胃炎患者）。两组指标均服从正态分布且方差齐性，作Bayes判别，先验概率暂取相等。
+\Note{本例和下一例中，组1为非胃癌（94例），组2为胃癌（46例），与表\ref{tab:gastric}（组1为胃癌）的编码不同。}
+\Note{原例另标注$x_2$、$x_3$。}
+\subsubsection{后验概率}
+\[
+f_i(x)=\frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\left[-\frac12\left(\frac{x-\mu_i}{\sigma}\right)^2\right],\quad i=1,2.
+\]
+若两类总体方差相等，$\sigma^2=MS_{\text{组内}}=0.025$。两类指标分别服从$N(0.24,0.025)$与$N(0.42,0.025)$。
+\[
+P(1\mid x)=\frac{q_1f_1(x)}{q_1f_1(x)+q_2f_2(x)},\qquad
+P(2\mid x)=\frac{q_2f_2(x)}{q_1f_1(x)+q_2f_2(x)}.
+\]
+1号观测$x=0.19$时，按$\mu_1=0.24$、$\mu_2=0.42$、$s^2=0.025$计算，$P(1\mid x)=0.7326$、$P(2\mid x)=0.2674$，判为组1（非胃癌）。原例的0.72来自软件按更高精度参数计算的结果，见下文。
+\subsubsection{线性判别函数}
+\begin{align*}
+u_i(x)&=\log q_i-\frac12\mu_i^{2}(\sigma^2)^{-1}+(\sigma^2)^{-1}\mu_ix,\\
+\widehat u_i(x)&=\log q_i-\frac12\bar x_i^{2}(s^2)^{-1}+(s^2)^{-1}\bar x_ix,\\
+\widehat u_1(x)&=\log\frac12-\frac12(0.24)^2(0.025)^{-1}+(0.025)^{-1}\,0.24x,\\
+\widehat u_2(x)&=\log\frac12-\frac12(0.42)^2(0.025)^{-1}+(0.025)^{-1}\,0.42x.
+\end{align*}
+\begin{center}\begin{tabular}{lrr}\toprule
+{\bfseries 分类函数系数}&{\bfseries 组1}&{\bfseries 组2}\\\midrule
+$x_4$&9.691&16.613\\常数&-1.868&-4.145\\\bottomrule
+\end{tabular}\end{center}
+按上面两位小数的参数，$\widehat u_1(x)=-1.845+9.600x$、$\widehat u_2(x)=-4.221+16.800x$，$x=0.19$时$\widehat u_1=-0.0211$、$\widehat u_2=-1.0291$。
+
+SPSS分类函数系数（上表）对应的参数精度更高：$\bar x_1=0.24239$、$\bar x_2=0.41554$、$s^2=0.025012$。$x=0.19$时$u_1=-0.0264$、$u_2=-0.988$，与原例一致。两套参数都判为组1（非胃癌）。同一题中的参数、函数系数和后验概率应采用同一精度，不宜混用。
+\subsubsection{转换为后验概率}
+令$Y_1=u_1(x)$、$Y_2=u_2(x)$、$Y_c=\max(Y_1,Y_2)$，则
+\[
+P(1\mid x)=\frac{e^{Y_1-Y_c}}{e^{Y_1-Y_c}+e^{Y_2-Y_c}},\qquad
+P(2\mid x)=\frac{e^{Y_2-Y_c}}{e^{Y_1-Y_c}+e^{Y_2-Y_c}}.
+\]
+按SPSS精度，1号观测的$P(1\mid x)=1/(1+e^{-0.988+0.0264})=0.7235$；按两位小数的参数为0.7326。都判为组1（非胃癌）。
+\subsection{二元胃癌鉴别}
+\Example{例10.2-2}
+140例患者中，46名为胃癌，94名为非胃癌（包括萎缩性胃炎患者）。两项生化指标为水试验$x_1$和吲哚乙酸$x_4$。两组指标服从二元正态分布，总体协方差阵相等，作Bayes判别，先验概率暂取相等。组1为非胃癌，组2为胃癌。
+\subsubsection{后验概率计算}
+\[
+\Sigma_1=\Sigma_2=\Sigma,\quad
+X\mid G_i\sim N_p(\mu_i,\Sigma),\quad
+P(i\mid X)=\frac{q_if_i(X)}{q_1f_1(X)+q_2f_2(X)}.
+\]
+用合并协方差阵$S_c$估计$\Sigma$，用各组样本均数向量$\bar X_i$估计$\mu_i$。
+\begin{center}\begin{tabular}{lrr}\toprule
+&{\bfseries 组1}&{\bfseries 组2}\\\midrule
+$x_1$均数&0.27660&2.96739\\$x_4$均数&0.24239&0.41554\\\bottomrule
+\end{tabular}\end{center}
+\[
+S_c=\begin{bmatrix}0.884&0.023\\0.023&0.025\end{bmatrix},\qquad df=138.
+\]
+\begin{code}
+\RFunction{library}(mvtnorm)
+m1 \ROperator{<-} \RFunction{c}(\RNumber{.2766}, \RNumber{.24239})
+m2 \ROperator{<-} \RFunction{c}(\RNumber{2.96739}, \RNumber{.41554})
+cov \ROperator{<-} \RFunction{matrix}(\RFunction{c}(\RNumber{.884}, \RNumber{.023}, \RNumber{.023}, \RNumber{.025}), \RNumber{2}, \RNumber{2})
+X \ROperator{<-} \RFunction{c}(\RNumber{0}, \RNumber{.19})
+fx1 \ROperator{<-} \RFunction{dmvnorm}(X, mean \ROperator{=} m1, sigma \ROperator{=} cov)
+fx2 \ROperator{<-} \RFunction{dmvnorm}(X, mean \ROperator{=} m2, sigma \ROperator{=} cov)
+p1 \ROperator{<-} fx1 \ROperator{/} (fx1 \ROperator{+} fx2); p1
+p2 \ROperator{<-} fx2 \ROperator{/} (fx1 \ROperator{+} fx2); p2
+\end{code}
+\[
+P(1\mid X)=0.9952562,\qquad P(2\mid X)=0.004743808.
+\]
+1号观测$X=(0,0.19)\trans$属于组1（非胃癌）的概率约为0.995。
+\subsubsection{线性判别函数}
+\begin{align}
+u_i(x)&=\log q_i-\frac12\mu_i\trans\Sigma^{-1}\mu_i+\mu_i\trans\Sigma^{-1}x,\\
+\widehat u_i(x)&=\log q_i-\frac12\bar X_i\trans S_c^{-1}\bar X_i+\bar X_i\trans S_c^{-1}x.
+\end{align}
+\begin{code}
+\RFunction{log}(\RNumber{0.5}) \ROperator{-} \RNumber{0.5} \ROperator{*} \RFunction{t}(m1) \ROperator{\%*\%} \RFunction{solve}(cov) \ROperator{\%*\%} m1
+\RFunction{solve}(cov) \ROperator{\%*\%} m1
+\RFunction{log}(\RNumber{0.5}) \ROperator{-} \RNumber{0.5} \ROperator{*} \RFunction{t}(m2) \ROperator{\%*\%} \RFunction{solve}(cov) \ROperator{\%*\%} m2
+\RFunction{solve}(cov) \ROperator{\%*\%} m2
+\end{code}
+\begin{center}\begin{tabular}{lrr}\toprule
+{\bfseries R计算系数}&{\bfseries 组1}&{\bfseries 组2}\\\midrule
+常数&-1.86987&-8.019123\\$x_1$&0.06212183&2.996028\\$x_4$&9.63844792&13.865254\\\bottomrule
+\end{tabular}\end{center}
+按上面输入的参数，
+\begin{align*}
+\widehat u_1(x)&=-1.870+0.062x_1+9.638x_4,\\
+\widehat u_2(x)&=-8.019+2.996x_1+13.865x_4.
+\end{align*}
+SPSS的系数与此略有差别，是因为上面的$S_c$只保留了3位小数，SPSS用的是全精度的合并协方差阵。
+\begin{center}\begin{tabular}{lrr}\toprule
+{\bfseries SPSS分类函数系数}&{\bfseries 组1}&{\bfseries 组2}\\\midrule
+$x_1$&0.059&2.992\\$x_4$&9.635&13.829\\常数&-1.869&-8.006\\\bottomrule
+\end{tabular}\end{center}
+\subsection{三组胃癌数据的线性判别}
+回到表\ref{tab:gastric}的数据（组1胃癌、组2萎缩性胃炎、组3非胃病者），使用$x_2,x_3$两项指标，各组先验概率为$1/3$。
+\begin{center}\begin{tabular}{lrrr}\toprule
+{\bfseries 类别}&{\bfseries 先验概率}&{\bfseries 未加权例数}&{\bfseries 加权例数}\\\midrule
+胃癌&0.333&5&5.000\\
+萎缩性胃炎&0.333&5&5.000\\
+非胃病者&0.333&5&5.000\\
+合计&1.000&15&15.000\\\bottomrule
+\end{tabular}\end{center}
+\begin{code}
+d1 \ROperator{<-} d[g \ROperator{==} \RNumber{1}, \RFunction{c}(\RString{"x2"}, \RString{"x3"})]; d2 \ROperator{<-} d[g \ROperator{==} \RNumber{2}, \RFunction{c}(\RString{"x2"}, \RString{"x3"})]; d3 \ROperator{<-} d[g \ROperator{==} \RNumber{3}, \RFunction{c}(\RString{"x2"}, \RString{"x3"})]
+m1 \ROperator{<-} \RFunction{colMeans}(d1); m2 \ROperator{<-} \RFunction{colMeans}(d2); m3 \ROperator{<-} \RFunction{colMeans}(d3)
+S \ROperator{<-} (\RFunction{cov}(d1)\ROperator{*}\RNumber{4} \ROperator{+} \RFunction{cov}(d2)\ROperator{*}\RNumber{4} \ROperator{+} \RFunction{cov}(d3)\ROperator{*}\RNumber{4}) \ROperator{/} (\RNumber{15} \ROperator{-} \RNumber{3})   \RComment{\# 合并协方差阵}
+\RFunction{solve}(S) \ROperator{\%*\%} m1; \ROperator{-}\RNumber{0.5} \ROperator{*} \RFunction{t}(m1) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} m1 \ROperator{+} \RFunction{log}(\RNumber{1}\ROperator{/}\RNumber{3})
+\RFunction{solve}(S) \ROperator{\%*\%} m2; \ROperator{-}\RNumber{0.5} \ROperator{*} \RFunction{t}(m2) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} m2 \ROperator{+} \RFunction{log}(\RNumber{1}\ROperator{/}\RNumber{3})
+\RFunction{solve}(S) \ROperator{\%*\%} m3; \ROperator{-}\RNumber{0.5} \ROperator{*} \RFunction{t}(m3) \ROperator{\%*\%} \RFunction{solve}(S) \ROperator{\%*\%} m3 \ROperator{+} \RFunction{log}(\RNumber{1}\ROperator{/}\RNumber{3})
+\end{code}
+\begin{center}\begin{tabular}{lrrr}\toprule
+{\bfseries 系数}&{\bfseries 胃癌}&{\bfseries 萎缩性胃炎}&{\bfseries 非胃病者}\\\midrule
+$x_2$&0.6623687&0.52386820&0.5647306\\
+$x_3$&0.3123956&-0.03120344&-0.2146332\\
+常数&-53.06427&-31.11182&-34.84117\\\bottomrule
+\end{tabular}\end{center}
+SPSS分类函数系数：
+\begin{center}\begin{tabular}{lrrr}\toprule
+&{\bfseries 胃癌}&{\bfseries 萎缩性胃炎}&{\bfseries 非胃病者}\\\midrule
+$x_2$&0.662&0.524&0.565\\$x_3$&0.312&-0.031&-0.215\\常数&-53.064&-31.112&-34.841\\\bottomrule
+\end{tabular}\end{center}
+\subsubsection{后验概率}
+\begin{code}
+out \ROperator{<-} \RFunction{lda}(g \ROperator{~} x2 \ROperator{+} x3, data \ROperator{=} d, prior \ROperator{=} \RFunction{rep}(\RNumber{1}\ROperator{/}\RNumber{3}, \RNumber{3}))   \RComment{\# 注意与Fisher例的 out 不同}
+\RFunction{predict}(out)\ROperator{\$}posterior
+\end{code}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{三类后验概率（$x_2$、$x_3$，等先验）}\label{tab:post3}
+\begin{tabular}{lrrr}\toprule
+{\bfseries 观测 }&{\bfseries  $P(1\mid X)$ }&{\bfseries  $P(2\mid X)$ }&{\bfseries  $P(3\mid X)$}\\\midrule
+1 & 0.9658451720 & 0.0297968387 & 0.0043579891\\
+2 & 0.3526390520 & 0.3379283779 & 0.3094325701\\
+3 & 0.9831064460 & 0.0049056704 & 0.0119878834\\
+4 & 0.4572207440 & 0.1339336178 & 0.4088456380\\
+5 & 0.9995009550 & 0.0003192242 & 0.0001798207\\
+6 & 0.0485141560 & 0.4532963773 & 0.4981894665\\
+7 & 0.0016103370 & 0.6767118343 & 0.3216778288\\
+8 & 0.0193343320 & 0.5470700752 & 0.4335955932\\
+9 & 0.3259334020 & 0.3587344893 & 0.3153321082\\
+10 & 0.0010730780 & 0.6358308799 & 0.3630960417\\
+11 & 0.0065175190 & 0.4836625296 & 0.5098199512\\
+12 & 0.0316765680 & 0.4173256165 & 0.5509978157\\
+13 & 0.1195197350 & 0.2107898241 & 0.6696904408\\
+14 & 0.0007677290 & 0.4211022759 & 0.5781299951\\
+15 & 0.0193343320 & 0.5470700752 & 0.4335955932\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+以$x_2=134,x_3=20$为例：
+\begin{code}
+f1 \ROperator{<-} \RNumber{0.6623687} \ROperator{*} \RNumber{134} \ROperator{+} \RNumber{0.3123956} \ROperator{*} \RNumber{20} \ROperator{-} \RNumber{53.06427}
+f2 \ROperator{<-} \RNumber{0.52386820} \ROperator{*} \RNumber{134} \ROperator{-} \RNumber{0.03120344} \ROperator{*} \RNumber{20} \ROperator{-} \RNumber{31.11182}
+f3 \ROperator{<-} \RNumber{0.5647306} \ROperator{*} \RNumber{134} \ROperator{-} \RNumber{0.2146332} \ROperator{*} \RNumber{20} \ROperator{-} \RNumber{34.84117}
+f \ROperator{<-} \RFunction{max}(f1, f2, f3)                  \RComment{\# 减去最大值，防止 exp() 溢出}
+\RFunction{exp}(f1 \ROperator{-} f) \ROperator{/} (\RFunction{exp}(f1 \ROperator{-} f) \ROperator{+} \RFunction{exp}(f2 \ROperator{-} f) \ROperator{+} \RFunction{exp}(f3 \ROperator{-} f))
+\RFunction{library}(mvtnorm)                        \RComment{\# m1--m3、S 沿用上文}
+S
+X \ROperator{<-} \RFunction{c}(\RNumber{134}, \RNumber{20})
+fx1 \ROperator{<-} \RFunction{dmvnorm}(X, mean \ROperator{=} m1, sigma \ROperator{=} S)
+fx2 \ROperator{<-} \RFunction{dmvnorm}(X, mean \ROperator{=} m2, sigma \ROperator{=} S)
+fx3 \ROperator{<-} \RFunction{dmvnorm}(X, mean \ROperator{=} m3, sigma \ROperator{=} S)
+fx1 \ROperator{/} (fx1 \ROperator{+} fx2 \ROperator{+} fx3)
+fx2 \ROperator{/} (fx1 \ROperator{+} fx2 \ROperator{+} fx3)
+fx3 \ROperator{/} (fx1 \ROperator{+} fx2 \ROperator{+} fx3)
+\end{code}
+\[
+S=\begin{bmatrix}220.3667&14.20000\\14.2000&14.06667\end{bmatrix}.
+\]
+线性判别函数计算得$P(1\mid X)=0.965845$。正态密度计算得
+\[
+P(1\mid X)=0.9658452,\quad P(2\mid X)=0.02979684,\quad P(3\mid X)=0.004357989.
+\]
+\paragraph{判别效果} 按表\ref{tab:post3}中后验概率最大的类别回代，混淆矩阵如下（第8、15例的$x_2$、$x_3$完全相同，后验概率也相同）：
+\begin{center}\small\begin{tabular}{lccccc}\toprule
+&\multicolumn{3}{c}{\bfseries 回代判为}&&\\\cmidrule(lr){2-4}
+{\bfseries 真实组别}&$G_1$&$G_2$&$G_3$&{\bfseries 回代正确率}&{\bfseries 留一法正确率}\\\midrule
+$G_1$ 胃癌&5&0&0&100\%&60\%\\
+$G_2$ 萎缩性胃炎&0&4&1&80\%&60\%\\
+$G_3$ 非胃病者&0&1&4&80\%&40\%\\\midrule
+合计&&&&$13/15=86.7\%$&$8/15=53.3\%$\\\bottomrule
+\end{tabular}\end{center}
+留一法（\texttt{lda(..., CV = TRUE)}）的正确率比回代低了三分之一以上。与四变量模型（回代80\%，留一法33.3\%）相比，两变量模型的回代和预测正确率都更高，说明变量多并不一定判得更准。但若$x_2$、$x_3$是看过全部数据后挑出来的，53.3\%仍然偏乐观，变量选择应放在每一折的训练样品内完成。
+\subsection{Bayes二次型判别函数}
+若各类总体协方差阵不相等，不能用$S_c$估计$\Sigma$。此时待判变量在判别函数中为二次型，称为二次型判别函数。
+记第$k$类的二次判别函数为$Q_k(X)$（教材式10.12、10.13记作$Z^2(k\mid X)$，协方差阵记作$V_k$），实际计算时以各组$S_k$估计$\Sigma_k$：
+\begin{align}
+Q_k(X)&=\log q_k-\frac12\log|\Sigma_k|
+-\frac12(X-\mu_k)\trans\Sigma_k^{-1}(X-\mu_k)\\
+&=\log q_k-\frac12\log|\Sigma_k|-\frac12\mu_k\trans\Sigma_k^{-1}\mu_k
+-\frac12X\trans\Sigma_k^{-1}X+X\trans\Sigma_k^{-1}\mu_k.
+\end{align}
+$Q_k(X)$最大的类别为判定类别。与线性情形相比，多了随类别变化的二次项$-\frac12X\trans\Sigma_k^{-1}X$和行列式项$-\frac12\log|\Sigma_k|$；先验项$\log q_k$照样保留。若考虑误判代价，按\ref{sec:loss}节以后验概率计算条件风险。QDA每组要估计$p(p+1)/2$个协方差参数，各组例数应明显多于$p$，本章三组各5例的数据不宜使用。
+协方差阵相等时的线性函数为
+\[
+u_i(x)=\log q_i-\frac12\mu_i\trans\Sigma^{-1}\mu_i+\mu_i\trans\Sigma^{-1}x.
+\]
+
+\begin{chaptersummary}{本章小结：判别分析}
+研究目的&用已知类别的训练样本建立判别规则，对新样品归类（有监督）\\
+优化准则或统计模型&距离判别：归入马氏距离最近的重心；Fisher判别：最大化$J(a)=a\trans Ba/a\trans Wa$，解$W^{-1}B$的特征问题；Bayes判别：最大后验概率，或一般地最小条件风险$R(j\mid x)=\sum_kL(j,k)P(k\mid x)$\\
+主要条件&用合并$S$时要求各组协方差阵相等（Box M检验需多元正态、样本量足够）；正态Bayes判别要求组内多元正态；先验应反映目标人群构成；$W$或$S_k$须可逆\\
+结果解释&判别函数系数与得分、典型相关与特征根贡献比例（分离程度）、后验概率；用混淆矩阵、各类正确率和留一法/交叉验证的预测误判率评价效果\\
+常见误用&只报告回代正确率；把Box M检验$P>\alpha$当作协方差阵相等的证据；小样本用各组$S_k$造成“完美回代”；把判别函数个数说成$\min(g-1,m)$个“分类数”；用病例对照样本比例作先验；在全部数据上筛选变量后再做交叉验证\\
+\end{chaptersummary}
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 比较聚类分析与判别分析的根本区别。\\
+\textit{答：判别分析的训练样品类别已知（有监督），目的是建立规则判别新样品；聚类分析事先不知道类别（无监督），目的是从数据中发现分组。}
+\item 3组、5个变量作Fisher判别，写出判别函数的最大个数。\\
+\textit{答：$\min(K-1,p)=\min(2,5)=2$个。}
+\item 第一判别函数的特征值$\lambda_1=2.864$，计算对应的典型相关系数。\\
+\textit{答：$R^2=\lambda/(1+\lambda)=0.741$，$R=0.861$。}
+\item 写出Bayes判别与基于合并协方差阵的距离判别等价的条件。\\
+\textit{答：各类多元正态、协方差阵相等、先验概率相等（且误判代价相等）。}
+\item 某判别规则的回代正确率为80\%，留一法正确率为33\%，解释这一结果。\\
+\textit{答：规则对训练样本过度拟合，判别新样品的能力很差；应报告留一法或交叉验证的结果，并考虑减少变量或增加样本量。}
+\item 说明不宜直接以病例对照研究中病例所占比例作为先验概率的原因。\\
+\textit{答：病例、对照的人数由研究设计决定，不反映判别规则将要使用的人群中的患病率。}
+\end{enumerate}
+\end{fuxi}

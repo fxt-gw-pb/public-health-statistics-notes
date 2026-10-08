@@ -1,0 +1,502 @@
+\chapter{主成分分析}
+本书四章按研究目的可分为两类：主成分分析与因子分析以\textbf{变量}为对象，目的是将多个相关指标概括为少数几个综合指标；聚类分析与判别分析以\textbf{观察对象}为对象，目的是将个体（或样品）分类，或判定新个体所属的类别。
+
+主成分分析是后续各章的基础。以6项智力测验得分为例，各项得分彼此相关，所含信息有重叠，主成分分析的任务是用一两个综合得分代替原有指标，并尽可能少地损失信息。这里的“信息”有明确的定义，即综合得分在个体间的方差，方差越大，区分个体的能力越强。本章的数学推导即求方差最大的线性组合，其解为协方差阵（或相关阵）的特征向量。
+
+主成分分析属于数据变换与描述方法，不涉及统计模型，也不要求分布假设。它不假定数据背后存在潜在因子，这是它与第2章因子分析的根本区别。
+\section{主成分分析}
+主成分分析（principal component analysis，PCA）是利用多个数值变量的相关性，把它们变换成少数几个互不相关的综合指标（主成分），以反映多个变量所提供的信息。
+\Note{PCA靠变量间的相关性来降维。若标准化后的变量近似互不相关，即相关阵接近单位阵，各特征值都接近1，没有少数几个主成分能概括大部分方差，降维效果就差。用协方差阵分析时，即使变量互不相关，方差特别大的变量也会单独占据前几个主成分，但这只反映量纲或尺度的差异，并没有实现降维。}
+\Example{例1\quad 六项智力测量得分}
+寻找一个或几个综合指标，概括六项得分的信息。
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{某小学10名男学生六个项目的智力测量计分}\label{tab:iq}
+\begin{tabular}{lrrrrrr}\toprule
+{\bfseries 编号 }&{\bfseries  常识 $X_1$ }&{\bfseries  算术 $X_2$ }&{\bfseries  理解 $X_3$ }&{\bfseries  填图 $X_4$ }&{\bfseries  积木 $X_5$ }&{\bfseries  译码 $X_6$}\\\midrule
+1 & 14 & 13 & 28 & 14 & 22 & 39\\
+2 & 10 & 14 & 15 & 14 & 34 & 35\\
+3 & 11 & 12 & 19 & 13 & 24 & 39\\
+4 & 7 & 7 & 7 & 9 & 20 & 23\\
+5 & 13 & 12 & 24 & 12 & 26 & 38\\
+6 & 19 & 14 & 22 & 16 & 23 & 37\\
+7 & 20 & 16 & 26 & 21 & 38 & 69\\
+8 & 9 & 10 & 14 & 9 & 31 & 46\\
+9 & 9 & 8 & 15 & 13 & 14 & 46\\
+10 & 9 & 9 & 12 & 10 & 23 & 46\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\Source{资料来源：余松林，《医学现场研究中的统计分析方法》，同济医科大学（内部教材），143页。}
+\subsection{六项得分的协方差阵和相关矩阵}
+\begin{code}
+\RComment{\# 按表\ref{tab:iq}录入数据}
+d \ROperator{<-} \RFunction{data.frame}(
+  x1 \ROperator{=} \RFunction{c}(\RNumber{14, 10, 11, 7, 13, 19, 20, 9, 9, 9}),
+  x2 \ROperator{=} \RFunction{c}(\RNumber{13, 14, 12, 7, 12, 14, 16, 10, 8, 9}),
+  x3 \ROperator{=} \RFunction{c}(\RNumber{28, 15, 19, 7, 24, 22, 26, 14, 15, 12}),
+  x4 \ROperator{=} \RFunction{c}(\RNumber{14, 14, 13, 9, 12, 16, 21, 9, 13, 10}),
+  x5 \ROperator{=} \RFunction{c}(\RNumber{22, 34, 24, 20, 26, 23, 38, 31, 14, 23}),
+  x6 \ROperator{=} \RFunction{c}(\RNumber{39, 35, 39, 23, 38, 37, 69, 46, 46, 46}))
+S \ROperator{<-} \RFunction{cov}(d)
+S
+\RFunction{cor}(d)
+\RFunction{diag}(S)
+\RFunction{sum}(\RFunction{diag}(S))
+\RFunction{diag}(\RFunction{cor}(d))
+\end{code}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{协方差阵 $S$}
+\begin{tabular}{lrrrrrr}\toprule
+ &{\bfseries  $X_1$ }&{\bfseries  $X_2$ }&{\bfseries  $X_3$ }&{\bfseries  $X_4$ }&{\bfseries  $X_5$ }&{\bfseries  $X_6$}\\\midrule
+$X_1$ & 19.433333 & 10.722222 & 24.088889 & 13.877778 & 12.611111 & 27.466667\\
+$X_2$ & 10.722222 & 8.500000 & 15.333333 & 8.722222 & 14.277778 & 15.444444\\
+$X_3$ & 24.088889 & 15.333333 & 45.288889 & 17.200000 & 13.222222 & 35.266667\\
+$X_4$ & 13.877778 & 8.722222 & 17.200000 & 12.988889 & 11.611111 & 27.022222\\
+$X_5$ & 12.611111 & 14.277778 & 13.222222 & 11.611111 & 49.833333 & 41.555556\\
+$X_6$ & 27.466667 & 15.444444 & 35.266667 & 27.022222 & 41.555556 & 138.400000\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{相关矩阵 $R$}
+\begin{tabular}{lrrrrrr}\toprule
+ &{\bfseries  $X_1$ }&{\bfseries  $X_2$ }&{\bfseries  $X_3$ }&{\bfseries  $X_4$ }&{\bfseries  $X_5$ }&{\bfseries  $X_6$}\\\midrule
+$X_1$ & 1.0000000 & 0.8342605 & 0.8119837 & 0.8734947 & 0.4052469 & 0.5296199\\
+$X_2$ & 0.8342605 & 1.0000000 & 0.7815041 & 0.8301024 & 0.6937311 & 0.4502926\\
+$X_3$ & 0.8119837 & 0.7815041 & 1.0000000 & 0.7091639 & 0.2783227 & 0.4454516\\
+$X_4$ & 0.8734947 & 0.8301024 & 0.7091639 & 1.0000000 & 0.4563813 & 0.6373339\\
+$X_5$ & 0.4052469 & 0.6937311 & 0.2783227 & 0.4563813 & 1.0000000 & 0.5003813\\
+$X_6$ & 0.5296199 & 0.4502926 & 0.4454516 & 0.6373339 & 0.5003813 & 1.0000000\\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\[
+\diag(S)=(19.43333,\ 8.50000,\ 45.28889,\ 12.98889,\ 49.83333,\ 138.40000),
+\]
+\[
+\tr(S)=274.4444,\qquad \diag(R)=(1,1,1,1,1,1).
+\]
+实际分析一般调用\rinline{prcomp()}。下面先列出结果，各数值的来源见后续各节。\rinline{prcomp()}默认基于协方差阵，设定\rinline{scale.=TRUE}时基于相关阵：
+\par\noindent\begin{rcode}
+pc <- prcomp(d)                 # 协方差阵
+summary(pc)
+round(pc$rotation[,1:2],3)      # 前两个特征向量
+\end{rcode}
+\begin{routput}
+Importance of components:
+                           PC1    PC2    PC3     PC4     PC5     PC6
+Standard deviation     13.6558 6.6942 5.8888 2.53505 1.31898 0.55498
+Proportion of Variance  0.6795 0.1633 0.1264 0.02342 0.00634 0.00112
+Cumulative Proportion   0.6795 0.8428 0.9691 0.99254 0.99888 1.00000
+      PC1    PC2
+x1 -0.232  0.377
+x2 -0.149  0.261
+x3 -0.317  0.710
+x4 -0.207  0.210
+x5 -0.334  0.021
+x6 -0.818 -0.491
+\end{routput}
+\rinline{Standard deviation}的平方为特征值，如$13.6558^2=186.48$；\rinline{Proportion of Variance}为贡献率，如$186.48/274.44=0.6795$。特征向量整体变号不影响结果（见第\ref{sec:pc-prop}节后的说明），此处R给出的第一特征向量各分量均为负值，解释时可统一乘以$-1$。
+
+第一主成分中译码$x_6$的系数达0.818。六项测验的满分与分布不同，译码的方差（138.4）为算术（8.5）的16倍，因而在协方差阵分析中占主导地位。改用相关阵的结果如下：
+\par\noindent\begin{rcode}
+pr <- prcomp(d,scale.=TRUE)     # 相关阵
+summary(pr)
+round(pr$rotation[,1:2],3)
+\end{rcode}
+\begin{routput}
+Importance of components:
+                          PC1    PC2    PC3     PC4     PC5    PC6
+Standard deviation     2.0364 0.9285 0.7759 0.50682 0.32673 0.1588
+Proportion of Variance 0.6912 0.1437 0.1003 0.04281 0.01779 0.0042
+Cumulative Proportion  0.6912 0.8348 0.9352 0.97800 0.99580 1.0000
+      PC1    PC2
+x1 -0.450  0.289
+x2 -0.458 -0.005
+x3 -0.408  0.448
+x4 -0.453  0.119
+x5 -0.315 -0.747
+x6 -0.341 -0.379
+\end{routput}
+\begin{sikao}[主成分的解释]
+基于相关阵时，第一主成分的六个系数同号且大小接近（0.32--0.46），可解释为总体智力水平，得分高者各项测验成绩均较好。它与六项标准化得分之和的相关系数为$0.9985$（符号取正后），接近于标准化总分。其原因在于：六项指标两两正相关且程度相近时，方差最大的方向接近等权重方向。
+
+第二主成分的系数有正有负：常识（0.289）、理解（0.448）为正，积木（$-0.747$）、译码（$-0.379$）为负。该主成分为一种对比，得分高表示言语类项目相对较好、操作类项目相对较差，反映能力结构的差异，与总体水平无关。
+
+解释主成分时主要依据系数的符号与相对大小。第二主成分及以后的主成分常为此类对比，其专业意义需结合专业知识判断；难以解释时不必强行命名。
+\end{sikao}
+\section{主成分的计算方法}
+设$p$个随机变量$X=(X_1,\ldots,X_p)\trans$的总体均数为$\mu$、协方差阵为$\Sigma$。总体主成分是中心化变量的线性组合$z_i=a_i\trans(X-\mu)$。实际计算时用样本均数$\bar x$和样本协方差阵$S$代替$\mu$和$\Sigma$，得到样本主成分，其方差为$S$的特征值$\widehat\lambda_i$。基于相关阵时，先把各变量标准化。样本形式为
+\begin{align}
+z_i&=a_{i1}(x_1-\bar x_1)+a_{i2}(x_2-\bar x_2)+\cdots+a_{ip}(x_p-\bar x_p),\\
+c_i&=a_{i1}x_1^*+a_{i2}x_2^*+\cdots+a_{ip}x_p^*,\qquad x_j^*=\frac{x_j-\bar x_j}{s_j}.
+\end{align}
+前者基于协方差阵提取主成分，后者基于相关矩阵提取主成分。$p$个变量最多有$p$个主成分。$n$例样本的中心化数据阵秩不超过$n-1$，故$\operatorname{rank}(S)\leqslant\min(p,n-1)$，方差非零的样本主成分不超过$\min(p,n-1)$个。
+\Note{要让主成分的方差最大，才更有代表性。}
+\subsection{变量线性组合的性质}
+设$p$个随机变量$X$的均数为$\mu$，协方差阵为$\Sigma$。$p$个变量的线性组合$a\trans X$的均数为$a\trans\mu$，方差为$a\trans\Sigma a$。
+\[
+X=\begin{bmatrix}X_1\\\vdots\\X_p\end{bmatrix},\qquad
+ a=\begin{bmatrix}a_1\\\vdots\\a_p\end{bmatrix},\qquad
+ a\trans X=\begin{bmatrix}a_1&\cdots&a_p\end{bmatrix}X
+ =a_1X_1+\cdots+a_pX_p.
+\]
+\subsection{用总分或平均分表示学生智力}
+以总分或平均分作为综合指标，是将各变量等同对待，赋予相同权。
+\[
+a\trans X=\begin{bmatrix}1&\cdots&1\end{bmatrix}
+\begin{bmatrix}X_1\\\vdots\\X_p\end{bmatrix}=X_1+\cdots+X_p,
+\]
+\[
+a\trans X=\begin{bmatrix}1/6&\cdots&1/6\end{bmatrix}
+\begin{bmatrix}X_1\\\vdots\\X_p\end{bmatrix}=\frac16X_1+\cdots+\frac16X_p.
+\]
+\Note{这样处理，还不能尽可能多地概括全部变量的信息。}
+下面比较等权组合与第一主成分的方差。为使比较对等，将等权重也标准化为单位长度，$a=(1/\sqrt6,\ldots,1/\sqrt6)\trans$：
+\par\noindent\begin{rcode}
+a <- rep(1/sqrt(6),6)
+c(t(a)%*%cov(d)%*%a, pc$sdev[1]^2)   # 协方差阵：等权组合与第一主成分的方差
+c(t(a)%*%cor(d)%*%a, pr$sdev[1]^2)   # 相关阵
+\end{rcode}
+\begin{routput}
+[1] 141.8815 186.4801
+[1] 4.079090 4.146965
+\end{routput}
+按原始分数等权相加，方差为141.9，第一主成分为186.5；按标准化分数等权相加，方差为4.079，与第一主成分的4.147接近。第一主成分是所有单位长度权重中方差最大者，等权组合只是其中之一。相关阵下二者接近，原因如前所述；协方差阵下二者差距较大，因为各项方差不同，最优权重偏向方差较大的项目。
+\subsection{基于协方差阵提取第一主成分}
+\[
+z_1=a_{11}(x_1-\bar x_1)+a_{12}(x_2-\bar x_2)+\cdots+a_{1p}(x_p-\bar x_p).
+\]
+要求$a_1\trans a_1=1$，且第一主成分$z_1$的方差最大。若不加单位长度约束，把$a_1$乘以常数$c$，方差就变为原来的$c^2$倍，可以任意大。加上约束后，问题只比较组合的方向。
+
+根据瑞利商性质，
+\begin{equation}
+\lambda_{\min}\leqslant\frac{x\trans Ax}{x\trans x}\leqslant\lambda_{\max}.
+\end{equation}
+当$A=\Sigma$、$x=e_1$时，式子的值最大，为$\lambda_1$。$e_1$是第一特征向量。
+\begin{zm}
+由谱分解，$\Sigma=E\Lambda E\trans$，其中$E=(e_1,\ldots,e_p)$为正交阵，$\Lambda=\diag(\lambda_1,\ldots,\lambda_p)$，$\lambda_1\geqslant\cdots\geqslant\lambda_p\geqslant0$。令$b=E\trans a$，则$b\trans b=a\trans a=1$，且
+\[
+a\trans\Sigma a=b\trans\Lambda b=\sum_{j=1}^p\lambda_jb_j^2\leqslant\lambda_1\sum_{j=1}^pb_j^2=\lambda_1,
+\]
+当$b=(1,0,\ldots,0)\trans$，即$a=e_1$时取等号。
+\end{zm}
+\subsection{基于协方差阵提取第二主成分}
+如果$z_1$不能很好地概括原指标信息，就继续提取第二主成分：
+\[
+z_2=a_{21}(x_1-\bar x_1)+a_{22}(x_2-\bar x_2)+\cdots+a_{2p}(x_p-\bar x_p).
+\]
+要求$a_2\trans a_2=1$、$a_1\trans a_2=0$，且第二主成分$z_2$的方差次大。$e_2$是$z_2$表达式的系数，$\var(z_2)=\lambda_2$。
+\begin{zm}
+沿用上面的记号。约束$a_2\trans e_1=0$即$b_1=0$，于是$a_2\trans\Sigma a_2=\sum_{j\geqslant2}\lambda_jb_j^2\leqslant\lambda_2\sum_{j\geqslant2}b_j^2=\lambda_2$，在$a_2=e_2$时取等号。依此类推，要求与前$i-1$个系数向量正交时，第$i$个主成分的系数是$e_i$，方差为$\lambda_i$。
+\end{zm}
+\Note{第二主成分与第一主成分两两不相关（见\ref{sec:pc-prop}节性质2），一般并不独立。最多有$p$个主成分，本例即为6个。6个特征值之和等于协方差阵的迹$\tr(S)=274.44$。原例标注的0.679是第一主成分的贡献率$\widehat\lambda_1/\tr(S)$。}
+\subsection{基于相关矩阵计算主成分}
+对$p\times p$相关矩阵求特征值$\lambda_i$和特征向量$e_i$，$i=1,2,\ldots,p$。
+\[
+c_1=a_{11}x_1^*+a_{12}x_2^*+\cdots+a_{1p}x_p^*.
+\]
+$e_1$是第一主成分$c_1$表达式的系数$a_1$，$\var(c_1)=\lambda_1$最大。$e_2$是第二主成分$c_2$表达式的系数，$\var(c_2)=\lambda_2$次大，以此类推。
+\Note{标准化变量的方差都是1，总方差为$\tr(R)=p$。这里的“信息量”指方差。}
+\section{主成分的性质}\label{sec:pc-prop}
+\begin{enumerate}
+\item 主成分$c_i$（$i=1,2,\ldots,p$）的均数为0。
+\item 主成分$c_i$和$c_j$（$i\ne j$）两两不相关，$\cov(c_i,c_j)=0$。
+\item $\var(c_1)=\lambda_1$最大，$\var(c_2)=\lambda_2$次大，以此类推。
+\item 总方差不增不减。协方差阵分析保留原变量的总方差$\tr(\Sigma)$，相关阵分析保留标准化变量的总方差$\tr(R)=p$：
+\[
+\sum_{i=1}^{p}\var(z_i)=\sum_{i=1}^p\lambda_i=\tr(\Sigma)=\sum_{i=1}^{p}\var(x_i),\qquad
+\sum_{i=1}^{p}\var(c_i)=\tr(R)=p.
+\]
+\item 主成分与原始指标间的相关系数（$u_{i1}$为第一特征向量$e_1$的第$i$个分量）：
+\[
+\rho_{i1}=\frac{u_{i1}\sqrt{\lambda_1}}{\sigma_i}\quad\text{（基于协方差阵）},\qquad
+\rho_{i1}=u_{i1}\sqrt{\lambda_1}\quad\text{（基于相关矩阵）}.
+\]
+这是因为$\cov(x_i,z_1)=(\Sigma e_1)_i=\lambda_1u_{i1}$，再除以$\sigma_i\sqrt{\lambda_1}$。
+\end{enumerate}
+\begin{zm}[性质2]
+$\cov(z_i,z_j)=\cov(e_i\trans X,e_j\trans X)=e_i\trans\Sigma e_j=\lambda_je_i\trans e_j=0$（$i\ne j$）。基于相关阵时把$\Sigma$换成$R$即可。
+\end{zm}
+不相关不等于独立。若$X$服从多元正态分布，主成分是$X$的线性变换，也服从联合正态分布，这时不相关与独立等价，总体主成分相互独立。样本主成分得分直接满足样本协方差为零：得分阵$Z=X_cE$的样本协方差阵为$E\trans SE=\widehat\Lambda$，为对角阵。
+
+\paragraph{方差贡献率与累计贡献率}
+第$j$个主成分的方差贡献率为$\lambda_j/\sum_{i=1}^p\lambda_i$，前$k$个主成分的累计贡献率为$\sum_{j=1}^k\lambda_j/\sum_{i=1}^p\lambda_i$。协方差阵分析的分母为$\tr(\Sigma)$，相关阵分析的分母为$p$。例1基于协方差阵：前两个主成分的贡献率分别为67.9\%和16.3\%，累计84.3\%。
+\Example{例2\quad 29名13岁男童的身高、体重和肺活量}
+\par\addvspace{5pt}\begin{center}\begin{minipage}{\linewidth}\centering
+\small
+\captionof{table}{某地29名13岁男童的身高、体重和肺活量}\label{tab:hwv}
+\begin{tabular}{lrrrrrrr}\toprule
+{\bfseries 编号 }&{\bfseries  身高/cm }&{\bfseries  体重/kg }&{\bfseries  肺活量/L }&{\bfseries  编号 }&{\bfseries  身高/cm }&{\bfseries  体重/kg }&{\bfseries  肺活量/L}\\\midrule
+1 & 135.1 & 32.0 & 1.75 & 2 & 139.9 & 30.4 & 2.00\\
+3 & 163.6 & 46.2 & 2.75 & 4 & 146.5 & 33.5 & 2.50\\
+5 & 156.2 & 37.1 & 2.75 & 6 & 156.4 & 35.5 & 2.00\\
+7 & 167.8 & 41.5 & 2.75 & 8 & 149.7 & 31.0 & 1.50\\
+9 & 145.0 & 33.0 & 2.50 & 10 & 148.5 & 37.2 & 2.25\\
+11 & 165.5 & 49.5 & 3.00 & 12 & 135.0 & 27.6 & 1.25\\
+13 & 153.3 & 41.0 & 2.75 & 14 & 152.0 & 32.0 & 1.75\\
+15 & 160.5 & 47.2 & 2.25 & 16 & 153.0 & 32.0 & 1.75\\
+17 & 147.6 & 40.5 & 2.00 & 18 & 157.5 & 43.3 & 2.25\\
+19 & 155.1 & 44.7 & 2.75 & 20 & 160.5 & 37.5 & 2.00\\
+21 & 143.0 & 31.5 & 1.75 & 22 & 149.4 & 33.9 & 2.25\\
+23 & 160.8 & 40.4 & 2.75 & 24 & 159.0 & 38.5 & 2.50\\
+25 & 158.2 & 37.5 & 2.00 & 26 & 150.0 & 36.0 & 1.75\\
+27 & 144.5 & 34.7 & 2.25 & 28 & 154.6 & 39.5 & 2.50\\
+29 & 156.5 & 32.0 & 1.75 &  &  &  & \\
+\bottomrule\end{tabular}
+\end{minipage}\end{center}
+
+\Source{资料来源：陈峰主编，《现代医学统计方法与Stata应用》，中国统计出版社，2000，109页。}
+\subsection{协方差阵与相关阵的选择}
+协方差阵分析按各变量的方差赋权，方差大的变量在第一主成分中占主导，结果随测量单位改变。相关阵分析先把每个变量标准化，使各变量的初始方差都为1，即在进入分析前赋予相同的方差权重，结果不随单位的线性变换而改变。用表\ref{tab:hwv}的数据复算：
+\begin{center}\small\begin{tabular}{lcc}\toprule
+{\bfseries 分析方式}&{\bfseries 第一主成分贡献率}&{\bfseries $e_1$（身高，体重，肺活量）}\\\midrule
+协方差阵（cm，kg，L）&89.3\%&$(0.865,\ 0.501,\ 0.031)$\\
+协方差阵（m，kg，mL）&99.99\%&$(0.000,\ 0.009,\ 1.000)$\\
+相关阵（任意单位）&79.3\%&$(0.565,\ 0.604,\ 0.563)$\\\bottomrule
+\end{tabular}\end{center}
+以cm、kg、L为单位时，身高方差最大，第一主成分主要反映身高；把身高改用m、肺活量改用mL后，第一主成分几乎只剩肺活量。贡献率看似接近100\%，只是因为肺活量的数值方差被放大。相关阵分析在两种单位下完全相同。因此，变量单位不同或方差相差悬殊时宜用相关阵；只有各变量单位相同、方差大小本身有专业意义时（如例4的空气污染分指数），才用协方差阵。
+\section{主成分的几何意义}
+\Example{例3\quad 18名学生的语文、数学成绩}
+从18名学生的语文、数学成绩中，基于协方差阵或相关阵提取主成分，进行综合评价。原始成绩即图\ref{fig:scores}左图中各点的坐标。
+\begin{code}
+d \ROperator{<-} \RFunction{data.frame}(
+  x1 \ROperator{=} \RFunction{c}(\RNumber{45, 48, 52, 61, 65, 67, 73, 75, 78, 81, 84, 88, 89, 93, 95, 98, 99, 98}),
+  x2 \ROperator{=} \RFunction{c}(\RNumber{43, 53, 58, 70, 61, 70, 75, 78, 83, 88, 76, 92, 78, 82, 97, 95, 92, 89}))
+\RFunction{eigen}(\RFunction{cor}(d))
+\RFunction{acos}(\RNumber{0.7071068}) \ROperator{*} \RNumber{180} \ROperator{/} pi
+\end{code}
+\[
+\lambda_1=1.93200236,\quad \lambda_2=0.06799764,\qquad
+\begin{bmatrix}e_1&e_2\end{bmatrix}=
+\begin{bmatrix}0.7071068&-0.7071068\\0.7071068&0.7071068\end{bmatrix}.
+\]
+\[
+c_1=0.707x_1^*+0.707x_2^*,\qquad
+\var(c_1)=\lambda_1=1.932,\qquad \frac{\lambda_1}{p}=\frac{1.932}{2}=96.6\%.
+\]
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=.46\textwidth,height=6.8cm,xlabel={$x_1$},ylabel={$x_2$},xmin=42,xmax=101,ymin=40,ymax=100]\addplot[only marks,mark=*,mark size=2.1pt,Brick] coordinates {(45,43) (48,53) (52,58) (61,70) (65,61) (67,70) (73,75) (75,78) (78,83) (81,88) (84,76) (88,92) (89,78) (93,82) (95,97) (98,95) (99,92) (98,89)};\addplot[densely dashed,line width=.45pt,Muted] coordinates {(77.16666666666667,40) (77.16666666666667,100)};\addplot[densely dashed,line width=.45pt,Muted] coordinates {(42,76.66666666666667) (101,76.66666666666667)};\end{axis}\end{tikzpicture}
+\hfill
+\begin{tikzpicture}\begin{axis}[width=.46\textwidth,height=6.8cm,xlabel={$x_1^*$},ylabel={$x_2^*$},xmin=-2,xmax=1.5,ymin=-2.4,ymax=1.5]\addplot[only marks,mark=*,mark size=2.1pt,Forest] coordinates {(-1.8240906,-2.2080866) (-1.6539681,-1.5522193) (-1.4271382,-1.2242857) (-0.91677091,-0.43724488) (-0.689941,-1.0275255) (-0.57652604,-0.43724488) (-0.23628116,-0.10931122) (-0.12286621,0.087448976) (0.047256233,0.41538264) (0.21737867,0.7433163) (0.38750111,-0.043724488) (0.61433103,1.0056632) (0.6710385,0.087448976) (0.89786842,0.3497959) (1.0112834,1.3335969) (1.1814058,1.2024234) (1.2381133,1.0056632) (1.1814058,0.80890303)};\addplot[densely dashed,line width=.45pt,Muted] coordinates {(0,-2.4) (0,1.5)};\addplot[densely dashed,line width=.45pt,Muted] coordinates {(-2,0) (1.5,0)};\end{axis}\end{tikzpicture}
+\caption{语文、数学成绩及其标化成绩}\label{fig:scores}
+\end{figure}\FloatBarrier
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=9.5cm,height=8.7cm,xlabel={$x_1^*$},ylabel={$x_2^*$},xmin=-2,xmax=2,ymin=-2.3,ymax=2,axis equal image]\addplot[only marks,mark=*,mark size=2pt,Ink!75] coordinates {(-1.8240906,-2.2080866) (-1.6539681,-1.5522193) (-1.4271382,-1.2242857) (-0.91677091,-0.43724488) (-0.689941,-1.0275255) (-0.57652604,-0.43724488) (-0.23628116,-0.10931122) (-0.12286621,0.087448976) (0.047256233,0.41538264) (0.21737867,0.7433163) (0.38750111,-0.043724488) (0.61433103,1.0056632) (0.6710385,0.087448976) (0.89786842,0.3497959) (1.0112834,1.3335969) (1.1814058,1.2024234) (1.2381133,1.0056632) (1.1814058,0.80890303)};\addplot[densely dotted,line width=.45pt,Muted] coordinates {(-2,0) (2,0)};\addplot[densely dotted,line width=.45pt,Muted] coordinates {(0,-2.3) (0,2)};\addplot[line width=1.1pt,Brick,<->] coordinates {(-2,-2) (2,2)} node[pos=.94,above] {$c_1$};\addplot[line width=1.1pt,Forest,dashed,<->] coordinates {(-2,2) (2,-2)} node[pos=.92,above] {$c_2$};\end{axis}\end{tikzpicture}
+\caption{主成分坐标轴旋转}
+\end{figure}\FloatBarrier
+
+原坐标系中，语文与数学成绩有相关。基于二维相关阵作主成分分析，将坐标轴逆时针旋转$45^\circ$，形成新坐标系。数据点在$c_1$轴上的投影最分散，即方差最大，在$c_2$轴上的投影相对紧密。$c_1$与$c_2$不相关，$c_1$包含大量原始信息，可作进一步分析。
+\subsection{旋转矩阵}
+\[
+T_{\text{顺时针}}=\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix},\qquad
+T_{\text{逆时针}}=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}.
+\]
+\subsection{保留主成分数与重构误差}
+设$X_c$为$n\times p$的中心化（或标准化）数据阵，$S=X_c\trans X_c/(n-1)=E\widehat\Lambda E\trans$，得分阵$Z=X_cE$。只保留前$k$个主成分，记$E_k=(e_1,\ldots,e_k)$，用这$k$个得分重构原数据：
+\[
+\widehat X_c=Z_kE_k\trans=X_cE_kE_k\trans.
+\]
+\begin{zm}
+记$\widetilde E=(e_{k+1},\ldots,e_p)$。由$EE\trans=I$，$X_c-\widehat X_c=X_c(I-E_kE_k\trans)=X_c\widetilde E\widetilde E\trans$，于是
+\[
+\|X_c-\widehat X_c\|_F^2=\tr\bigl(\widetilde E\trans X_c\trans X_c\widetilde E\bigr)=(n-1)\tr\bigl(\widetilde E\trans S\widetilde E\bigr)=(n-1)\sum_{j>k}\widehat\lambda_j.
+\]
+再证这是最小值。任取$p\times k$列正交阵$V$（$V\trans V=I_k$），把数据投影到$V$张成的$k$维子空间，重构误差为$(n-1)\bigl[\tr(S)-\tr(V\trans SV)\bigr]$。令$w_j=\|V\trans e_j\|^2$，则$0\leqslant w_j\leqslant1$，$\sum_jw_j=\tr(V\trans V)=k$，且$\tr(V\trans SV)=\sum_j\widehat\lambda_jw_j\leqslant\widehat\lambda_1+\cdots+\widehat\lambda_k$。$V=E_k$时取等号，故前$k$个主成分给出最小平方重构误差。对一般秩$k$近似阵，同样结论即Eckart--Young定理。
+\end{zm}
+因此
+\[
+\frac{\|X_c-\widehat X_c\|_F^2}{\|X_c\|_F^2}=\frac{\sum_{j>k}\widehat\lambda_j}{\sum_{j=1}^p\widehat\lambda_j}=1-\text{前$k$个主成分的累计贡献率}.
+\]
+累计贡献率就是前$k$个主成分重构出的那部分总方差（平方和）所占比例。碎石图把$\widehat\lambda_j$按$j$作图，曲线由陡变平的“拐点”之后，每多保留一个主成分，重构误差的减少都很有限。常用的经验做法是取累计贡献率达到70\%～85\%、碎石图拐点前的主成分，或在相关阵分析中保留特征值大于1（即大于平均特征值）的主成分；几种准则应结合专业解释使用。例3只保留$c_1$，相对重构误差为$\lambda_2/2=3.4\%$。
+\section{资料是否适合作主成分分析}
+\subsection{Bartlett球形检验}
+零假设为总体相关阵是单位阵（球形假设）。若$P<\alpha$，则认为指标间有一定相关性。
+\begin{equation}
+\chi^2=-\left(n-1-\frac{2p+5}{6}\right)\log|R|\ \dot\sim\ \chi^2\!\left(\frac{p(p-1)}{2}\right).
+\end{equation}
+\Note{$n$是总例数，$p$是变量个数。检验要求各观测独立抽样、变量服从多元正态分布，$\chi^2$分布是大样本近似。}
+拒绝球形假设只说明变量间存在相关，并不说明相关强到足以有效降维：样本量大时，很弱的相关也会显著。降维效果仍要看特征值和累计贡献率。例2（表\ref{tab:hwv}）的$\chi^2=41.60$，$df=3$，$P<0.001$。
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=9cm,height=5.7cm,xlabel={$|R|$},ylabel={$\chi^2$},xmin=0,xmax=1,ymin=0,ymax=235,xtick={0,.2,.4,.6,.8,1},ytick={0,50,100,150,200}]
+\addplot[Forest,line width=1pt] coordinates {(0.003003,144.715447) (0.012012,87.804878) (0.021021,76.016260) (0.030030,69.105691) (0.039039,63.414634) (0.048048,59.756098) (0.057057,56.504065) (0.066066,53.252033) (0.075075,50.813008) (0.084084,48.373984) (0.093093,46.747967) (0.102102,45.121951) (0.111111,43.089431) (0.120120,41.869919) (0.129129,40.243902) (0.138138,39.024390) (0.147147,37.804878) (0.156156,36.585366) (0.165165,35.772358) (0.174174,34.552846) (0.183183,33.739837) (0.192192,32.520325) (0.201201,31.707317) (0.210210,30.894309) (0.219219,30.081301) (0.228228,29.268293) (0.237237,28.455285) (0.246246,28.048780) (0.255255,27.235772) (0.264264,26.829268) (0.273273,26.016260) (0.282282,25.203252) (0.291291,24.796748) (0.300300,24.390244) (0.309309,23.577236) (0.318318,22.764228) (0.327327,22.764228) (0.336336,21.951220) (0.345345,21.544715) (0.354354,21.138211) (0.363363,20.325203) (0.372372,20.325203) (0.381381,19.512195) (0.390390,19.105691) (0.399399,18.699187) (0.408408,18.292683) (0.417417,17.886179) (0.426426,17.479675) (0.435435,17.073171) (0.444444,16.666667) (0.453453,16.260163) (0.462462,15.853659) (0.471471,15.447154) (0.480480,15.447154) (0.489489,14.634146) (0.498498,14.634146) (0.507508,13.821138) (0.516517,13.821138) (0.525526,13.414634) (0.534535,13.008130) (0.543544,13.008130) (0.552553,12.195122) (0.561562,12.195122) (0.570571,12.195122) (0.579580,11.382114) (0.588589,11.382114) (0.597598,10.975610) (0.606607,10.569106) (0.615616,10.569106) (0.624625,10.162602) (0.633634,9.756098) (0.642643,9.756098) (0.651652,9.349593) (0.660661,8.943089) (0.669670,8.943089) (0.678679,8.536585) (0.687688,8.130081) (0.696697,8.130081) (0.705706,8.130081) (0.714715,7.317073) (0.723724,7.317073) (0.732733,7.317073) (0.741742,6.504065) (0.750751,6.504065) (0.759760,6.504065) (0.768769,6.504065) (0.777778,5.691057) (0.786787,5.691057) (0.795796,5.691057) (0.804805,5.284553) (0.813814,4.878049) (0.822823,4.878049) (0.831832,4.878049) (0.840841,4.471545) (0.849850,4.065041) (0.858859,4.065041) (0.867868,4.065041) (0.876877,3.658537) (0.885886,3.252033) (0.894895,3.252033) (0.903904,3.252033) (0.912913,3.252033) (0.921922,2.439024) (0.930931,2.439024) (0.939940,2.439024) (0.948949,2.439024) (0.957958,1.626016) (0.966967,1.626016) (0.975976,1.626016) (0.984985,1.626016) (0.993994,1.626016)};
+\end{axis}\end{tikzpicture}
+\caption{Bartlett球形检验：卡方值随相关阵行列式的变化（示意图）}
+\end{figure}\FloatBarrier
+
+\subsection{KMO统计量}
+\begin{equation}
+\mathrm{KMO}=\frac{\sum_{i\ne j}r_{ij}^{2}}{\sum_{i\ne j}r_{ij}^{2}+\sum_{i\ne j}p_{ij}^{2}}.
+\end{equation}
+其中$p_{ij}$为偏相关系数。令$C=R^{-1}$，$C_{ij}$为逆矩阵$C$的元素，则
+\[
+p_{ij}=-\frac{C_{ij}}{\sqrt{C_{ii}C_{jj}}}.
+\]
+例2按表\ref{tab:hwv}复算，KMO$=0.695$（原例记为0.69）。
+\begin{center}
+\begin{tabular}{ll}\toprule
+{\bfseries KMO范围}&{\bfseries 适合性评价}\\\midrule
+$\mathrm{KMO}\geqslant0.9$&极好（Excellent）\\
+$0.8\leqslant\mathrm{KMO}<0.9$&好（Good）\\
+$0.7\leqslant\mathrm{KMO}<0.8$&中等（Fair）\\
+$0.5\leqslant\mathrm{KMO}<0.7$&勉强接受（Poor）\\
+$\mathrm{KMO}<0.5$&不可接受（Unacceptable）\\\bottomrule
+\end{tabular}
+\end{center}
+例2的两个统计量可直接按公式计算，无需调用其他程序包：
+\par\noindent\begin{rcode}
+# h、w、v：例2表中29名男童的身高、体重、肺活量，按例1的方式录入
+X <- cbind(h,w,v); R <- cor(X); n <- nrow(X); p <- ncol(X)
+chi <- -(n-1-(2*p+5)/6)*log(det(R))
+c(chi=chi, df=p*(p-1)/2, P=pchisq(chi,p*(p-1)/2,lower.tail=FALSE))
+C <- solve(R); P <- -C/sqrt(outer(diag(C),diag(C)))   # 偏相关阵
+diag(P) <- 0; R0 <- R; diag(R0) <- 0
+sum(R0^2)/(sum(R0^2)+sum(P^2))                        # KMO
+\end{rcode}
+\begin{routput}
+         chi           df            P 
+4.159713e+01 3.000000e+00 4.884930e-09 
+[1] 0.6945357
+\end{routput}
+KMO需与Bartlett球形检验结合使用。$\mathrm{KMO}\geqslant0.7$且Bartlett检验$P<0.05$时，数据适合因子分析。
+\Note{KMO比较简单相关与偏相关：若变量间的相关主要来自共同因子，控制其他变量后偏相关应很小，KMO接近1。因此上表的经验阈值主要用于评价共同因子结构，是因子分析的参考指标。PCA只是对协方差结构作正交变换，不以存在公因子为前提，KMO不宜作为实施PCA的必要条件；PCA是否有用，应直接看前几个主成分的累计贡献率及其可解释性。}
+\section{主成分应用}
+\subsection{综合评价}
+例3中，基于相关阵提取的第一主成分结构符合专业意义。假设成绩服从正态分布，可将主成分得分转化为百分位数（正态分布累积概率），获得较直观的解释。参照人群中$c_1\sim N(0,\lambda_1)$，故个体的百分位为
+\[
+P=100\,\Phi\!\left(\frac{c_1}{\sqrt{\lambda_1}}\right),
+\]
+即参照人群中得分低于该个体的百分比。这里的参照人群是估计均数、标准差和特征向量所用的人群，本例即这18名学生；换一个参照人群，百分位就要重新计算。特征向量的符号是任意的，应先把方向取成“得分越高越好”（若软件给出的$e_1$各分量为负，就用$-c_1$）。例3中$\lambda_1=1.932$：第1名学生（45，43）的$c_1=-2.85$，百分位为2.0；第9名（78，83）为0.33，百分位59.3；第17名（99，92）为1.59，百分位87.3。
+\Note{方差最大准则只保证$c_1$最能拉开个体间的差距，并不保证它就是专业上合理的综合评价。还要检查各变量的系数是否同号、大小是否合理；若有变量方向相反（如“越小越好”的指标），应先统一方向再分析。}
+\Example{例4\quad 空气污染加权指数}
+广州市某两个月空气污染数据包括二氧化硫（SO$_2$）、氮氧化物（NO$_x$）和总悬浮颗粒物（TSP）三个原始浓度指标。各污染物分指数（iSO$_2$、iNO$_x$和iTSP）由浓度经非线性变换获得。api（Air Pollution Index）是当日三个分指数的最大值。
+
+同样的分指数具有相同的医学意义和尺度，因此可以从协方差阵出发计算主成分，并构造空气污染加权指数\texttt{api.w}：$\operatorname{cor}(z_1,\mathrm{api.w})=1$。
+
+只看相关系数等于1并不能确定这个指数：$z_1$的任何正线性变换$az_1+b$（$a>0$）与$z_1$的相关系数都等于1。课程程序（数据：\texttt{广州某2个月空气污染指数.sav}，$n=32$天）的具体做法是：对三个分指数的协方差阵求第一特征向量$e_1$（第一主成分贡献率76.4\%），取各分量为正的方向，再除以分量之和，使权重之和为1：
+\[
+a=\frac{e_1}{\sum_je_{1j}}=(0.322,\ 0.139,\ 0.540)\quad\text{对应（iTSP，iSO$_2$，iNO$_x$）},
+\]
+\[
+\mathrm{api.w}=0.322\,\mathrm{iTSP}+0.139\,\mathrm{iSO_2}+0.540\,\mathrm{iNO_x}.
+\]
+也就是不中心化的加权平均，与分指数处于同一尺度。它与第一主成分得分$z_1=e_1\trans(x-\bar x)$的关系为$\mathrm{api.w}=z_1/\sum_je_{1j}+\bar x\trans a=0.643\,z_1+138.2$，即先缩放、再平移。iNO$_x$的权重最大，是因为它的方差最大；这是协方差阵分析按方差赋权的结果，并不表示它的健康效应最大。这个加权指数有无专业上的合理性，仍需结合污染物的健康效应来解释。
+\begin{figure}[!htbp]\centering
+\begin{tikzpicture}\begin{axis}[width=.95\textwidth,height=8.2cm,xlabel={day},ylabel={AQI},xmin=300,xmax=331,ymin=20,ymax=310,xtick={300,305,310,315,320,325,330},legend columns=3,legend style={at={(.5,1.1)},anchor=south,column sep=10pt}]\addplot[Forest,line width=1.25pt] coordinates {(300,107.26127) (301,145.27864) (302,141.22945) (303,157.21937) (304,81.621569) (305,90.085873) (306,86.178508) (307,98.646724) (308,78.291902) (309,72.049023) (310,104.56766) (311,84.434957) (312,86.18886) (313,213.97022) (314,152.9089) (315,147.39466) (316,157.99634) (317,154.27618) (318,74.077504) (319,128.10968) (320,169.44181) (321,200.48644) (322,174.34601) (323,148.40829) (324,84.311319) (325,85.25623) (326,110.46081) (327,88.88253) (328,117.71726) (329,171.52345) (330,197.32004) (331,179.32267)};\addlegendentry{api.w}
+\addplot[Brick,densely dashed,line width=1pt] coordinates {(300,148) (301,217) (302,210) (303,212) (304,99) (305,107) (306,98) (307,120) (308,89) (309,84) (310,128) (311,101) (312,97) (313,259) (314,215) (315,207) (316,209) (317,194) (318,91) (319,181) (320,227) (321,261) (322,252) (323,211) (324,97) (325,102) (326,143) (327,133) (328,155) (329,253) (330,299) (331,270)};\addlegendentry{api}
+\addplot[only marks,mark=*,mark size=1.7pt,Plum] coordinates {(300,148) (301,217) (302,210) (303,212) (304,99) (305,98) (306,98) (307,120) (308,89) (309,84) (310,128) (311,101) (312,97) (313,230) (314,215) (315,207) (316,209) (317,194) (318,91) (319,181) (320,227) (321,261) (322,252) (323,211) (324,97) (325,102) (326,143) (327,80) (328,155) (329,253) (330,299) (331,270)};\addlegendentry{iNO$_x$}
+\addplot[only marks,mark=triangle,mark size=2.4pt,Ochre,line width=.65pt] coordinates {(300,80) (301,76) (302,73) (303,81) (304,73) (305,107) (306,94) (307,95) (308,82) (309,74) (310,103) (311,87) (312,97) (313,259) (314,91) (315,89) (316,116) (317,127) (318,69) (319,83) (320,130) (321,163) (322,93) (323,82) (324,86) (325,84) (326,91) (327,133) (328,93) (329,86) (330,80) (331,77)};\addlegendentry{iTSP}
+\addplot[only marks,mark=+,mark size=2.4pt,Muted,line width=.65pt] coordinates {(300,12) (301,27) (302,32) (303,121) (304,34) (305,20) (306,22) (307,24) (308,28) (309,21) (310,17) (311,14) (312,19) (313,47) (314,55) (315,51) (316,57) (317,63) (318,20) (319,27) (320,37) (321,52) (322,61) (323,59) (324,31) (325,23) (326,29) (327,21) (328,30) (329,53) (330,74) (331,64)};\addlegendentry{iSO$_2$}\end{axis}\end{tikzpicture}
+\caption{空气污染指数、加权指数与三个污染物分指数}
+\end{figure}\FloatBarrier
+
+\subsection{主成分回归}
+22例胎儿受精龄（$Y$，周）与胎儿外型测量指标如下。试求由$X_1$、$X_2$、$X_3$推算$Y$的回归方程。
+\begin{center}\begin{tabular}{lrr}\toprule
+{\bfseries 指标}&{\bfseries 均数}&{\bfseries 标准差}\\\midrule
+身高（$X_1$，cm）&33.05&9.71\\
+头围（$X_2$，cm）&23.26&6.86\\
+体重（$X_3$，g）&936.9&690.3\\\bottomrule
+\end{tabular}\end{center}
+因自变量间高度共线性，导致$b_2$的符号异常，为负值：
+\[
+\widehat Y=11.01+1.69X_1-2.16X_2+0.007X_3.
+\]
+\Note{主成分回归舍弃了部分主成分方向，一般是有偏估计；岭回归也是有偏估计。偏倚大小见下文推导。}
+主成分回归步骤：基于相关阵提取1至2个主成分$c_1$和$c_2$，与$y$作回归（\texttt{y\string~c1+c2}），再变形为\texttt{y\string~x1+x2+x3}。
+\begin{align*}
+\widehat Y&=23.73+3.88C_1+3.10C_2,\\
+C_1&=0.58\frac{X_1-\bar X_1}{S_1}+0.58\frac{X_2-\bar X_2}{S_2}+0.57\frac{X_3-\bar X_3}{S_3},\\
+C_2&=-0.42\frac{X_1-\bar X_1}{S_1}-0.39\frac{X_2-\bar X_2}{S_2}+0.82\frac{X_3-\bar X_3}{S_3}.
+\end{align*}
+\subsubsection{由主成分回归还原原始变量的回归式}
+\begin{align*}
+\widehat Y&=b_0^c+b_1^cC_1+b_2^cC_2,\\
+C_i&=a_{i1}x_1+a_{i2}x_2+a_{i3}x_3\\
+&=\frac{a_{i1}(X_1-\bar X_1)}{S_1}+\frac{a_{i2}(X_2-\bar X_2)}{S_2}+\frac{a_{i3}(X_3-\bar X_3)}{S_3},\quad i=1,2.
+\end{align*}
+$b_i^c$为主成分回归系数，$a_{ij}$为组合系数（特征向量）。解得
+\begin{align}
+\widehat Y&=b_0+\frac{b_1^ca_{11}+b_2^ca_{21}}{S_1}X_1
++\frac{b_1^ca_{12}+b_2^ca_{22}}{S_2}X_2
++\frac{b_1^ca_{13}+b_2^ca_{23}}{S_3}X_3,\\
+b_0&=b_0^c-\left[b_1^c\left(\frac{a_{11}\bar X_1}{S_1}+\frac{a_{12}\bar X_2}{S_2}+\frac{a_{13}\bar X_3}{S_3}\right)
++b_2^c\left(\frac{a_{21}\bar X_1}{S_1}+\frac{a_{22}\bar X_2}{S_2}+\frac{a_{23}\bar X_3}{S_3}\right)\right]\notag\\
+&=b_0^c-(b_1\bar X_1+b_2\bar X_2+b_3\bar X_3).\notag
+\end{align}
+\subsubsection{分析结果}
+\[
+\widehat Y_{\mathrm{Prin}}(2)=10.44+0.10X_1+0.15X_2+0.007X_3.
+\]
+附：本例岭回归分析结果
+\[
+\widehat Y_{\mathrm{Ridge}}(0.1)=8.12+0.21X_1+0.19X_2+0.005X_3.
+\]
+\subsubsection{截断主成分回归的偏倚与方差}
+设$X^*$为$n\times p$标准化自变量阵，$y=\beta_0\mathbf 1+X^*\beta+\varepsilon$，$\E\varepsilon=0$，$\cov(\varepsilon)=\sigma^2I$。由$X^{*\mathsf T}X^*=(n-1)E\Lambda E\trans$，主成分得分$Z=X^*E$各列两两正交，$Z\trans Z=(n-1)\Lambda$。记$\gamma=E\trans\beta$，即真回归系数在各主成分方向上的分量，则$X^*\beta=Z\gamma$。由于各列正交，$y$对$Z$回归时各系数互不影响：
+\[
+\widehat\gamma_j=\frac{z_j\trans y}{(n-1)\lambda_j},\qquad \E\widehat\gamma_j=\gamma_j,\qquad\var(\widehat\gamma_j)=\frac{\sigma^2}{(n-1)\lambda_j}.
+\]
+只保留前$k$个主成分时，$\widehat\beta_{(k)}=\sum_{j\leqslant k}\widehat\gamma_je_j$，于是
+\[
+\E\widehat\beta_{(k)}-\beta=-\sum_{j>k}\gamma_je_j,\qquad
+\cov\bigl(\widehat\beta_{(k)}\bigr)=\frac{\sigma^2}{n-1}\sum_{j\leqslant k}\frac{e_je_j\trans}{\lambda_j}.
+\]
+偏倚只取决于真回归系数在被舍弃方向上的分量$\gamma_j$（$j>k$）：若$\beta$几乎与这些方向正交，偏倚很小。被舍弃的小$\lambda_j$方向本会贡献很大的方差$\sigma^2/[(n-1)\lambda_j]$，截断就是用偏倚换方差。保留全部非零主成分（$k=\operatorname{rank}(X^*)$）时，$Z_k$与$X^*$张成同一列空间，主成分回归恢复最小二乘拟合；本例$k=3$时还原得到的正是上面$b_2<0$的最小二乘方程。
+\paragraph{原例续算}
+本例（数据：\texttt{princeple reg exp.sav}）相关阵的特征值为2.926、0.0714、0.0025，前两个主成分的累计贡献率达99.9\%。逐个加入主成分时，$\widehat\gamma_1=3.88$、$\widehat\gamma_2=3.10$保持不变，与上面的推导一致。第三个主成分方差只有0.0025，但$\widehat\gamma_3=22.16$（标准误5.11，$t=4.34$，$P<0.001$），即低方差方向仍含有关于$Y$的预测信息。自变量的累计贡献率只说明$X$的结构，不能代替对$Y$的预测评价。用留一法比较预测误差，每一折内都重新标准化、重新作PCA：
+\begin{code}
+dc \ROperator{<-} foreign\ROperator{::}\RFunction{read.spss}(\RString{"princeple reg exp.sav"}, to.data.frame \ROperator{=} \RKeyword{TRUE})
+X \ROperator{<-} \RFunction{as.matrix}(dc[, \RFunction{c}(\RString{"x1"}, \RString{"x2"}, \RString{"x3"})]); y \ROperator{<-} dc\ROperator{\$}y
+rmse \ROperator{<-} \RFunction{sapply}(\RNumber{1}\ROperator{:}\RNumber{3}, \RKeyword{function}(k) \{
+  e \ROperator{<-} \RFunction{numeric}(\RFunction{nrow}(X))
+  \RKeyword{for} (i \RKeyword{in} \RFunction{seq_len}(\RFunction{nrow}(X))) \{
+    pc \ROperator{<-} \RFunction{prcomp}(X[\ROperator{-}i, ], scale. \ROperator{=} \RKeyword{TRUE})      \RComment{\# 训练折内标准化与PCA}
+    Z \ROperator{<-} pc\ROperator{\$}x[, \RNumber{1}\ROperator{:}k, drop \ROperator{=} \RKeyword{FALSE}]
+    fit \ROperator{<-} \RFunction{lm}(y[\ROperator{-}i] \ROperator{~} Z)
+    z0 \ROperator{<-} \RFunction{predict}(pc, X[i, , drop \ROperator{=} \RKeyword{FALSE}])[, \RNumber{1}\ROperator{:}k, drop \ROperator{=} \RKeyword{FALSE}]
+    e[i] \ROperator{<-} y[i] \ROperator{-} \RFunction{cbind}(\RNumber{1}, z0) \ROperator{\%*\%} \RFunction{coef}(fit)
+  \}
+  \RFunction{sqrt}(\RFunction{mean}(e\ROperator{\textasciicircum{}}\RNumber{2}))
+\})
+rmse
+\end{code}
+\begin{center}\small\begin{tabular}{lccc}\toprule
+{\bfseries 保留主成分数$k$}&1&2&3（即最小二乘）\\\midrule
+留一法预测均方根误差（周）&1.867&1.732&1.483\\\bottomrule
+\end{tabular}\end{center}
+本例保留全部3个主成分时预测误差最小，PCR(2)虽然系数符号“合理”，预测反而较差。保留数应结合交叉验证的预测误差来选择；标准化和PCA都必须在训练折内估计，否则测试样品的信息会泄漏进模型。
+
+最小二乘方程中$b_2=-2.16$（标准误0.54）是条件效应，表示身高、体重固定时头围每增加1 cm，$Y$的平均变化。$X_1$、$X_2$的方差膨胀因子约为200和209，条件数$\sqrt{2.926/0.0025}\approx34$，严重共线。这时“身高、体重不变而头围变化”的组合在数据中几乎不存在，负号的大小和方向都很不稳定，不宜直接作专业解释，应结合标准误和共线性诊断来看。
+
+\begin{sikao}[主成分分析的几何概括]
+主成分分析相当于建立一组新的坐标轴：第一轴沿数据分散程度最大的方向，第二轴取与第一轴垂直的方向中分散程度最大者，依此类推。仅保留前几个轴，即以尽量少的维度保留尽量多的方差。
+
+本章的主要结论均可由此得到：方差最大对应特征向量；坐标轴相互垂直对应主成分互不相关；坐标轴旋转不改变总方差；分散程度按原始尺度度量，故结果依赖单位，单位不同时需先标准化；变量间无相关时数据在各方向上分散程度相同，无法降维。
+\end{sikao}
+
+\begin{chaptersummary}{本章小结：主成分分析}
+研究目的&用少数互不相关的线性组合概括多个相关变量的方差，用于降维、综合评价、消除共线性\\
+优化准则&在$a\trans a=1$且与前面各主成分不相关的约束下，使$\var(a\trans x)$最大；解为$S$或$R$的特征向量。等价于最小平方重构误差\\
+主要条件&变量间有较强相关；单位不同时用相关阵；属于描述性方法，无分布假设（Bartlett检验另需多元正态）\\
+结果解释&特征值即主成分方差，累计贡献率即重构出的方差比例；载荷$u_{i1}\sqrt{\lambda_1}$为变量与主成分的相关系数\\
+常见误用&把“不相关”说成“独立”；单位不同仍用协方差阵；只凭累计贡献率决定主成分回归的保留数；把KMO当作PCA的必要条件；忽视特征向量符号的任意性\\
+\end{chaptersummary}
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 对6个变量作主成分分析，分别写出基于相关阵与基于协方差阵时特征值之和。\\
+\textit{答：相关阵为6；协方差阵为各变量方差之和$\tr(S)$。}
+\item 解释“第一主成分的贡献率为70\%”的含义。\\
+\textit{答：第一主成分的方差占总方差的70\%，即仅用第一主成分重构原数据（或标准化数据）时所保留的平方和比例。此处的“信息”专指方差。}
+\item 基于相关阵的分析中，第一特征向量为$(0.58,0.58,0.57)$，$\lambda_1=2.926$，计算第一个变量与第一主成分的相关系数。\\
+\textit{答：$0.58\times\sqrt{2.926}=0.99$。}
+\item 说明变量间互不相关时不宜作主成分分析的原因。\\
+\textit{答：此时相关阵接近单位阵，各特征值均接近1，每个主成分只代表一个原变量，无法降维。}
+\item 说明主成分回归缓解共线性的原理及其代价。\\
+\textit{答：舍弃特征值很小的方向，消除这些方向上被放大的方差；若真实系数在被舍弃方向上有分量，估计将产生偏倚，预测效果也可能下降。}
+\end{enumerate}
+\end{fuxi}

@@ -1,0 +1,595 @@
+\chapter{生存分析（一）}
+\sourcepages{5}{1-2}
+\subsection*{主要内容}
+生存分析的基本概念；生存率的估计方法（统计描述）；生存曲线比较的方法（统计推断：单因素分析）；Cox回归分析（多因素分析）；生存分析方法的正确应用。
+若所有研究对象均随访至死亡，生存时间即为普通的连续变量，可计算均数，进行$t$检验或回归分析。生存资料的特殊性在于删失：随访结束时仍存活者与中途失访者，其生存时间仅知道不短于观察时间。这部分对象不能剔除（剔除后只剩死亡较早者，生存被低估），不能按死亡处理，也不能视为存活至随访结束以后。
+
+生存分析的各种方法均围绕如何利用删失数据所提供的部分信息展开。本章的主要内容为：Kaplan--Meier法将删失者纳入风险集以估计生存率；log-rank检验在每个死亡时刻比较实际死亡数与期望死亡数。第5章的Cox回归将这一思路推广至多因素分析。
+
+本章需注意区分以下几组概念：生存概率与生存率，风险函数与死亡概率，累积风险与累积发生概率。
+\section{生存分析的基本概念}
+\sourcepages{5}{3-5}
+\subsection{生存分析}
+在许多医学研究中，我们不仅关心终点事件（terminal event）是否发生，还关心发生终点事件经历了多长时间，如恶性肿瘤治疗随访：复发与否、死亡与否（5年生存率）。
+
+生存分析（survival analysis）是将终点事件的发生与否和到达终点所经历的时间结合起来分析的一类统计方法。源于古老的寿命表，是现代统计学的一个重要分支。
+
+\textbf{例1} 某医院胸外科的研究人员选择了在1996年至2010年间接受手术治疗的胃癌患者作为研究对象，对可能影响胃癌术后生存的因素进行了调查。关注是否出现了感兴趣的终点事件或结局（死亡），还关注出现该结局所经历的时间长短。研究因素及分组见表1。
+
+随访截止日期为2010年12月30日，患者的生存结局（死亡与否）通过查阅病历、电话和信访的方式获得，其中6例随访记录见表2。
+\sourcepages{5}{6-7}
+\ctable{表1\quad 胃癌患者生存资料变量赋值表}{\begin{tabular}{lll}\toprule
+变量&因素&分组及赋值\\\midrule
+age&年龄&岁\\
+grade&肿瘤分级&I级：1；II级：2；III级：3\\
+size&肿瘤大小（cm）&$<3.0$：0；$\ge3.0$：1\\
+relapse&是否复发&未复发：0；复发：1\\
+start&手术日期&月/日/年\\
+end&终止观察日期&月/日/年\\
+t&生存时间&月\\
+status&生存结局&删失：0；死亡：1\\\bottomrule\end{tabular}}
+\begin{annotation}死亡/失访/研究结束。\end{annotation}
+\ctable{表2\quad 6例胃癌患者生存资料原始记录表}{\begin{tabular}{rrrrrllrrl}\toprule
+id&age&grade&size&relapse&start&end&t&status&结局\\\midrule
+1&76&3&0&1&1996/03/27&1996/08/24&5&0&失访\\
+2&23&2&1&0&1997/12/17&2000/08/03&32&1&死亡\\
+3&52&2&1&0&1998/09/16&2001/02/02&29&1&死亡\\
+4&74&2&1&1&1996/04/29&1997/02/23&10&1&死亡\\
+5&67&3&0&1&1998/01/16&1998/04/16&3&0&死于其他\\
+6&47&1&0&0&1997/02/10&2010/12/30&167&0&存活\\\bottomrule\end{tabular}}
+\subsection{完全数据}
+\sourcepages{5}{8}
+随访研究中，在规定的观察期内，观察到了终点事件的发生，从起点到终点事件发生所经历的时间，称为生存时间的完全数据（complete data）。表2中患者2号、3号和4号患者的随访结局都是死于胃癌，属生存时间的完全数据；完全数据提供的是准确的生存时间。
+\subsection{删失数据}
+\sourcepages{5}{9-13}
+在规定的观察期内，对于某些观察对象，由于某种原因未能观察到终点事件发生，并不知道确切的生存时间，称为生存时间的删失数据（censored data）；包含删失的数据称不完全数据（incomplete data）。
+
+删失的原因：研究结束时终点事件尚未发生；失访（lost to follow-up）；死于其它原因。
+
+删失生存时间的计算为规定的起点至删失点所经历的时间。删失数据常在其右上角标记“$+$”。本章着重讨论右删失（right censoring），即从时间轴上看，终点事件发生在最后一次随访时间的右方，其真实的生存时间只能长于观察到的时间而不会短于这个时间。
+
+生存时间通常不服从正态分布（一般为正偏态，指数分布、Weibull分布等）。
+\begin{annotation}正偏态即分布向右拖尾：多数人生存时间较短，少数人很长。\end{annotation}
+\textbf{删失数据的记号}\quad 记个体的真实事件时间为 $T$，删失时间为 $C$（研究结束、失访等使观察中止的时间）。实际观察到的是
+\[
+\widetilde T=\min(T,C),\qquad \delta=I(T\le C),
+\]
+$\delta=1$ 表示观察到事件（完全数据），$\delta=0$ 表示删失（只知道 $T>\widetilde T$）。
+\begin{derivation}{独立删失与个体似然贡献}
+\dpart{假设}(1) 独立删失：同一比较组内（或给定协变量 $\bm x$ 后）$T$ 与 $C$ 相互独立，即删失的人与仍在观察的人具有相同的后续事件风险；Kaplan--Meier法、log-rank检验要求组内独立删失，Cox回归要求给定协变量后独立删失。(2) 非信息删失：$C$ 的分布不含 $T$ 的分布参数。
+\dpart{关键等式}设 $T$ 的密度为 $f$、生存函数为 $S$，$C$ 的密度为 $g$、生存函数为 $G$。在独立性下
+\[
+\begin{aligned}
+\delta=1:&\quad P(\widetilde T\in[t,t+dt),\ \delta=1)=P(T\in[t,t+dt),\ C\ge t)=f(t)G(t)\,dt,\\
+\delta=0:&\quad P(\widetilde T\in[t,t+dt),\ \delta=0)=P(C\in[t,t+dt),\ T>t)=g(t)S(t)\,dt .
+\end{aligned}
+\]
+\dpart{结论}个体的似然贡献为 $\{f(\tilde t)G(\tilde t)\}^\delta\{g(\tilde t)S(\tilde t)\}^{1-\delta}$。在非信息删失下 $G$、$g$ 与 $T$ 的参数无关，可从似然中略去，得
+\[
+L_i\propto f(\tilde t_i)^{\delta_i}\,S(\tilde t_i)^{1-\delta_i}=h(\tilde t_i)^{\delta_i}S(\tilde t_i).
+\]
+\dpart{解释}完全数据贡献“恰在 $\tilde t$ 发生事件”的密度，删失数据贡献“活过 $\tilde t$”的概率，删失者的信息并未丢弃。若删失与预后有关（如病情恶化者更易失访），独立删失不成立，KM会高估生存率。“死于其他原因”按删失处理时，若关心的是该病的实际累积发生概率，需改用竞争风险方法（第5章）。
+\end{derivation}
+\cfigure{图1\quad 随访时间示意图（9名观察对象）}{\begin{tikzpicture}[x=.42cm,y=.38cm,font=\footnotesize]
+\draw[course observation] (0,0)--(10.4,0);
+\draw[course observation] (7.00,9)--(9.70,9);
+\node at (9.70,9) {$\times$};
+\draw[course observation] (6.40,8)--(9.20,8);
+\node at (9.20,8) {$\times$};
+\draw[course observation] (6.20,7)--(8.70,7);
+\node at (8.70,7) {$\times$};
+\draw[course observation] (6.00,6)--(10.00,6);
+\node at (10.00,6) {$\circ$};
+\draw[course observation] (3.50,5)--(6.00,5);
+\node at (6.00,5) {$\times$};
+\draw[course observation] (2.80,4)--(9.70,4);
+\node at (9.70,4) {$\circ$};
+\draw[course observation] (2.00,3)--(8.80,3);
+\node at (8.80,3) {$\times$};
+\draw[course observation] (1.30,2)--(5.00,2);
+\node at (5.00,2) {$\times$};
+\draw[course observation] (0.70,1)--(9.30,1);
+\node at (9.30,1) {$\times$};
+\draw[course reference] (0,0)--(0,10);\node[below] at (0,0) {1990};
+\draw[course reference] (5,0)--(5,10);\node[below] at (5,0) {1995};
+\draw[course reference] (7,0)--(7,10);\node[below] at (7,0) {1997};
+\draw[course reference] (10,0)--(10,10);\node[below] at (10,0) {2000};
+\node[above] at (4.8,10) {(a) Real time};\end{tikzpicture}\qquad\begin{tikzpicture}[x=.42cm,y=.38cm,font=\footnotesize]
+\draw[course observation] (0,0)--(10.4,0);
+\draw[course observation] (0.00,9)--(2.70,9);
+\node at (2.70,9) {$\times$};
+\draw[course observation] (0.00,8)--(2.80,8);
+\node at (2.80,8) {$\times$};
+\draw[course observation] (0.00,7)--(2.50,7);
+\node at (2.50,7) {$\times$};
+\draw[course observation] (0.00,6)--(4.00,6);
+\node at (4.00,6) {$\circ$};
+\draw[course observation] (0.00,5)--(2.50,5);
+\node at (2.50,5) {$\times$};
+\draw[course observation] (0.00,4)--(6.90,4);
+\node at (6.90,4) {$\circ$};
+\draw[course observation] (0.00,3)--(6.80,3);
+\node at (6.80,3) {$\times$};
+\draw[course observation] (0.00,2)--(3.70,2);
+\node at (3.70,2) {$\times$};
+\draw[course observation] (0.00,1)--(8.60,1);
+\node at (8.60,1) {$\times$};
+\draw[course reference] (0,0)--(0,10);\node[below] at (0,0) {$t=0$};\node[below] at (10,0) {$t=10$};\node[above] at (5,10) {(b)};\end{tikzpicture}}
+计算生存时间三要素：起点时间；时间尺度；失效时间。
+\cfigure{图2\quad 两种不同研究对象纳入形式示意图}{\resizebox{.47\linewidth}{!}{\begin{tikzpicture}[x=.72cm,y=.6cm,font=\footnotesize]\draw[PlotPrimary,line width=.65pt,-{Stealth}] (0,0)--(5.8,0) node[right]{时间};\draw (0,0)--(0,5.8);\draw[dashed] (5,0)--(5,5.8);\node[below] at (0,0) {研究起点};\node[below] at (5,0) {研究终点};
+\draw (0,5)--(3,5);\node at (3,5) {$\circ$};
+\draw (0,4)--(4,4);\node at (4,4) {$\oplus$};
+\draw (0,3)--(3.5,3);\node at (3.5,3) {$\oplus$};
+\draw (0,2)--(5,2);\node at (5,2) {$\oplus$};
+\draw (0,1)--(4.5,1);\node at (4.5,1) {$\circ$};
+\node[above] at (2.7,5.8) {研究对象同一时间点进入观察};\end{tikzpicture}}\hfill\resizebox{.47\linewidth}{!}{\begin{tikzpicture}[x=.72cm,y=.6cm,font=\footnotesize]\draw[PlotPrimary,line width=.65pt,-{Stealth}] (0,0)--(5.8,0) node[right]{时间};\draw (0,0)--(0,5.8);\draw[dashed] (5,0)--(5,5.8);\node[below] at (0,0) {研究起点};\node[below] at (5,0) {研究终点};
+\draw (0,5)--(3,5);\node at (3,5) {$\circ$};
+\draw (0,4)--(4,4);\node at (4,4) {$\oplus$};
+\draw (1,3)--(3.5,3);\node at (3.5,3) {$\oplus$};
+\draw (1.5,2)--(5,2);\node at (5,2) {$\oplus$};
+\draw (0.5,1)--(4.5,1);\node at (4.5,1) {$\circ$};
+\node[above] at (2.7,5.8) {研究对象不同时间点进入观察};\end{tikzpicture}}}
+\begin{annotation}左图同时入组常见于动物实验；右图分批入组（日历时间上不同时间进入）常见于临床试验和队列研究。分析时把每个人的时间起点对齐到各自入组（或确诊、手术）时刻，即图1(b)，两种情形的方法相同。
+
+需要与分批入组区分的是\textbf{左截断（延迟入组）}：若时间尺度的起点早于开始观察的时刻（例如以确诊为起点，但患者在确诊后一段时间 $a_i$ 才被纳入研究），在 $a_i$ 之前死亡的人根本不会进入样本。此时个体只在 $t>a_i$ 时属于风险集，似然贡献要除以 $S(a_i)$，即 $f(\tilde t_i)^{\delta_i}S(\tilde t_i)^{1-\delta_i}/S(a_i)$；若照常从0开始计算风险集，会高估早期生存率（不朽时间偏倚）。分批入组本身不造成截断，因为时间是从各自入组时开始计的。\end{annotation}
+\subsection{死亡概率}
+\sourcepages{5}{14}
+死亡概率（probability of death）：表示某时段开始时存活的个体，在该时段内死亡的可能性。例如，年死亡概率表示年初尚存人口在今后1年内死亡的可能性。
+\[
+q=\frac{\text{某年内死亡人数}}{\text{某年年初人口数}},\qquad
+\text{分母校正例数}=\text{年初人口数}-\frac12\text{删失例数}.
+\]
+\begin{annotation}这里假设所有删失的人平均观察了半年。\end{annotation}
+\subsection{生存概率}
+\sourcepages{5}{15}
+生存概率（probability of survival）：表示某时段开始时存活的个体，到该时段结束时仍存活的可能性。例如，年生存概率表示年初尚存人口存活满一年的可能性。
+\[
+p=\frac{\text{某年活满一年人数}}{\text{某年年初人口数}},\qquad p=1-q.
+\]
+\[
+\text{分母校正例数}=\text{年初人口数}-\frac12\text{删失例数}.
+\]
+\subsection{生存函数}
+\sourcepages{5}{16-19}
+生存函数（survival function）或生存率（survival rate）指观察对象经历 $t$ 个时段后仍存活的可能性。
+\[
+S(t)=P(T>t),\qquad
+\widehat S(t)=\frac{t\text{时刻仍存活的例数}}{\text{观察总例数}}\quad(\text{无删失时}).
+\]
+$S(t)$ 是总体的生存函数（未知参数）；右边的人数比例是它在\emph{无删失}资料中的估计。有删失时，$t$ 之前删失者的生存状态未知，不能放进分子或分母，须用下面的分时段乘积估计。
+\begin{annotation}
+生存率和生存概率完全不同，记住！生存概率是1年；生存率是 $t$ 个时段：3年生存率是观察对象要活满3年。
+\[
+\text{3年生存率}=\text{第1年生存概率}\times\text{第2年生存概率}\times\text{第3年生存概率}.
+\]
+\end{annotation}
+若含有删失数据，须分时段计算生存概率。把时间轴分为 $0=t_0<t_1<\cdots<t_k$，记第 $j$ 时段的条件生存概率
+\[
+p_j=P(T>t_j\mid T>t_{j-1}).
+\]
+由条件概率的定义，$P(T>t_j)=P(T>t_j\mid T>t_{j-1})P(T>t_{j-1})$（因为活过 $t_j$ 必然先活过 $t_{j-1}$），逐段递推得
+\[
+S(t_k)=P(T>t_k)=p_1p_2\cdots p_k=S(t_{k-1})p_k.
+\]
+这是概率的乘法公式（链式法则），\emph{不需要}假定“各时段的生存事件相互独立”——各时段事件本来就不独立（活过前一时段是进入后一时段的前提），条件概率已经体现了这种依赖。估计时需要的是独立删失假设：每个 $p_j$ 用该时段开始时仍在观察的人估计。故生存率又称累积生存概率（cumulative probability of survival）。
+\cfigure{图3\quad 生存概率与生存率关系示意图}{\begin{tikzpicture}[x=3.1cm,y=1cm,font=\small]
+\draw (0,0)--(3,0);\foreach \i in {0,1,2,3}{\draw (\i,0)--(\i,.12);\node[above] at (\i,.12) {\i};}
+\node[above] at (.5,.55) {第1年生存概率 $p_1$};\node[above] at (1.5,.55) {第2年生存概率 $p_2$};\node[above] at (2.5,.55) {第3年生存概率 $p_3$};
+\draw[decorate,decoration={brace,mirror,amplitude=5pt}] (0,-.15)--(1,-.15) node[midway,below=6pt] {1年生存率 $S(1)$};
+\draw[decorate,decoration={brace,mirror,amplitude=5pt}] (0,-.85)--(2,-.85) node[midway,below=6pt] {2年生存率 $S(2)$};
+\draw[decorate,decoration={brace,mirror,amplitude=5pt}] (0,-1.55)--(3,-1.55) node[midway,below=6pt] {3年生存率 $S(3)$};
+\end{tikzpicture}}
+\cfigure{图4\quad 生存函数（生存曲线）示意图}{\begin{tikzpicture}\begin{axis}[width=7cm,height=5.1cm,axis lines=left,xmin=0,xmax=60,ymin=0,ymax=1.03,ytick={0,.2,.4,.6,.8,1},xlabel={时间},ylabel={生存率},title={生存函数1},title style={font=\small\bfseries}]
+\addplot[PlotPrimary,line width=1pt] coordinates {(0,1) (1,0.85) (2,0.72) (4,0.6) (7,0.5) (10,0.4) (15,0.28) (20,0.2) (30,0.1) (40,0.055) (50,0.033) (60,0.02)};
+\draw[dashed] (axis cs:0,0.5)--(axis cs:7,0.5)--(axis cs:7,0);
+\end{axis}\end{tikzpicture}\quad\begin{tikzpicture}\begin{axis}[width=7cm,height=5.1cm,axis lines=left,xmin=0,xmax=60,ymin=0,ymax=1.03,ytick={0,.2,.4,.6,.8,1},xlabel={时间},ylabel={生存率},title={生存函数2},title style={font=\small\bfseries}]
+\addplot[PlotPrimary,line width=1pt] coordinates {(0,1) (10,0.83) (20,0.7) (30,0.59) (40,0.5) (50,0.46) (60,0.43)};
+\draw[dashed] (axis cs:0,0.5)--(axis cs:40,0.5)--(axis cs:40,0);
+\end{axis}\end{tikzpicture}}
+中位生存期（median survival time）：又称半数生存期，生存函数为0.5时对应的时间，表示有50\%的个体可活这么长时间，用于描述生存期的平均水平。
+\begin{annotation}右图生存情况好于左图。\end{annotation}
+\subsection{风险函数}
+\sourcepages{5}{20-23}
+假如终点事件为死亡，风险函数（hazard function）表示 $t$ 时刻存活的个体在 $t$ 时刻的瞬时死亡风险，记为 $h(t)$，描述了某个体的瞬时死亡风险随时间变化的情况。表示 $t$ 时刻的死亡速率。
+\[
+h(t)=\lim_{\Delta t\to0}\frac{P(t\le T<t+\Delta t\mid T\ge t)}{\Delta t}.
+\]
+\cfigure{图5\quad 人类死亡的风险函数}{\begin{tikzpicture}[x=1cm,y=1cm]
+\draw (0,0)--(7,0) node[right] {$t$};\draw (0,0)--(0,4) node[left] {$h(t)$};
+\draw[PlotPrimary,line width=1pt] (0,3.2) .. controls (.5,1.9) and (.6,1.2) .. (1.4,.8) .. controls (2,.55) and (3,.5) .. (3.8,.5) .. controls (5,.5) and (5.6,1) .. (6.3,4);
+\node[below] at (3.5,-.25) {Hazard function for death in human beings};\end{tikzpicture}}
+\begin{annotation}幼年和老年风险大。\end{annotation}
+生存函数与风险函数的关系：
+\[
+S(t)=\exp\left[-\int_0^th(u)\,du\right],\qquad
+h(t)=-\frac{dS(t)/dt}{S(t)}.
+\]
+\begin{derivation}{$h$、$H$、$S$、$F$ 之间的关系}
+\dpart{假设}$T\ge0$ 为连续型随机变量，密度 $f(t)$，分布函数 $F(t)=P(T\le t)$，生存函数 $S(t)=1-F(t)$。
+\dpart{关键等式}由风险函数的定义及条件概率，
+\[
+h(t)=\lim_{\Delta t\to0}\frac{P(t\le T<t+\Delta t)}{\Delta t\,P(T\ge t)}=\frac{f(t)}{S(t)}.
+\]
+又 $f(t)=F'(t)=-S'(t)$，故 $h(t)=-S'(t)/S(t)=-\dfrac{d}{dt}\ln S(t)$。定义累积风险函数
+\[
+H(t)=\int_0^th(u)\,du ,
+\]
+两边从0到 $t$ 积分，并利用 $S(0)=1$，得 $-\ln S(t)=H(t)$。
+\dpart{结论}
+\[
+h(t)=\frac{f(t)}{S(t)},\qquad S(t)=e^{-H(t)},\qquad F(t)=1-e^{-H(t)},\qquad H(t)=-\ln S(t).
+\]
+\dpart{解释}$H(t)$ 是风险的累积量，取值 $[0,\infty)$，可以大于1；$F(t)$ 是 $t$ 之前发生事件的概率，取值 $[0,1]$。二者不同：$F=1-e^{-H}$，只有 $H$ 很小时才有 $F\approx H$。下图的 $\widehat F(t)$ 是生存时间的分布函数（累积发生概率），不是累积风险函数。
+\end{derivation}
+\cfigure{图6\quad 生存函数与风险函数的关系示意图}{\begin{tikzpicture}\begin{axis}[width=10cm,height=6cm,axis lines=left,xmin=0,xmax=6,ymin=0,ymax=1.06,xtick={1,2,3,4,5},ytick={0,.1,...,1},xlabel={$t$},ylabel={$\widehat S(t)$},legend pos=south west]
+\addplot[PlotPrimary,line width=1pt,const plot] coordinates {(0,1)(1,.70)(2,.42)(3,.25)(4,.17)(5,.10)(5.7,.10)};\addlegendentry{survival function}
+\addplot[PlotSecondary,dashed,line width=1pt,const plot] coordinates {(0,0)(1,.33)(2,.70)(3,.85)(4,.95)(5,1)(5.7,1)};\addlegendentry{distribution function of survival time}
+\node at (axis cs:3.5,.83) {$\widehat F(t)$};\end{axis}\end{tikzpicture}}
+\[
+\widehat F(t)=1-\widehat S(t).
+\]
+\begin{annotation}
+$\widehat F(t)=1-\widehat S(t)$ 是 $t$ 之前发生事件的累积概率。它与 $h(t)$ 的关系是 $F(t)=1-\exp\{-\int_0^th(u)\,du\}$，而累积风险函数是 $H(t)=\int_0^th(u)\,du=-\ln S(t)$。有的说法把 $F$ 称为“累积的风险函数”，应更正为“累积发生概率（分布函数）”。
+\end{annotation}
+\section{生存率的估算方法}
+\sourcepages{5}{24-26}
+寿命表法（life table method）；乘积极限法（Kaplan--Meier）。
+\subsection{寿命表法（life table method）}
+某些队列研究，并不知道个体确定的死亡时间或删失时间，例如肿瘤登记等大型监测系统。随访中某些个体死亡或删失发生在两次随访之间，寿命表法是分析分组生存资料的经典方法。
+
+\textbf{例2} 收集374名食管癌患者随访资料，取时间区间均为1年，整理结果见表3中（1）--（5）栏，试估计各年生存率。
+\sourcepages{5}{27-31}
+\ctable{表3\quad 寿命表法估计生存率计算表}{\begin{tabular}{crrrrr}\toprule 序号 $i$&确诊后年数&期内死亡数 $d_i$&期内删失数 $c_i$&期初病例数 $n_i^\prime$&期初有效例数 $n_i$\\\midrule
+1&0--&90&0&374&374.0\\
+2&1--&76&0&284&284.0\\
+3&2--&51&0&208&208.0\\
+4&3--&25&12&157&151.0\\
+5&4--&20&5&120&117.5\\
+6&5--&7&9&95&90.5\\
+7&6--&4&9&79&74.5\\
+8&7--&1&3&66&64.5\\
+9&8--&3&5&62&59.5\\
+10&9--10&2&5&54&51.5\\
+\bottomrule\end{tabular}\par\smallskip 注：生存时间长于10年者47例。}
+\ctable{表3（续）\quad 死亡概率、生存概率、生存率及标准误}{\footnotesize\begin{tabular}{crrlr}\toprule 序号 $i$&死亡概率 $\widehat q_i$&生存概率 $\widehat p_i$&生存率 $\widehat S(t_i)$&$\SE[\widehat S(t_i)]$\\\midrule
+1&90/374.0=0.2406&0.7594&0.7594&0.0221\\
+2&76/284.0=0.2676&0.7324&0.7594$\times$0.7324=0.5562&0.0257\\
+3&51/208.0=0.2452&0.7548&0.5562$\times$0.7548=0.4198&0.0255\\
+4&25/151.0=0.1656&0.8344&0.4198$\times$0.8344=0.3503&0.0248\\
+5&20/117.5=0.1702&0.8298&0.3503$\times$0.8298=0.2907&0.0239\\
+6&7/90.5=0.0773&0.9227&0.2907$\times$0.9227=0.2682&0.0235\\
+7&4/74.5=0.0537&0.9463&0.2682$\times$0.9463=0.2538&0.0233\\
+8&1/64.5=0.0155&0.9845&0.2538$\times$0.9845=0.2499&0.0233\\
+9&3/59.5=0.0504&0.9496&0.2499$\times$0.9496=0.2373&0.0232\\
+10&2/51.5=0.0388&0.9612&0.2373$\times$0.9612=0.2281&0.0232\\
+\bottomrule\end{tabular}}
+\subsubsection{计算步骤}
+\begin{enumerate}
+\item 计算期初有效例数：$n_i=n'_i-c_i/2$。这里假定删失在区间内均匀分布，删失者平均在区间中点退出，因而只按半个区间计入风险人数（精算法假定）；若区间内删失集中在区间开始或末尾，这一校正会有偏差。
+\item 计算各时间区间上的死亡概率和生存概率：
+\[
+\widehat q_i=\frac{d_i}{n'_i-c_i/2}=\frac{d_i}{n_i},\qquad \widehat p_i=1-\widehat q_i.
+\]
+\item 计算生存率：
+\[
+S(t_k)=P(T>t_k)=p_1p_2\cdots p_k=S(t_{k-1})p_k.
+\]
+\item 计算生存率的标准误和置信区间（Greenwood，1926）：
+\[
+\SE[\widehat S(t_i)]=\widehat S(t_i)\sqrt{\sum_{j=1}^i\frac{d_j}{n_j(n_j-d_j)}},\qquad
+\widehat S(t_i)\pm z_{\alpha/2}\SE[\widehat S(t_i)].
+\]
+这是基于大样本正态近似的区间；$\widehat S$ 接近0或1、或风险人数少时，区间可能超出 $[0,1]$，覆盖率也不足。
+\Needspace{12\baselineskip}
+\item 计算生存率的标准误和置信区间（双对数变换法，$\widehat S$ 接近0或1时）：
+\[
+G(t_i)=\ln\{-\ln[\widehat S(t_i)]\},
+\]
+\[
+\SE[G(t_i)]=\sqrt{\frac{\displaystyle\sum_{j=1}^i\frac{d_j}{n_j(n_j-d_j)}}
+ {\displaystyle\left(\sum_{j=1}^i\ln\frac{n_j-d_j}{n_j}\right)^2}},
+\]
+\[
+\exp\{-\exp[G(t_i)\pm z_{\alpha/2}\SE(G(t_i))]\}.
+\]
+反变换是单调\emph{递减}的：$G+z\SE(G)$ 对应生存率的\emph{下限}，$G-z\SE(G)$ 对应上限，即
+\[
+\Bigl(\exp\{-\exp[G(t_i)+z_{\alpha/2}\SE(G)]\},\ \exp\{-\exp[G(t_i)-z_{\alpha/2}\SE(G)]\}\Bigr),
+\]
+所得区间一定落在 $(0,1)$ 内且不对称。
+\end{enumerate}
+\begin{annotation}
+生存率 $S(t)$ 是总体参数，$\widehat S(t_i)$ 是它的估计，置信区间用于推断总体。$d_j$ 为死亡例数，$n_j$ 为有效例数。两种区间都依据大样本正态近似：直接法假定 $\widehat S$ 近似正态；双对数变换法假定 $G=\ln\{-\ln\widehat S\}$ 近似正态，变换后的分布通常更接近正态、且区间不会越界，但仍是近似而非“严格服从正态”。上表的生存率是用四舍五入后的值逐步相乘得到的，与全精度计算在第四位小数上可能差1（如第2年全精度为0.5561）。
+\end{annotation}
+\sourcepages{5}{32-34}
+\textbf{6. 生存曲线} 将随访时间作横坐标，生存率作纵坐标，将各个时间点生存率连接在一起绘制生存曲线（survival curve）。随时间的增加，该曲线一般呈下降趋势。下降速度快、曲线陡峭，意味着较低的生存率或较短的生存期；下降速度慢、曲线平缓，意味着较高的生存率或较长的生存期。
+
+\textbf{7. 中位生存期（median survival time）} 也称半数生存期，表示当且仅当50\%个体尚存活的时间。中位生存期越长，表示疾病预后越好；中位生存期越短，表示疾病预后越差。可借助生存曲线进行图法估计或用线性内插法求得。
+\cfigure{图7\quad 某恶性肿瘤生存曲线}{\begin{tikzpicture}\begin{axis}[width=10cm,height=5.1cm,axis lines=left,xmin=0,xmax=12,ymin=0,ymax=1.03,ytick={0,.2,.4,.6,.8,1},xlabel={Survival time (years)},ylabel={Cum Survival},title={Survival Function},title style={font=\small\bfseries}]
+\addplot[PlotPrimary,line width=1pt,const plot] coordinates {(0,1) (1,0.7594) (2,0.5562) (3,0.4198) (4,0.3503) (5,0.2907) (6,0.2682) (7,0.2538) (8,0.2499) (9,0.2373) (10,0.2281) (11,0.2281)};
+\draw[dashed] (axis cs:0,0.5)--(axis cs:3,0.5)--(axis cs:3,0);
+\end{axis}\end{tikzpicture}}
+\subsection{乘积极限法（Kaplan--Meier）}
+\sourcepages{5}{35-41}
+基本思想：将所有观察对象的生存时间（包括删失数据）由小到大依次排列，对每个时间点进行死亡概率、生存概率和生存率的估计。适用于有每个个体确切生存时间的资料，无论样本大小，都能充分利用每条记录的信息，估计不同生存时间点的生存率。Product limit method。
+\begin{annotation}
+K--M法：你拥有每一个个体确切的生存时间数据，而寿命表法只能知道死亡发生在某一个时间段中，这是两者的差异。
+
+补充：Kaplan--Meier法由Kaplan和Meier于1958年提出，又称乘积极限法（product limit method）。乘积的含义：生存率等于生存概率的乘积；极限的含义：标准寿命表法中时间区间长度趋近于0。
+\end{annotation}
+\textbf{例3} 18例胃癌肿瘤小于3.0cm患者和12例胃癌肿瘤大于或等于3.0cm患者的生存时间（月）如下，试估计两组生存率。
+\begin{itemize}[before=\raggedright]
+\item 肿瘤小于3.0cm：$3^+,\allowbreak 5^+,\allowbreak 6^+,\allowbreak 10^+,\allowbreak 15,\allowbreak 16^+,\allowbreak 20,\allowbreak 21,\allowbreak 24,\allowbreak 29,\allowbreak 30^+,\allowbreak 52,\allowbreak 72,\allowbreak 94,\allowbreak 136,\allowbreak 144,\allowbreak 167^+,\allowbreak 177$。
+\item 肿瘤大于或等于3.0cm：$1,\allowbreak 2,\allowbreak 7^+,\allowbreak 10,\allowbreak 12,\allowbreak 13^+,\allowbreak 24,\allowbreak 29,\allowbreak 30,\allowbreak 32,\allowbreak 61,\allowbreak 62$。
+\end{itemize}
+\revnote{原列表中的“167”未标“$+$”，按删失（$167^+$）处理，理由有三：图9在167月处画的是删失标记，KM曲线在该处不下降；表2中6号患者 $t=167$、status $=0$（随访截止时存活）；表5中小于3.0cm组的实际死亡数为11，而列表中的完全数据恰为11个的前提是167为删失。两组死亡数合计 $11+10=21$。}
+\subsubsection{计算方法和步骤}
+\begin{enumerate}
+\item 将生存时间 $t_i$ 由小到大顺序排列，完全数据与删失数据相同者，删失数据排在完全数据的后面。
+\item 列出时间区间 $[t_i,t_{i+1})$ 上的死亡数 $d_i$ 和删失数 $c_i$。
+\item 计算恰在每一时刻 $t_i$ 之前的生存人数 $n_i$。计算时应减去小于 $t_i$ 的死亡数和删失数，即 $n_i=n_{i-1}-d_{i-1}-c_{i-1}$。
+\item 计算死亡概率 $q_i$ 和生存概率 $p_i$。
+\item 计算生存率 $\widehat S(t_i)$ 及其标准误。
+\item 绘制生存曲线。
+\end{enumerate}
+\begin{annotation}同一时刻既有死亡又有删失时，约定删失发生在死亡之后：删失者在该时刻仍然存活，应计入该时刻的风险人数 $n_i$，只在之后退出。\end{annotation}
+\begin{derivation}{KM乘积估计与Greenwood方差}
+\dpart{假设}独立删失；不同的事件时间点为 $t_{(1)}<t_{(2)}<\cdots<t_{(k)}$，$t_{(i)}$ 时刻前一瞬间的风险人数为 $n_i$，该时刻死亡 $d_i$ 例。
+\dpart{关键等式}把生存函数写成事件时点上条件生存概率的连乘：$S(t)=\prod_{t_{(i)}\le t}(1-q_i)$，$q_i=P(T=t_{(i)}\mid T\ge t_{(i)})$ 为该时点的条件死亡概率。给定风险集，$t_{(i)}$ 时刻的死亡数 $d_i\sim B(n_i,q_i)$，各时点的条件似然相乘：
+\[
+L(q_1,\ldots,q_k)=\prod_{i=1}^k q_i^{d_i}(1-q_i)^{n_i-d_i},
+\]
+对每个 $q_i$ 分别求最大值得 $\widehat q_i=d_i/n_i$，故
+\[
+\widehat S(t)=\prod_{t_{(i)}\le t}\left(1-\frac{d_i}{n_i}\right).
+\]
+删失者的作用体现在 $n_i$ 中：他们在删失前一直计入风险集，删失后退出。
+\dpart{方差}取对数 $\ln\widehat S(t)=\sum\ln(1-\widehat q_i)$。各 $\widehat q_i$ 渐近不相关，$\Var(\widehat q_i)\approx q_i(1-q_i)/n_i$，由Delta方法 $\Var\{\ln(1-\widehat q_i)\}\approx\Var(\widehat q_i)/(1-q_i)^2=q_i/\{n_i(1-q_i)\}$，以 $\widehat q_i=d_i/n_i$ 代入得 $d_i/\{n_i(n_i-d_i)\}$。再由 $\Var(\widehat S)\approx S^2\Var(\ln\widehat S)$：
+\[
+\widehat{\Var}[\widehat S(t)]=\widehat S(t)^2\sum_{t_{(i)}\le t}\frac{d_i}{n_i(n_i-d_i)}\qquad(\text{Greenwood公式}).
+\]
+\dpart{解释}(1) 尾部 $n_i$ 很小，每个事件都使曲线大幅下降、标准误增大，曲线尾部的形状不可靠，作图时常同时标出风险人数。(2) 若最后一个观察是死亡，$\widehat S$ 降为0（如表4）；若是删失，$\widehat S$ 停在大于0的水平，此后无定义。(3) 若 $\widehat S(t)$ 始终未降到0.5，中位生存期“未达到”，只能报告其置信下限或某时点生存率，不能用最大观察时间代替。
+\end{derivation}
+\ctable{表4\quad 胃癌肿瘤大于或等于3.0cm组生存率计算表}{\begin{tabular}{rrrrr}\toprule 序号 $i$&时间 $t_i$（月）&死亡数 $d_i$&删失数 $c_i$&期初例数 $n_i$\\\midrule
+1&1&1&0&12\\
+2&2&1&0&11\\
+3&7&0&1&10\\
+4&10&1&0&9\\
+5&12&1&0&8\\
+6&13&0&1&7\\
+7&24&1&0&6\\
+8&29&1&0&5\\
+9&30&1&0&4\\
+10&32&1&0&3\\
+11&61&1&0&2\\
+12&62&1&0&1\\
+\bottomrule\end{tabular}}
+\ctable{表4（续）\quad 概率、生存率与标准误}{\footnotesize\begin{tabular}{rrrlr}\toprule $t_i$（月）&死亡概率 $q_i$&生存概率 $p_i$&生存率 $\widehat S(t_i)$&$\SE[\widehat S(t_i)]$\\\midrule
+1&1/12=0.0833&0.9167&0.9167&0.0798\\
+2&1/11=0.0909&0.9091&0.9167$\times$0.9091=0.8333&0.1076\\
+7&0/10=0.0000&1.0000&0.8333$\times$1.0000=0.8333&0.1076\\
+10&1/9=0.1111&0.8889&0.8333$\times$0.8889=0.7407&0.1295\\
+12&1/8=0.1250&0.8750&0.7407$\times$0.8750=0.6481&0.1426\\
+13&0/7=0.0000&1.0000&0.6481$\times$1.0000=0.6481&0.1426\\
+24&1/6=0.1667&0.8333&0.6481$\times$0.8333=0.5401&0.1544\\
+29&1/5=0.2000&0.8000&0.5401$\times$0.8000=0.4321&0.1568\\
+30&1/4=0.2500&0.7500&0.4321$\times$0.7500=0.3241&0.1503\\
+32&1/3=0.3333&0.6667&0.3240$\times$0.6667=0.2160&0.1335\\
+61&1/2=0.5000&0.5000&0.2160$\times$0.5000=0.1080&0.1014\\
+62&1/1=1.0000&0.0000&0.1080$\times$0.0000=0.0000&---\\
+\bottomrule\end{tabular}}
+\cfigure{图9\quad 两组患者的生存曲线对比}{\begin{tikzpicture}\begin{axis}[width=12cm,height=7cm,axis lines=left,xmin=0,xmax=190,ymin=0,ymax=103,xtick={0,30,...,180},ytick={0,25,50,75,100},xlabel={Survival time (months)},ylabel={Survival probability (\%)},title={Survival Function},legend pos=north east]
+\addplot[PlotPrimary,line width=1pt,const plot] coordinates {(0,100.000000) (15,92.857143) (20,85.119048) (21,77.380952) (24,69.642857) (29,61.904762) (52,53.061224) (72,44.217687) (94,35.374150) (136,26.530612) (144,17.687075) (177,0.000000)};\addlegendentry{size $<3$ cm}
+\addplot[PlotSecondary,dashed,line width=1pt,const plot] coordinates {(0,100.000000) (1.0,91.670000) (2.0,83.330000) (7.0,83.330000) (10.0,74.070000) (12.0,64.810000) (13.0,64.810000) (24.0,54.010000) (29.0,43.210000) (30.0,32.410000) (32.0,21.600000) (61.0,10.800000) (62.0,0.000000)};\addlegendentry{size $\ge3$ cm}
+\addplot[only marks,mark=+,PlotPrimary,mark size=2pt] coordinates {(3,100)(5,100)(6,100)(10,100)(16,92.8571)(30,61.9048)(167,17.6871)};
+\addplot[only marks,mark=+,PlotSecondary,mark size=2pt] coordinates {(7,83.33)(13,64.81)};\draw[densely dashed] (axis cs:0,50)--(axis cs:94,50);\draw[densely dashed] (axis cs:29,50)--(axis cs:29,0);\draw[densely dashed] (axis cs:72,50)--(axis cs:72,0);\end{axis}\end{tikzpicture}}
+\begin{annotation}图中看觉得肿瘤越大，生存时间越短，预后越差。但这仍需要假设检验。\end{annotation}
+R中用\texttt{survival}包完成KM估计，\texttt{Surv(time,status)}将时间与结局合成为生存对象：
+\par\noindent
+\begin{coursecode}{R}
+library(survival)
+t1 <- c(3,5,6,10,15,16,20,21,24,29,30,52,72,94,136,144,167,177)   # <3cm
+s1 <- c(0,0,0,0, 1,0, 1,1,1,1,0,1,1,1,1,1,0,1)                     # 1=死亡，0=删失
+t2 <- c(1,2,7,10,12,13,24,29,30,32,61,62)                         # >=3cm
+s2 <- c(1,1,0,1,1,0,1,1,1,1,1,1)
+d <- data.frame(time=c(t1,t2), status=c(s1,s2), size=rep(c("<3cm",">=3cm"),c(18,12)))
+km <- survfit(Surv(time,status)~size, data=d)
+km                         # 各组例数、事件数、中位生存期
+summary(km[2])             # >=3cm组的生存率表
+plot(km, lty=1:2, mark.time=TRUE)
+\end{coursecode}
+\begin{routput}
+            n events median 0.95LCL 0.95UCL
+size=<3cm  18     11     72      24      NA
+size=>=3cm 12     10     29      12      NA
+
+ time n.risk n.event survival std.err lower 95% CI upper 95% CI
+    1     12       1    0.917  0.0798       0.7729        1.000
+    2     11       1    0.833  0.1076       0.6470        1.000
+   10      9       1    0.741  0.1295       0.5259        1.000
+   12      8       1    0.648  0.1426       0.4211        0.998
+   24      6       1    0.540  0.1544       0.3084        0.946
+   29      5       1    0.432  0.1568       0.2121        0.880
+   30      4       1    0.324  0.1503       0.1306        0.804
+   32      3       1    0.216  0.1335       0.0644        0.725
+   61      2       1    0.108  0.1014       0.0171        0.680
+   62      1       1    0.000     NaN           NA           NA
+\end{routput}
+所得生存率与标准误与表4一致，标准误按Greenwood公式计算。R默认的置信区间在$\log S$尺度上构造，与前述直接法、双对数法均不相同，报告时应注明。两组中位生存期分别为72个月和29个月，其置信上限均为\texttt{NA}，即生存曲线下降幅度不足，上限无法确定。
+
+\begin{sikao}[删失数据处理方式的比较]
+以肿瘤$<3$\,cm组为例，将几种简化处理方法与KM估计作比较：
+\begin{center}\small
+\begin{tabular}{lcc}\toprule
+做法&24个月生存率&中位生存期（月）\\\midrule
+Kaplan--Meier&0.696&72\\
+删失者均按存活超过24个月计&$14/18=0.778$&---\\
+删失者均按死亡计&$9/18=0.500$&---\\
+仅用死亡者的生存时间&---&52\\\bottomrule
+\end{tabular}
+\end{center}
+将24个月前删失的4人按存活超过24个月处理，生存率被高估；按死亡处理，生存率被低估；仅以死亡者的生存时间计算中位数，排除了生存时间较长、尚未死亡的对象，中位生存期由72个月降至52个月。KM法中，删失者在删失前始终计入风险集，作为各死亡时刻条件死亡概率的分母，删失后退出，不对其此后的结局作任何推断。该方法成立的前提是独立删失，即删失者与继续随访者此后的风险相同。
+\end{sikao}
+\section{生存曲线的比较方法}
+\sourcepages{5}{42-48}
+\subsection{log-rank检验}
+\textbf{例3（续）} 试比较胃癌肿瘤小于3.0cm患者和肿瘤大于或等于3.0cm患者的生存曲线，就总体而言，两条生存曲线是否有差别。
+\[
+H_0:S_1(t)=S_2(t),\quad\text{两总体生存曲线相同；}
+\]
+\[
+H_1:S_1(t)\ne S_2(t),\quad\text{两总体生存曲线不同；}\qquad\alpha=0.05.
+\]
+\begin{annotation}这是整条曲线的比较，而不是某一时点的比较。\end{annotation}
+log-rank检验是比较生存曲线的非参数方法之一。基本思想：当 $H_0$ 成立时，将两组资料合并统一按生存时间由小到大排序。根据 $t_i$ 时点的死亡率，可计算出 $t_i$ 时点上各组的理论死亡数；将所有时点各组的理论死亡数累加，便得到各组的理论死亡总数 $T_g$；将 $T_g$ 和各组的实际死亡总数 $A_g$ 作比较，就形成log-rank检验的 $\chi^2$ 统计量。下面的近似公式形式简单，精确（方差）公式见后。
+\[
+\chi^2\approx\sum_{g=1}^k\frac{(A_g-T_g)^2}{T_g},\qquad\nu=k-1.
+\]
+\ctable{表5\quad 肿瘤 $<3.0$cm和肿瘤 $\ge3.0$cm患者生存曲线比较的log-rank检验计算表}{\begin{tabular}{rrrrrrrrrrr}\toprule
+\multirow{2}{*}{$i$}&\multirow{2}{*}{$t_i$（月）}&\multicolumn{3}{c}{肿瘤 $<3.0$cm组}&\multicolumn{3}{c}{肿瘤 $\ge3.0$cm组}&\multicolumn{2}{c}{合计}&\multirow{2}{*}{$V_{1i}$}\\\cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(lr){9-10}
+&&$n_{1i}$&$d_{1i}$&$T_{1i}$&$n_{2i}$&$d_{2i}$&$T_{2i}$&$n_i$&$d_i$&\\\midrule
+1&1&18&0&0.6000&12&1&0.4000&30&1&0.2400\\
+2&2&18&0&0.6207&11&1&0.3793&29&1&0.2354\\
+3&10&15&0&0.6250&9&1&0.3750&24&1&0.2344\\
+$\cdots$&&&&&&&&&&\\
+8&24&10&1&1.2500&6&1&0.7500&16&2&0.4375\\
+$\cdots$&&&&&&&&&&\\
+合计&---&---&11&15.7831&---&10&5.2169&---&21&3.3782\\\bottomrule\end{tabular}\par\smallskip\begin{minipage}{.9\linewidth}\footnotesize 表中只列\emph{有死亡发生}的时点（共19个，24、29月各有2例死亡）。原表第3行为删失时点 $t=3$，该处 $d_i=0$，理论死亡数应为0，不应列出；原表合计死亡数22有误，应为 $11+10=21$。合计按全精度计算，原表为15.7842、5.2170。\end{minipage}}
+\[
+T_{gi}=\frac{n_{gi}d_i}{n_i}.
+\]
+\begin{align*}
+\chi^2&\approx\sum_{g=1}^k\frac{(A_g-T_g)^2}{T_g}\\
+&=\frac{(11-15.7831)^2}{15.7831}+\frac{(10-5.2169)^2}{5.2169}=5.835,
+\end{align*}
+\[
+0.01<P<0.025.
+\]
+\begin{annotation}$A_g$ 为实际死亡总数，$T_g$ 为理论死亡总数，自由度为组数减1。$\chi^2=5.835>3.84$，按近似公式拒绝 $H_0$。\end{annotation}
+\begin{derivation}{log-rank统计量的超几何分布推导}
+\dpart{假设}$H_0$：两组的风险函数相同，$h_1(t)=h_2(t)$；组内独立删失。
+\dpart{关键等式}在每个事件时点 $t_i$，把风险集按“组别 $\times$ 是否死亡”列成 $2\times2$ 表，行合计 $n_{1i}$、$n_{2i}$，列合计 $d_i$、$n_i-d_i$。在 $H_0$ 下，给定这些边际合计，$d_i$ 例死亡在 $n_i$ 人中的分配与组别无关，第1组的死亡数 $d_{1i}$ 服从超几何分布：
+\[
+\E(d_{1i})=\frac{n_{1i}d_i}{n_i}=T_{1i},\qquad
+V_{1i}=\Var(d_{1i})=\frac{n_{1i}n_{2i}d_i(n_i-d_i)}{n_i^2(n_i-1)} .
+\]
+把各时点的 $2\times2$ 表累加（与Mantel--Haenszel检验相同），$U=\sum_i(d_{1i}-T_{1i})=A_1-T_1$。各时点在给定过去的条件下依次成立，$U$ 的方差为 $V_1=\sum_iV_{1i}$。
+\dpart{结论}
+\[
+\chi^2_{\text{log-rank}}=\frac{(A_1-T_1)^2}{V_1}\ \dot\sim\ \chi^2_1 .
+\]
+两组时 $A_1-T_1=-(A_2-T_2)$，$V_1=V_2$，只需算一组，不能把两组的项再相加。$k$ 组时用 $k-1$ 维向量 $\bm U$ 及其协方差阵 $\bm V$，$\chi^2=\bm U^\top\bm V^{-1}\bm U$，$\mathrm{df}=k-1$。$\chi^2$ 参照分布是大样本近似，事件数很少时只是近似。
+\dpart{解释}近似公式 $\sum(A_g-T_g)^2/T_g$ 用 $T_g$ 代替方差，两组时其值总不大于上式，是保守的近似。
+\end{derivation}
+log-rank检验精确法（方差法）的统计量计算公式为：
+\begin{align*}
+\chi^2&=\frac{[\sum_i d_{1i}-\sum_i T_{1i}]^2}{\sum_i V_{1i}},\\
+V_{1i}&=\frac{n_{1i}(n_i-n_{1i})(n_i-d_i)d_i}{n_i^2(n_i-1)}
+=\frac{n_{1i}d_i}{n_i}\frac{(n_i-n_{1i})(n_i-d_i)}{n_i(n_i-1)},\\
+\chi^2&=\frac{(11-15.7831)^2}{3.3782}=6.772,\qquad P=0.009.
+\end{align*}
+\begin{annotation}有的算法把两组的 $(A_g-T_g)^2$ 都除以6.7578后相加，数值上等于 $(A_1-T_1)^2$ 除以 $6.7578/2\approx3.378$，结果6.7722正确，但写法与上面的公式不一致：方差应取单组的 $\sum_iV_{1i}=3.3782$，分子只取一组的 $(A_1-T_1)^2$。方差法的值大于近似公式的值，这是因为近似公式本来就偏保守，而不是“方差校正使检验更容易拒绝 $H_0$”。\end{annotation}
+\subsection{Breslow检验}
+\sourcepages{5}{49-50}
+Breslow检验（Gehan--Wilcoxon检验）：
+\[
+\chi^2=\frac{[\sum_i w_i(d_{1i}-T_{1i})]^2}{\sum_i w_i^2V_{1i}},\qquad w_i=n_i.
+\]
+Log-rank检验：
+\[
+\chi^2=\frac{[\sum_i d_{1i}-\sum_i T_{1i}]^2}{\sum_i V_{1i}}\qquad(w_i\equiv1).
+\]
+两者都是“加权的 $(O-E)$”，区别只在各事件时点的权重。log-rank检验对每个事件时点等权，在比例风险（两组风险之比恒定）时检验效能最高；Breslow检验以风险人数 $n_i$ 为权，早期（风险人数多时）的差别权重大，当两组差别主要出现在早期、后来消失时效能更高。其权重还受删失分布影响，两组删失模式不同时解释要谨慎。本例Breslow检验 $\chi^2=5.50$，$P=0.019$；log-rank检验 $\chi^2=6.77$，$P=0.009$。
+\begin{annotation}有的资料把两者概括为“Breslow针对短期效应、log-rank针对长期效应”，不准确。log-rank并不偏重后期，它对所有事件时点等权，只是在后期风险人数少时，Breslow给后期的权重相对更小。选择检验方法应在分析前根据预期的效应模式确定，不能两种都做后挑 $P$ 值小的报告。\end{annotation}
+R中用\texttt{survdiff()}作log-rank检验，其结果为方差法的统计量：
+\par\noindent
+\begin{coursecode}{R}
+survdiff(Surv(time,status)~size, data=d)          # log-rank
+survdiff(Surv(time,status)~size, data=d, rho=1)   # Peto-Peto加权
+\end{coursecode}
+\begin{routput}
+            N Observed Expected (O-E)^2/E (O-E)^2/V
+size=<3cm  18       11    15.78      1.45      6.77
+size=>=3cm 12       10     5.22      4.39      6.77
+
+ Chisq= 6.8  on 1 degrees of freedom, p= 0.009 
+
+            N Observed Expected (O-E)^2/E (O-E)^2/V
+size=<3cm  18     5.22     8.34      1.17      5.19
+size=>=3cm 12     6.93     3.81      2.56      5.19
+
+ Chisq= 5.2  on 1 degrees of freedom, p= 0.02 
+\end{routput}
+输出中\texttt{(O-E)\^{}2/E}两列之和$1.45+4.39=5.84$即近似公式的结果，\texttt{(O-E)\^{}2/V}即方差法的6.77。\texttt{rho=1}按各时刻的KM生存率加权（Peto--Peto法），与Breslow法按风险人数加权的思路相同，均侧重早期差别，但权重不完全相同，故结果（5.19）与Breslow检验的5.50略有差异。
+
+\textbf{当检验结果是拒绝 $H_0$ 时，如何下结论？}
+\begin{enumerate}
+\item 比较不同组的生存曲线，高低、距离、下降速度等。
+\item 中位生存时间的比较，结合多个时间点的生存率的比较。
+\item 相对危险度：$\widehat{\RR}=(A_1/T_1)/(A_2/T_2)$。
+\end{enumerate}
+\begin{annotation}$A$ 为实际死亡数，$T$ 为理论死亡数。$(A_1/T_1)/(A_2/T_2)$ 是两组风险比（HR）的近似估计，在比例风险时才有单一的解释。\end{annotation}
+\subsection{趋势检验}
+\sourcepages{5}{51-53}
+多组生存率（生存曲线）比较时，若分组变量是等级变量，如肿瘤分期为I期、II期、III期，或连续变量等级化分组，如不同年龄段，若log-rank检验发现组间生存率差别有统计学意义，还可作趋势检验（trend test）。分析生存率的差别是否有随分组等级变化而变化的趋势，即是否有肿瘤分期越高，预后越差，或年龄越大（或越小），预后越差的情况。
+
+\textbf{例4} 就下表分析多发性骨髓瘤患者血尿素氮与预后的关系。
+\ctable{表6\quad 多发性骨髓瘤患者血尿素氮与预后的关系}{\begin{tabular}{crrrr}\toprule
+血尿素氮（mg/100ml）&病例数&实际死亡数 $A$&期望死亡数 $T$&相对死亡比 $A/T$\\\midrule
+0--39&113&79&122.06&0.65\\40--79&92&81&74.60&1.09\\$\ge80$&53&53&16.34&3.24\\\bottomrule\end{tabular}}
+Log-rank检验：
+\[
+\chi^2=\frac{(79-122.06)^2}{122.06}+\frac{(81-74.60)^2}{74.60}+\frac{(53-16.34)^2}{16.34}=97.99.
+\]
+\begin{annotation}log-rank只能说明三组间有区别，但不能说明存在趋势。\end{annotation}
+\ctable{表7\quad 趋势检验卡方统计量计算表}{\begin{tabular}{crrrrrr}\toprule
+血尿素氮（mg/100ml）&记分 $S$&$A$&$T$&$S(A-T)$&$ST$&$S^2T$\\\midrule
+0--39&1&79&122.06&$-43.06$&122.06&122.06\\
+40--79&2&81&74.60&12.80&149.20&298.40\\
+$\ge80$&3&53&16.34&109.98&49.02&147.06\\
+合计&---&213&213.00&79.72&320.28&567.52\\\bottomrule\end{tabular}}
+\[
+\chi^2=\frac{[\sum S(A-T)]^2}{\sum S^2T-(\sum ST)^2/\sum T}
+=\frac{79.72^2}{567.52-320.28^2/213}=73.96,\qquad P<0.005.
+\]
+\begin{annotation}血尿素氮越低，生存率越高，预后越好。\end{annotation}
+\subsection{注意事项}
+\sourcepages{5}{54-57}
+\begin{enumerate}
+\item log-rank检验和Breslow检验也适用于寿命表资料及多组生存曲线的比较。
+\item 实际死亡总数 $A$ 与理论死亡总数 $T$ 之比称为相对死亡比（relative death ratio），$R=A/T$，则相对危险度（relative risk, RR）估计值为两组相对死亡比之比：
+\[
+\widehat{\RR}=\frac{A_1/T_1}{A_2/T_2}=\frac{11/15.7842}{10/5.2170}=0.36.
+\]
+胃癌肿瘤小于3.0cm患者的生存情况较优。
+\item log-rank检验用于整条生存曲线的比较，若比较两条生存曲线某时间点处的生存率，如2年生存率或5年生存率，可按两个率比较的正态近似法：
+\[
+Z=\frac{\widehat S_1(t)-\widehat S_2(t)}{\sqrt{\SE^2[\widehat S_1(t)]+\SE^2[\widehat S_2(t)]}}.
+\]
+\item 生存曲线交叉时的解释：曲线交叉并不使log-rank检验失效（$H_0$ 为两条曲线完全相同，检验的第一类错误仍能控制），但交叉说明两组风险之比随时间改变，早期与后期的差别方向相反、在 $(O-E)$ 中相互抵消，log-rank检验的效能会明显下降，“差异无统计学意义”不能解释为两组生存无差别。交叉本身提示非比例风险（效应随时间变化），不一定是混杂所致。可分时段比较、采用对不同时期加权的检验（如Fleming--Harrington族），或比较限制性平均生存时间（RMST）。
+\item log-rank检验属单因素分析方法，应用条件是除比较因素外，影响生存率的各协变量组间均衡可比。
+\end{enumerate}
+\begin{annotation}$\widehat{\RR}=0.36$ 说明肿瘤小于3.0cm组的死亡风险约为大于等于3.0cm组的0.36倍。（同一资料用Cox回归估计的HR为 $1/3.58=0.28$，两者都是近似估计。）固定时点生存率的比较是两个率的比较，$Z$ 近似服从标准正态分布；应在分析前指定比较的时点。\end{annotation}
+\par\Needspace{8\baselineskip}\noindent\textbf{补充练习（诊断题）}
+\question{某肿瘤随访研究中，病情恶化的患者常转往外院而失访，研究者把这些人按删失处理后用Kaplan--Meier法估计5年生存率为62\%。(1) 这一估计可能偏向哪个方向？为什么？(2) 若失访与病情无关、只与居住地远近有关，结论有何不同？}
+\answer{(1) 偏高。KM法要求独立删失：删失者此后的死亡风险应与仍在随访者相同。病情恶化者失访，意味着留在风险集中的人预后较好，各时点的条件死亡概率被低估，生存率被高估。(2) 若失访只与居住地有关、而居住地与预后无关，独立删失近似成立，KM估计无偏，只是删失使样本信息减少、标准误增大。若居住地本身与预后有关，则只有在给定居住地后删失独立，需分层估计或在Cox模型中调整居住地。}
+\section*{小结}
+\sourcepages{5}{58-59}
+生存分析的目的、资料特点、基本概念；生存率的估计方法（寿命表法、Kaplan--Meier）；生存曲线比较的方法（log-rank法）。
+
+\begin{fuxi}[复习题]
+\begin{enumerate}
+\item 比较生存概率与生存率，并写出由各年生存概率计算3年生存率的公式。\\
+\textit{答：生存概率为活过某一时段的条件概率；生存率为自起点活过$t$的累积概率。3年生存率$=p_1p_2p_3$。}
+\item 说明寿命表法中期初有效例数取$n'_i-c_i/2$的依据。\\
+\textit{答：假定删失在区间内均匀发生，删失者平均只暴露半个区间。}
+\item KM法中同一时刻既有死亡又有删失时，说明删失者是否计入该时刻的风险人数。\\
+\textit{答：计入，按约定删失发生在死亡之后。}
+\item $S(t)=0.6$时，计算累积风险$H(t)$与累积发生概率$F(t)$。\\
+\textit{答：$H=-\ln0.6=0.51$，$F=0.4$。}
+\item 两条生存曲线交叉，log-rank检验$P=0.40$，说明能否据此认为两组生存无差别。\\
+\textit{答：不能。曲线交叉提示风险比随时间变化，早期与后期的差别相互抵消，log-rank检验效能降低；应分时段比较，或采用RMST等方法。}
+\item 比较log-rank检验与Breslow检验。\\
+\textit{答：前者对各死亡时刻等权，比例风险时效能最高；后者以风险人数为权，对早期差别更为敏感。}
+\end{enumerate}
+\end{fuxi}

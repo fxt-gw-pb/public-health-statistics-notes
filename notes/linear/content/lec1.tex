@@ -1,0 +1,301 @@
+\chapter{矩阵知识简介}
+回归分析中的参数估计、方差分析、杠杆值与共线性诊断均以矩阵形式表述，本章先整理后续各章所需的矩阵知识。本章将数据矩阵视为一张数据表及其运算规则：每一行对应一个观察对象，每一列对应一个变量。
+
+本章的重点有以下三项：
+\begin{itemize}
+\item 均数向量、协方差阵与相关阵分别描述数据的集中位置、变量间的共同变化，以及消除量纲后的共同变化；
+\item 线性组合的方差$a^\top\Sigma a$。回归系数的标准误、预测区间与方差分析的期望均方均由该式导出；
+\item 特征值与特征向量的统计含义：特征向量表示一个方向，特征值为数据在该方向上的方差。第3章的共线性诊断与多元分析中的主成分分析均以此为基础。
+\end{itemize}
+\section{矩阵和向量}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{例1.1\quad 某地12名16岁中学生的身高、体重、胸围资料}
+\begin{center}\small
+\begin{tabular}{rrrr}
+\toprule 编号 & 身高（cm，$x_1$） & 体重（kg，$x_2$） & 胸围（cm，$x_3$）\\\midrule
+1&171.0&58.5&81.0\\2&175.0&65.0&87.0\\3&159.0&38.0&71.0\\
+4&155.3&45.0&74.0\\5&152.0&35.0&63.0\\6&158.3&44.5&75.0\\
+7&154.8&44.5&74.0\\8&164.0&51.0&72.0\\9&165.2&55.0&79.0\\
+10&164.5&46.0&71.0\\11&159.1&48.0&72.5\\12&164.2&46.5&73.0\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+36个元素$x_{ij}$组成维度是12行3列的矩阵$X$，其中每列元素组成一个向量。
+\par\noindent\begin{rcode}
+x1 <- c(171,175,159,155.3,152,158.3,154.8,164,165.2,164.5,159.1,164.2)
+x2 <- c(58.5,65,38,45,35,44.5,44.5,51,55,46,48,46.5)
+x3 <- c(81,87,71,74,63,75,74,72,79,71,72.5,73)
+X <- cbind(x1,x2,x3)
+\end{rcode}\par\smallskip
+\ann{$12\times3$的矩阵。}
+以下各节的数值可由下列命令一并求得，其结果列于此处，供阅读各节公式时对照。
+\par\noindent\begin{rcode}
+colMeans(X)                       # 均数向量，等价于 apply(X,2,mean)
+S <- cov(X); round(S,3)           # 样本协方差阵，分母 n-1
+L <- crossprod(scale(X,scale=FALSE))  # 离差阵：中心化后的 X'X
+all.equal(L, 11*S)                # 验证 L=(n-1)S
+round(cor(X),4)                   # 样本相关阵
+\end{rcode}
+\begin{routput}
+       x1        x2        x3 
+161.86667  48.08333  74.37500 
+       x1     x2     x3
+x1 45.722 50.362 32.232
+x2 50.362 69.629 45.466
+x3 32.232 45.466 35.324
+[1] TRUE
+       x1     x2     x3
+x1 1.0000 0.8926 0.8020
+x2 0.8926 1.0000 0.9168
+x3 0.8020 0.9168 1.0000
+\end{routput}
+\subsection{均数向量}
+用均数向量反映资料的平均水平：总体均数向量记为$\mu$（参数），样本均数向量记为$\bar X$（由样本算得的估计值）。均数向量默认是列向量，有时用行向量表示；本书统一用$\bar X^\top$表示转置（transpose），其他资料中的$\bar X'$与$\bar X^T$同义。
+\[
+\mu=\begin{bmatrix}\mu_1\\\mu_2\\\mu_3\end{bmatrix},\qquad
+\bar X=\begin{bmatrix}\bar x_1\\\bar x_2\\\bar x_3\end{bmatrix},\qquad
+\bar X^\top=\begin{bmatrix}\bar x_1&\bar x_2&\bar x_3\end{bmatrix}.
+\]
+\[
+\code{apply(X,2,mean)}\ \longrightarrow\
+\bar X^\top=(161.86667\quad48.08333\quad74.37500).
+\]
+\ann{按列求平均。}
+\subsection{协方差阵}
+方差-协方差矩阵（variance-covariance matrix）简称协方差阵，反映$p$个变量间的线性共变关系。它是方阵和对称矩阵，有时只给出右上半或左下半（上三角或下三角阵）。须区分两类对象：
+\begin{itemize}
+\item 总体协方差阵$\Sigma$：$\sigma_{ij}=\Cov(X_i,X_j)=E[(X_i-\mu_i)(X_j-\mu_j)]$，$\sigma_{ii}$为第$i$个变量的总体方差，是未知参数。
+\item 样本协方差阵$S$：$s_{ij}=l_{ij}/(n-1)$，由样本计算，是$\Sigma$的无偏估计。命令\code{cov(X)}给出的是$S$。
+\end{itemize}
+\[
+\Sigma=\begin{bmatrix}\sigma_{11}&\sigma_{12}&\sigma_{13}\\
+\sigma_{21}&\sigma_{22}&\sigma_{23}\\\sigma_{31}&\sigma_{32}&\sigma_{33}\end{bmatrix},
+\qquad S=\begin{bmatrix}s_{11}&s_{12}&s_{13}\\s_{21}&s_{22}&s_{23}\\s_{31}&s_{32}&s_{33}\end{bmatrix}.
+\]
+对例1.1，
+\[
+\code{cov(X)}\ \longrightarrow\
+S=\begin{bmatrix}45.722&50.362&32.232\\50.362&69.629&45.466\\32.232&45.466&35.324\end{bmatrix}.
+\]
+\begin{sikao}[协方差数值的解释]
+$s_{12}=50.362>0$表示身高高于平均水平的学生，其体重也倾向于高于平均水平。协方差的数值大小依赖于测量单位：$s_{12}$的单位为cm$\cdot$kg，若身高改以米为单位记录，该值缩小为原来的1/100，而变量间的关系并未改变。因此，协方差的符号可以解释，其绝对大小不宜直接用于判断关联强度。
+
+比较关联强度时需消除量纲，即计算相关系数：
+\[
+r_{12}=\frac{s_{12}}{\sqrt{s_{11}s_{22}}}=\frac{50.362}{\sqrt{45.722\times69.629}}=0.8926 .
+\]
+第2章的标准化偏回归系数，以及多元分析中基于协方差阵或相关阵提取主成分的选择，所涉及的都是同一问题：各变量单位不同时，应根据分析目的决定是否消除量纲。
+\end{sikao}
+\subsection{离均差平方和与离均差积和矩阵}
+简称离差阵，用$L$表示，$L=(n-1)S$。
+\[
+l_{ii}=\sum_{k=1}^{n}(x_{ki}-\bar x_i)^2,\qquad
+l_{ij}=\sum_{k=1}^{n}(x_{ki}-\bar x_i)(x_{kj}-\bar x_j),
+\quad i,j=1,2,3,\quad i\ne j.
+\]
+\[
+L=\begin{bmatrix}l_{11}&l_{12}&l_{13}\\l_{21}&l_{22}&l_{23}\\l_{31}&l_{32}&l_{33}\end{bmatrix}.
+\]
+\subsection{相关系数矩阵}
+相关系数矩阵（correlation matrix）简称相关阵，反映$p$个变量间线性相关的方向与程度，也是方阵和对称矩阵。总体相关阵记为$R$（元素$\rho_{ij}$），样本相关阵记为$\widehat R$（元素$r_{ij}$），命令\code{cor(X)}给出$\widehat R$。
+\[
+R=\begin{bmatrix}1&\rho_{12}&\rho_{13}\\\rho_{21}&1&\rho_{23}\\\rho_{31}&\rho_{32}&1\end{bmatrix},
+\qquad
+\widehat R=\begin{bmatrix}1&r_{12}&r_{13}\\r_{21}&1&r_{23}\\r_{31}&r_{32}&1\end{bmatrix}.
+\]
+\[
+r_{ij}=\frac{l_{ij}}{\sqrt{l_{ii}l_{jj}}}
+=\frac{\sum_{k=1}^{n}(x_{ki}-\bar x_i)(x_{kj}-\bar x_j)}
+{\sqrt{\sum_{k=1}^{n}(x_{ki}-\bar x_i)^2}
+\sqrt{\sum_{k=1}^{n}(x_{kj}-\bar x_j)^2}}
+=\frac{s_{ij}}{\sqrt{s_{ii}s_{jj}}}.
+\]
+\subsection{单位阵和迹}
+方阵主对角线元素之和称为迹（trace），记为$\tr(\cdot)$。协方差阵的迹$\tr(\Sigma)=\sum\sigma_{ii}$（样本为$\tr(S)=\sum s_{ii}$）是各分量方差之和，常称“总变异”；它只汇总方差，不含协方差信息。迹受量纲影响：例1.1中$\tr(S)=45.72+69.63+35.32=150.68$，把cm$^2$与kg$^2$直接相加，换用mm或g会改变各项的相对比重，因此只有在各变量量纲相同或已标准化时才便于解释。相关阵是标准化变量的协方差阵，其迹恒为$p$。
+
+单位阵$I$是指主对角线为1，其余所有元素均为0的$p$行$p$列矩阵。
+\[
+I=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix}.
+\]
+如果总体相关阵是单位阵，只能说明$p$个指标两两不相关（线性相关系数为0），一般不能推出相互独立。
+\begin{itemize}
+\item 若$(X_1,\ldots,X_p)$服从多元正态分布，则两两不相关等价于相互独立，因为此时联合密度可分解为各边缘密度之积。
+\item 非正态反例：$X\sim N(0,1)$，$Y=X^2$。$\Cov(X,Y)=E(X^3)-E(X)E(X^2)=0$，故$\rho_{XY}=0$；但$Y$完全由$X$决定，二者并不独立。
+\end{itemize}
+\section{矩阵运算}
+\subsection{矩阵加（减）法与数乘}
+\[
+A=\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad
+B=\begin{bmatrix}5&6\\7&8\end{bmatrix},\quad
+C=A+B=\begin{bmatrix}6&8\\10&12\end{bmatrix}.
+\]
+\[
+A\cdot2=2\cdot A=\begin{bmatrix}2&4\\6&8\end{bmatrix}.
+\]
+\subsection{矩阵乘法}
+\[
+A_{m\times p}B_{p\times n}=C_{m\times n}.
+\]
+要求$A$的列数等于$B$的行数。
+
+向量内积：
+\[
+a=\begin{bmatrix}1\\2\end{bmatrix},\quad b=\begin{bmatrix}5\\7\end{bmatrix},\quad
+a^\top b=\begin{bmatrix}1&2\end{bmatrix}\begin{bmatrix}5\\7\end{bmatrix}
+=1\times5+2\times7=19.
+\]
+矩阵相乘：
+\[
+A=\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad B=\begin{bmatrix}5&6\\7&8\end{bmatrix},
+\quad AB=\begin{bmatrix}19&22\\43&50\end{bmatrix},\quad
+BA=\begin{bmatrix}23&34\\31&46\end{bmatrix}.
+\]
+矩阵乘法一般不满足交换律，通常$AB\ne BA$。$B=I$只是可交换的一个特例：$B=cI$、$B=A^{-1}$、$B$为$A$的多项式（如$A^2+2A$），或$A,B$同为对角阵时，也都有$AB=BA$。转置满足$(AB)^\top=B^\top A^\top$。
+\[
+I=\begin{bmatrix}1&0\\0&1\end{bmatrix}
+=\begin{bmatrix}\cos2\pi&\sin2\pi\\-\sin2\pi&\cos2\pi\end{bmatrix},
+\qquad AI=IA=A.
+\]
+\subsection{矩阵乘法的几何意义}
+$AT$的几何意义：将坐标轴顺时针旋转$90^\circ$（$90\pi/180$弧度）后数据点的新坐标。
+\[
+A=\begin{bmatrix}1&2\\3&4\end{bmatrix},\qquad
+T=\begin{bmatrix}\cos(\pi/2)&\sin(\pi/2)\\-\sin(\pi/2)&\cos(\pi/2)\end{bmatrix},
+\qquad AT=\begin{bmatrix}-2&1\\-4&3\end{bmatrix}.
+\]
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.2cm,height=5.4cm,xmin=-6.5,xmax=6.5,ymin=-6.5,ymax=6.5,
+xtick={-6,-4,-2,0,2,4,6},ytick={-6,-4,-2,0,2,4,6},xlabel={$A[,1]$},ylabel={$A[,2]$},title={旋转前}]
+\addplot[only marks,draw=TextInk,mark=o,mark options={fill=white},mark size=2.6pt] coordinates{(1,2)(3,4)};
+\draw[-{Stealth},draw=ChartBrick,line width=.95pt] (axis cs:-6,0)--(axis cs:6,0);
+\draw[-{Stealth},draw=ChartForest,line width=.95pt,dashed] (axis cs:0,-6)--(axis cs:0,6);
+\end{axis}
+\begin{axis}[at={(6.9cm,0)},anchor=south west,width=6.2cm,height=5.4cm,xmin=-6.5,xmax=6.5,ymin=-6.5,ymax=6.5,
+xtick={-6,-4,-2,0,2,4,6},ytick={-6,-4,-2,0,2,4,6},xlabel={$A[,1]$},ylabel={$A[,2]$},title={旋转后}]
+\addplot[only marks,draw=TextInk,mark=o,mark options={fill=white},mark size=2.6pt] coordinates{(1,2)(3,4)};
+\draw[-{Stealth},draw=ChartForest,line width=.95pt,dashed] (axis cs:-6,0)--(axis cs:6,0);
+\draw[-{Stealth},draw=ChartBrick,line width=.95pt] (axis cs:0,6)--(axis cs:0,-6);
+\end{axis}
+\end{tikzpicture}\end{center}
+\subsection{矩阵求逆}
+求矩阵$A$的逆矩阵，使$AA^{-1}=I$。
+\[
+A=\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad
+A^{-1}=\begin{bmatrix}-2&1.0\\1.5&-0.5\end{bmatrix},\quad
+AA^{-1}=\begin{bmatrix}1&0\\0&1\end{bmatrix}.
+\]
+\subsection{特征值与特征向量}
+对方阵$A$求特征值$\lambda$和特征向量$e$，使$Ae=\lambda e$。
+\[
+A=\begin{bmatrix}1&.941\\.941&1\end{bmatrix},\qquad
+e=\begin{bmatrix}.707\\.707\end{bmatrix},\qquad\lambda=1.941.
+\]
+对相关矩阵求特征值和特征向量。特征向量$e_i$为标准化向量：
+\[
+e_i^\top e_i=1,\quad i=1,2,\ldots,m.
+\]
+向量$e_i$和$e_j$之间正交：
+\[
+e_i^\top e_j=0,\quad i,j=1,2,\ldots,m,\quad i\ne j.
+\]
+\ann{标准化：向量的长度调整为1；正交：内积为0。}
+\begin{sikao}[特征值的统计含义]
+上例中$A$为两个变量的相关阵，相关系数为0.941。以第一特征向量为权重组合两个标准化变量$X_1^*,X_2^*$，得$Z=0.707X_1^*+0.707X_2^*$，由第\ref{sec:lincomb}节的公式，
+\[
+\Var(Z)=e^\top Ae=\lambda e^\top e=\lambda=1.941 .
+\]
+第二特征向量为$(-0.707,0.707)^\top$，对应$Z_2=0.707(X_2^*-X_1^*)$，其方差仅为$0.059$。两变量高度相关时，数据点集中分布于“两者之和”方向的对角线附近，在“两者之差”方向上变异很小。特征向量表示方向，特征值为数据在该方向上的方差。
+
+由此可得两点结论：
+\begin{itemize}
+\item 若某一特征值接近0，则存在一个几乎没有变异的线性组合，即变量间近似线性相关。第3章据此诊断多重共线性。
+\item 最大特征值对应的方向为数据变异最大的方向。主成分分析按特征值由大到小依次取这些方向。
+\end{itemize}
+例1.1中三个指标相关阵的特征值如下：
+\par\noindent\begin{rcode}
+e <- eigen(cor(X)); e$values; sum(e$values)
+\end{rcode}
+\begin{routput}
+[1] 2.74182093 0.19930442 0.05887465
+[1] 3
+\end{routput}
+三个特征值之和等于$\tr(\widehat R)=3$，其中第一个特征值占$2.742/3=91\%$。第一特征向量约为$(0.567,0.592,0.573)$，三个权重接近相等，可解释为反映“体格大小”的综合指标。身高、体重、胸围三项指标所含的信息主要集中在这一个方向上。
+\end{sikao}
+\subsection{相关矩阵的谱分解}
+$m\times m$的相关矩阵$R$有$m$对特征值和特征向量。用它们表示相关矩阵称为相关矩阵的谱分解：
+\[
+R=\sum_{i=1}^{m}\lambda_i e_i e_i^\top
+=\lambda_1e_1e_1^\top+\lambda_2e_2e_2^\top+\cdots+\lambda_me_me_m^\top.
+\]
+任意实对称矩阵都有这种分解，且特征值均为实数、特征向量可取为两两正交的单位向量。记$P=(e_1,\ldots,e_m)$，$\Lambda=\operatorname{diag}(\lambda_1,\ldots,\lambda_m)$，则$R=P\Lambda P^\top$，$P^\top P=I$。
+\subsection{秩、可逆性与正定性}\label{sec:rank}
+\begin{description}
+\item[秩] 矩阵$A$中线性无关的列（等价地，行）的最大个数，记为$\rank(A)$。$n\times p$矩阵$X$满足$\rank(X)=p$时称为列满秩，即没有一列能由其他列线性表出。
+\item[可逆] $p\times p$方阵$A$可逆$\iff\rank(A)=p\iff|A|\ne0\iff$特征值均不为0。对$n\times p$矩阵$X$，$X^\top X$可逆$\iff X$列满秩（因为$X^\top Xa=0\Rightarrow a^\top X^\top Xa=\|Xa\|^2=0\Rightarrow Xa=0$）。
+\item[正定与半正定] 对称矩阵$A$若对一切$a\ne0$有$a^\top Aa>0$，称为正定；若$a^\top Aa\ge0$，称为半正定。由谱分解$a^\top Aa=\sum_i\lambda_i(e_i^\top a)^2$，正定$\iff$全部$\lambda_i>0$，半正定$\iff$全部$\lambda_i\ge0$。正定阵必可逆。
+\end{description}
+\begin{derivation}{协方差阵是半正定矩阵}
+\dpart{条件}随机向量$X=(X_1,\ldots,X_p)^\top$的二阶矩存在，$E(X)=\mu$，$\Cov(X)=\Sigma$。
+\dpart{结论}$\Sigma$对称且半正定；$\Sigma$正定当且仅当不存在非零$a$使$a^\top X$几乎必然为常数。
+\dpart{推导}对任意常数向量$a$，$a^\top X-a^\top\mu=a^\top(X-\mu)$，故
+\[
+\Var(a^\top X)=E\bigl[a^\top(X-\mu)(X-\mu)^\top a\bigr]=a^\top\Sigma a\ge0 .
+\]
+等号成立$\iff\Var(a^\top X)=0\iff a^\top X$几乎必然为常数。样本协方差阵同理：$a^\top Sa$是数值$a^\top x_1,\ldots,a^\top x_n$的样本方差，故$S$也半正定。
+\dpart{统计解释}若某一线性组合的方差为0（如三个变量中有一个等于另两个之和），$\Sigma$或$S$奇异、不可逆。第3章的完全共线性就是设计矩阵中出现了这种线性依赖。
+\end{derivation}
+\Needspace{.3\textheight}
+\section{随机变量的线性组合}\label{sec:lincomb}
+设$m$个随机变量$X=(X_1,X_2,\ldots,X_m)^\top$的均数向量为$\mu$，协方差阵为$\Sigma$，其线性组合$a^\top X$的均数为$a^\top\mu$，方差为$a^\top\Sigma a$。
+\begin{align*}
+a_1x_1+a_2x_2+\cdots+a_mx_m
+&=\begin{bmatrix}a_1&\cdots&a_m\end{bmatrix}
+\begin{bmatrix}x_1\\\vdots\\x_m\end{bmatrix}=a^\top x,\\
+\begin{bmatrix}a_1&\cdots&a_m\end{bmatrix}
+\begin{bmatrix}\mu_1\\\vdots\\\mu_m\end{bmatrix}&=a^\top\mu,\\
+\begin{bmatrix}a_1&\cdots&a_m\end{bmatrix}
+\begin{bmatrix}\sigma_{11}&\cdots&\sigma_{1m}\\\vdots&\ddots&\vdots\\\sigma_{m1}&\cdots&\sigma_{mm}\end{bmatrix}
+\begin{bmatrix}a_1\\\vdots\\a_m\end{bmatrix}&=a^\top\Sigma a.
+\end{align*}
+\begin{derivation}{多个线性组合的均数向量与协方差阵}
+\dpart{条件}$X$为$m$维随机向量，$E(X)=\mu$，$\Cov(X)=\Sigma$；$A$为$q\times m$常数矩阵，$c$为$q$维常数向量。
+\dpart{结论}
+\[
+E(AX+c)=A\mu+c,\qquad \Cov(AX+c)=A\Sigma A^\top .
+\]
+\dpart{推导}期望是线性运算，逐个分量可得$E(AX+c)=A\mu+c$。又$AX+c-E(AX+c)=A(X-\mu)$，故
+\[
+\Cov(AX+c)=E\bigl[A(X-\mu)(X-\mu)^\top A^\top\bigr]=A\,E\bigl[(X-\mu)(X-\mu)^\top\bigr]A^\top=A\Sigma A^\top .
+\]
+$q=1$、$A=a^\top$时即为上面的$a^\top\mu$与$a^\top\Sigma a$。$\Cov(AX,BX)=A\Sigma B^\top$可同理得到。若$X$服从多元正态分布，则$AX+c$仍服从多元正态分布。
+\dpart{统计解释}第2章的回归系数估计量$\widehat\beta=(X^\top X)^{-1}X^\top Y$、拟合值$HY$和残差$(I-H)Y$都是$Y$的线性变换，其均数与协方差阵都由这两个公式直接得到。
+\end{derivation}
+\question{将中学生的身高、体重、胸围三个指标标准化后，设$a=(1/3,1/3,1/3)^\top$，求线性组合$a^\top X^*$的均数和方差。}
+\answer{标准化后各变量均数为0、方差为1，$X^*$的协方差阵就是相关阵$\widehat R$。故均数$a^\top\mathbf 0=0$，方差
+\[
+a^\top\widehat Ra=\frac19\Bigl[3+2(r_{12}+r_{13}+r_{23})\Bigr]
+=\frac19\bigl[3+2(0.8926+0.8020+0.9168)\bigr]=0.9136 .
+\]
+R验证：\texttt{a <- rep(1/3,3); t(a)\%*\%cor(X)\%*\%a}，或\texttt{var(scale(X)\%*\%a)}，结果均为0.9136。三个指标高度正相关，平均后的方差仍接近1；若三者互不相关，方差会降为$1/3$。}
+\begin{sikao}[相关指标之和的方差]
+将$a^\top\Sigma a$按分量展开，两个变量时为
+\[
+\Var(a_1X_1+a_2X_2)=a_1^2\sigma_{11}+a_2^2\sigma_{22}+2a_1a_2\sigma_{12}.
+\]
+式中最后一项为协方差的贡献。正相关的指标相加时，其和的方差大于各自方差之和，取平均后方差的下降也有限。因此，当若干测量高度相关时，增加测量项目对降低误差的作用有限，因为这些测量反映的是同一特征。若为同一指标的独立重复测量（协方差为0），取$k$次测量的均数，方差降为单次的$1/k$。
+
+后续各章中$\Var(\widehat\beta)=\sigma^2(X^\top X)^{-1}$、$\Var(\widehat y_0)=\sigma^2x_0^\top(X^\top X)^{-1}x_0$等公式，均为线性组合方差公式的具体形式。
+\end{sikao}
+
+\begin{fuxi}
+\begin{enumerate}
+\item 区分总体与样本：$\mu,\Sigma,R$为总体参数，$\bar X,S,\widehat R$为样本估计。R中\code{cov()}、\code{cor()}给出的是样本量，分母为$n-1$。
+\item 三个矩阵的关系：$L=(n-1)S$；$r_{ij}=s_{ij}/\sqrt{s_{ii}s_{jj}}=l_{ij}/\sqrt{l_{ii}l_{jj}}$。相关阵就是标准化变量的协方差阵，对角线全为1，迹为$p$。
+\item 协方差有单位，受量纲影响；相关系数无单位。$\tr(S)$将不同单位的方差相加，仅在量纲相同时便于解释。
+\item 不相关不等同于独立，二者仅在多元正态分布下等价。$Y=X^2$为常用反例。
+\item 矩阵乘法一般不可交换；$(AB)^\top=B^\top A^\top$；$X^\top X$可逆当且仅当$X$列满秩。
+\item 两个常用公式：$\Var(a^\top X)=a^\top\Sigma a$，$\Cov(AX+c)=A\Sigma A^\top$。
+\item 特征值为数据在对应特征向量方向上的方差；全部特征值之和等于矩阵的迹；存在接近0的特征值，表示变量间近似线性相关。
+\end{enumerate}
+\end{fuxi}

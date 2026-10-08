@@ -1,0 +1,59 @@
+% 广义线性模型：讲解部分所用宏（按总笔记版式重新定义）
+% 图形配色（沿用原名称，映射到总笔记色板）
+\colorlet{InkSoft}{Muted}
+\colorlet{PlotPrimary}{PKURed}
+\colorlet{PlotSecondary}{black!65}
+\colorlet{PlotThird}{black!40}
+\colorlet{PlotFourth}{PKURed!45}
+\colorlet{PlotNeutral}{PKUMuted}
+\tikzset{every picture/.append style={line cap=round,line join=round},
+  course observation/.style={PlotPrimary,line width=.75pt},
+  course reference/.style={InkSoft,line width=.4pt,dashed}}
+\pgfplotsset{every axis/.append style={axis line style={InkSoft,line width=.45pt},
+  tick style={InkSoft,line width=.4pt},tick align=outside,label style={font=\small,color=Ink},
+  tick label style={font=\footnotesize,color=InkSoft},title style={font=\small\bfseries\sffamily,color=Ink},
+  legend style={draw=none,fill=white,font=\footnotesize,cells={anchor=west},inner sep=2pt},
+  ymajorgrids=true,grid style={draw=black!9,line width=.2pt},axis background/.style={fill=white}}}
+% 代码
+\newcommand{\courseCJKMono}{}
+\tcbuselibrary{listings}
+\lstdefinestyle{course}{basicstyle=\ttfamily\fontsize{9.2}{13}\selectfont\color{Ink},
+  columns=fullflexible,keepspaces=true,breaklines=true,breakatwhitespace=false,breakindent=14pt,
+  showstringspaces=false,tabsize=2,numbers=left,numberstyle=\ttfamily\fontsize{7.3}{10}\selectfont\color{Muted!80},
+  numbersep=9pt,stepnumber=1,firstnumber=1,xleftmargin=18pt,keywordstyle=\bfseries\color{CodeKeyword},
+  keywordstyle=[2]\color{CodeFunction},keywordstyle=[3]\color{CodeConstant},stringstyle=\color{CodeString},
+  commentstyle=\color{CodeComment}\itshape,aboveskip=0pt,belowskip=0pt}
+\lstdefinelanguage{GLMR}{sensitive=true,morekeywords={if,else,for,while,repeat,function,return,next,break},morekeywords=[2]{glm,clogit,polr,multinom,coxph,cph,Surv,rcs,basehaz,cox.zph,summary,exp,coef,loglm,loglin,pchisq,c,list,library,require,install.packages,help,data,qcc.overdispersion.test,glm.nb,binomial,gaussian,poisson},morekeywords=[3]{TRUE,FALSE,NULL,NA,NaN,Inf},morecomment=[l]{\#},morestring=[b]',morestring=[b]",alsoletter={._},otherkeywords={<-}}
+\lstdefinelanguage{GLMSAS}{sensitive=false,morekeywords={proc,run,model,class,by,direct,strata,weight,loglin,oddsratio},morekeywords=[2]{genmod,logistic,phreg,catmod,sort},morekeywords=[3]{data,dist,link,selection,ties,risklimits,cl,rl,lackfit,order,descending,ref,first,type3,obstats,residuals,type,scale,offset,SLE,SLS},morecomment=[l]{\#},morecomment=[s]{/*}{*/},morestring=[b]',morestring=[b]"}
+\lstdefinelanguage{GLMStata}{sensitive=true,morekeywords={poisson,nbreg,stset,stcox,stcurve,estat,logistic,logit,clogit,mlogit,ologit},morekeywords=[2]{phtest},morekeywords=[3]{failure,survival,detail,r,irr,nolog,exposure,offset},morecomment=[l]{//},morecomment=[s]{/*}{*/},morecomment=[l]{\#},literate={\#\#}{{\textcolor{CodeKeyword}{\#\#}}}2,morestring=[b]',morestring=[b]"}
+\lstdefinelanguage{GLMSPSS}{sensitive=false,morekeywords={COXREG,STATUS,STRATA,METHOD,PRINT,CRITERIA},morekeywords=[2]{ENTER,CI,PIN,POUT,ITERATE},morecomment=[l]{\#},morestring=[b]',morestring=[b]"}
+\newtcblisting{coursecode}[1]{pkucode,listing only,listing engine=listings,
+  listing options={style=course,language=GLM#1},title={#1},
+  fonttitle=\sffamily\bfseries\small\color{black},coltitle=black,
+  title after break={#1（续）}}
+% 批注、推导、说明
+\newenvironment{annotation}{\begin{zbnote}}{\end{zbnote}}
+\newenvironment{derivation}[1]{\begin{zbderive}{#1}}{\end{zbderive}}
+\newcommand{\revnote}[1]{\begin{zbcheck}#1\end{zbcheck}}
+\newcommand{\sourcepages}[2]{}
+% 表题、图题（编号随正文手写）
+\newcommand{\ctable}[2]{\begin{center}\begin{minipage}{\linewidth}\centering\small
+  \captionof*{table}{\sffamily\bfseries #1}#2\end{minipage}\end{center}}
+\newcommand{\cfigure}[2]{\begin{center}\begin{minipage}{\linewidth}\centering #2
+  \captionof*{figure}{\sffamily #1}\end{minipage}\end{center}}
+% 记号
+\DeclareMathOperator{\logit}{logit}
+\let\Var\relax
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\SE}{SE}
+\DeclareMathOperator{\OR}{OR}
+\DeclareMathOperator{\RR}{RR}
+\DeclareMathOperator{\HR}{HR}
+\let\Cov\relax
+\DeclareMathOperator{\Cov}{Cov}
+\let\diag\relax
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\IRR}{IRR}
+\renewcommand{\E}{\operatorname{E}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}

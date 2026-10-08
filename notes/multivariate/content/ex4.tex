@@ -1,0 +1,1042 @@
+\ExerciseChapter{判别分析}
+
+\label{chapter:4}
+
+\section{往年题}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{单项选择题}
+
+\Question{L13-1}{文献中的研究设计}
+
+所指原始文献、图1及完整数据没有随题卷提供。以下保留设问；不能据此独立核验文献中的具体研究事实。
+
+从获取资料的方法看，该研究设计最接近哪一种？
+
+
+\begin{choices}
+
+\item 病例对照设计。
+
+\item 队列设计。
+
+\item 横断面设计。
+
+\item 配对设计。
+
+\item 分层随机抽样设计。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{L13-2}{利用文献指标建立诊断模型}
+
+所指原始文献、图1及完整数据没有随题卷提供。以下保留设问；不能据此独立核验文献中的具体研究事实。
+
+若要利用该数据建立诊断模型，最好的做法是：
+
+
+\begin{choices}
+
+\item 用原15项指标建立Logistic模型。
+
+\item 用8项指标建立Logistic模型。
+
+\item 用8项指标作Fisher线性判别。
+
+\item 寻找合适先验，用8项指标建立Bayes判别。
+
+\item 以所得第1、第2因子为综合指标进行两类判别。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M15-2}{三类两指标的判别函数}
+
+类别数 \(k=3\)、指标数 \(m=2\)，以下哪项符合课程中的常见判别模型？
+
+
+\begin{choices}
+
+\item 需建立3个Bayes类别判别函数。
+
+\item Bayes线性判别应判入后验概率最小类。
+
+\item Bayes判别无需对数据分布作任何假设。
+
+\item 需建立3个典型判别函数。
+
+\item 构造典型判别方向必须假定多元正态。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M15-4}{先验概率的解释与估计}
+
+关于判别分析的先验概率，说法错误的是：
+
+
+\begin{choices}
+
+\item 先验概率既可以是主观的，又可以是客观的。
+
+\item 同一训练样本用于不同场景，可采用不同先验。
+
+\item 对于给定的样本，后验概率与先验概率成正比。
+
+\item 一般而言，用训练样本类别百分率代替先验概率是最佳的。
+
+\item 医生在诊断时可能自觉或不自觉使用先验概率。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M17-2}{判别考核的错判率}
+
+一般而言，三种判别考核的错判率由大到小排列为：
+
+
+\begin{choices}
+
+\item 刀切法、回代法、前瞻性考核。
+
+\item 前瞻性考核、刀切法、回代法。
+
+\item 刀切法、前瞻性考核、回代法。
+
+\item 前瞻性考核、回代法、刀切法。
+
+\item 回代法、刀切法、前瞻性考核。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M21-2}{判别考核的错判率}
+
+一般而言，三种判别考核的错判率由大到小排列为：
+
+
+\begin{choices}
+
+\item 刀切法、回代法、前瞻性考核。
+
+\item 前瞻性考核、刀切法、回代法。
+
+\item 刀切法、前瞻性考核、回代法。
+
+\item 前瞻性考核、回代法、刀切法。
+
+\item 回代法、刀切法、前瞻性考核。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M17-1}{判别函数的分类规则}
+
+关于判别函数，正确的是：
+
+
+\begin{choices}
+
+\item 原变量足够多时，典型判别最多产生 \(k\) 个指标（\(k\)为类数）。
+
+\item 典型判别的新指标应使类内方差尽可能大。
+
+\item 典型判别时，应判入距离 \(d(r)\) 最大的一类。
+
+\item Bayes线性判别在等代价下应判入后验概率最大类。
+
+\item Bayes线性判别只需建立k−1个类别评分函数。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M21-1}{典型判别的类别判定}
+
+关于判别函数，正确的是：
+
+
+\begin{choices}
+
+\item 原变量足够多时，典型判别最多产生 \(k\) 个指标（\(k\)为类数）。
+
+\item 典型指标的类间方差与类内方差之比应尽量小。
+
+\item 典型判别可按待判样品与类别中心的适当距离判断类别。
+
+\item Bayes线性判别对数据分布没有任何要求。
+
+\item Bayes线性判别需要k−1个类别评分函数。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M21-6}{先验与后验的关系}
+
+判断下列说法：I. 先验可以来自主观和经验判断；II. 对于给定样本，后验与先验成正比；III. 医生诊断时可能自觉或不自觉使用先验。
+
+按严格表述，哪些成立？
+
+
+\begin{choices}
+
+\item 仅I。
+
+\item 仅II。
+
+\item 仅III。
+
+\item I与II。
+
+\item I、II与III。
+
+\item I与III。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M21-7}{个体指标与总体关联指标}
+
+以下哪个指标与其余指标有明显不同？
+
+
+\begin{choices}
+
+\item 主成分得分。
+
+\item 因子得分。
+
+\item 欧氏距离。
+
+\item 典型相关系数。
+
+\item 依据第一主成分计算的加权平均分。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M21-8}{一般Bayes判别的适用范围}
+
+对于一般Bayes判别原则，适用范围最全面的表述是：
+
+
+\begin{choices}
+
+\item 仅适用于正态且协方差相等的总体。
+
+\item 仅适用于正态且协方差不等的总体。
+
+\item 仅适用于非正态且协方差相等的总体。
+
+\item 仅适用于非正态且协方差不等的总体。
+
+\item 不局限于正态；只要能合理建立类条件概率或密度，就可按后验风险决策。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M19-4}{判别正确率的经验排序}
+
+按教材的一般经验，回代、刀切和前瞻性考核的正确率常呈何种排序？
+
+
+\begin{choices}
+
+\item 回代 \textgreater{} 刀切 \textgreater{} 前瞻性。
+
+\item 刀切 \textgreater{} 回代 \textgreater{} 前瞻性。
+
+\item 前瞻性 \textgreater{} 回代 \textgreater{} 刀切。
+
+\item 三者必然完全相同。
+
+\item 刀切一定等于100\%。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{M19-5}{典型轴与Bayes类别函数}
+
+有 \(p\) 个指标、\(k\) 类，且需要区分的方向满秩。下列关于指标数与分类规则的组合哪项正确？
+
+
+\begin{choices}
+
+\item 典型轴最多 \(\min(p,k-1)\) 个；通常有 \(k\) 个Bayes类别评分；等损失时取后验最大类。
+
+\item 典型轴最多 \(k\) 个；Bayes取后验最小类。
+
+\item 典型轴总有 \(p+k\) 个；Bayes取距离最大类。
+
+\item 典型轴只有1个；Bayes无需先验或损失。
+
+\item 典型轴和Bayes类别函数均固定为 \(k-1\) 个。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N19-10}{后验概率与分类代价}
+
+两类后验概率为0.6、0.4。把第1类错判为第2类损失10，反向损失1，正确分类损失0。应判为：
+
+
+\begin{choices}
+
+\item 第1类。
+
+\item 第2类。
+
+\item 任意一类，损失相同。
+
+\item 必拒绝分类。
+
+\item 仅依赖哪个训练样本数更少。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N21-18}{协方差不同的正态Bayes模型}
+
+各类均假定正态且协方差不同，一般形成哪种Bayes判别边界？
+
+
+\begin{choices}
+
+\item 二次边界。
+
+\item 必为通过原点的直线。
+
+\item 只能使用一个阈值且不能有交叉项。
+
+\item 无法计算后验。
+
+\item 不受先验影响。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N21-19}{灵敏度的分母}
+
+二分类中以疾病为阳性，灵敏度等于：
+
+
+\begin{choices}
+
+\item \(TP/(TP+FN)\)。
+
+\item \(TN/(TN+FP)\)。
+
+\item \(TP/(TP+FP)\)。
+
+\item \((TP+TN)/N\)。
+
+\item \(FP/(FP+TN)\)。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{N21-20}{回代正确率的局限}
+
+模型在训练数据上的回代正确率很高，最合理的判断是：
+
+
+\begin{choices}
+
+\item 已经证明可以推广至所有人群。
+
+\item 可以省去任何外部验证。
+
+\item 可能有乐观偏倚，应使用不泄漏信息的交叉验证或独立验证。
+
+\item 模型必定有因果解释。
+
+\item 一定比其他模型临床收益更高。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{简答题}
+
+\Question{DSLEG}{典型判别、Bayes判别与先验概率}
+
+典型判别和Bayes判别有何区别？请谈谈先验概率在判别分析中的作用。共20分。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{DS17}{先验概率在医学实践中的作用}
+
+请结合医学实践谈谈先验概率的作用。共20分。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{DS20}{Bayes先验概率的确定方法}
+
+写出Bayes判别时确定先验概率的几种主要方法。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{计算与分析题}
+
+\Question{D19}{耳形的Fisher或Bayes判别}
+
+对ear数据作判别分析。Fisher法与Bayes法任选其一，以EX为分组，以EC、EZ、EK、EI、AI为判别依据。共20分。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  若选择Fisher法，给出4个判别函数；若选择Bayes法，给出5个判别函数。
+\item
+  给出各类别与总体判别正确率。
+\item
+  某人的EC、EZ、EK分别为\ldots\ldots，请按方法判定耳型；EI和AI需由公式计算。
+\end{enumerate}
+
+EI=100EK/EC，AI=100EZ/EK。第3问的具体原始三项数值未被记录。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{D20}{视网膜病变：变量筛选与Bayes判别}
+
+E23.1数据研究糖尿病患者视网膜病变，分轻、中、重三型。指标为年龄age、患病年数（题写year，数据列名time）、血糖glucose、视力vision、a波峰时at及振幅av、b波峰时bt及振幅bv、qp波峰时qpt及振幅qpv。前131行是训练记录，第132行为待判样本。 1. 用所有指标求典型判别函数，按原变量``分类相对重要性\textgreater5\%''筛选，列出计算结果及保留变量。（4分） 2. 取训练样本率为先验，以保留变量进行Bayes判别；先排除末行待判样本。 - 检验各总体协方差是否不等，\(\alpha=0.1\)，报告统计量和结论。（4分） - 列出case1、case100、case130的Bayes判别函数值。（4分） - 回代判别并报告总体一致率。（4分） - 判定第132行，列出函数值和分类。（4分）
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{D21}{视网膜病变：典型相关与重要性}
+
+E23.1数据研究糖尿病患者视网膜病变，分轻、中、重三型。指标为年龄age、患病年数（题写year，数据列名time）、血糖glucose、视力vision、a波峰时at及振幅av、b波峰时bt及振幅bv、qp波峰时qpt及振幅qpv。前131行是训练记录，第132行为待判样本。 用全部10个指标做典型判别分析，填写：
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  两个典型相关系数。
+\item
+  两个典型判别变量的相对重要性。
+\item
+  按分类相对重要性从大到小排列的前4个原始变量。
+\end{enumerate}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{DLIP}{血脂与心梗的Bayes二分类}
+
+根据血脂与心梗练习数据，作Bayes二分类；两类先验均0.5，误判与漏判损失均0.5。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  列出组内及合并协方差矩阵，检验总体协方差是否相等。
+\item
+  计算回代总体一致率。
+\item
+  计算灵敏度和特异度。
+\end{enumerate}
+
+原Excel为左右并排的两组，各30人；请先转换为60行长表。本题按参考解答的组编码约定：左侧组记0、右侧组记阳性1。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{文献分析题}
+
+\Question{L13-5}{诊断准确率95.3\%的评议}
+
+所指原始文献、图1及完整数据没有随题卷提供。以下保留设问；不能据此独立核验文献中的具体研究事实。
+
+结合图1，对作者所谓95.3\%的准确率作剖析。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\clearpage\section{补充练习}
+
+本节为配合正文新编的补充练习。除注明沿用正文例题外，数值与研究摘要均为教学设定。题型与作答方式沿用本章往年题，解析见章末。
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{单项选择题}
+
+\Question{SUP-D1}{判别函数值换算后验概率}
+
+某三分类Bayes模型在一个待判样品上的类别评分为 \(u_1=1000\)、\(u_2=999\)、\(u_3=998\)。评分已包含先验项，且仅略去各类共同的项。按正文的指数归一化方法，第1类后验概率约为多少？已知 \(e^{-1}=0.3679\)，\(e^{-2}=0.1353\)。
+
+
+\begin{choices}
+
+\item 1.0000。
+
+\item 0.3337。
+
+\item 0.5000。
+
+\item 0.2447。
+
+\item 0.6652。
+
+\end{choices}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{简答题}
+
+\Question{SUP-D2}{最近马氏距离与最大后验的关系}
+
+在多元正态、误判代价相等的条件下，有人认为``到哪个类别中心的马氏距离最小，Bayes判别就一定归入哪一类''。这句话在什么条件下成立？当各类协方差矩阵不相等时，只比较各类马氏距离漏掉了什么？
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{计算与分析题}
+
+\Question{SUP-D3}{先验概率改变后的判别界值}
+
+某数值指标 \(X\) 用于区分两个类别，教学设定为 \[X\mid G_1\sim N(0,1),\qquad X\mid G_2\sim N(2,1),\] 其中正态分布的第二参数为方差。两种误判代价相等，正确分类代价为0。共15分。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  当 \(q_1=q_2=0.5\) 时，写出两类线性Bayes评分，求分类界值。（5分）
+\item
+  对 \(x=1.2\)，计算属于第2类的后验概率并分类。（4分）
+\item
+  保持两类条件分布不变，将先验改为 \(q_1=0.8\)、\(q_2=0.2\)。重新计算界值及该样品的第2类后验概率，解释类别是否改变。（6分）
+\end{enumerate}
+
+可用 \(\log4=1.3863\)、\(e^{0.4}=1.4918\)。
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\Question{SUP-D4}{Fisher方向与主成分方向的比较}
+
+有3个类别、2个尺度可比的数值指标。组内离差阵 \(W\) 与组间离差阵 \(B\) 为 \[W=\begin{pmatrix}100&0\\0&1\end{pmatrix},\qquad
+B=\begin{pmatrix}25&0\\0&4\end{pmatrix}.\] 本题Fisher方向取普通欧氏长度为1的特征向量，首个非零系数取正。共15分。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  求两个Fisher判别方向及各自的分离度，并写出判别变量。（5分）
+\item
+  计算两个典型相关系数及按特征值定义的相对分类能力。（5分）
+\item
+  若对同一资料直接作协方差阵PCA，第一主成分沿哪个原指标方向？为什么与第一Fisher方向不同？（5分）
+\end{enumerate}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+
+\par\addvspace{6pt}\noindent\begin{minipage}{\linewidth}
+
+\subsection{文献分析题}
+
+\Question{SUP-D5}{分类研究摘要与回代结果评议}
+
+以下为模拟研究摘要，不对应真实论文。研究者按已知类别各选取30例，共90例，建立三分类Bayes模型。使用同一批90例拟合并回代，得到下表。
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrr@{}}
+\toprule
+实际类别 & 判为1 & 判为2 & 判为3 \\
+\midrule
+
+1 & 27 & 2 & 1 \\
+2 & 3 & 24 & 3 \\
+3 & 0 & 6 & 24 \\
+\bottomrule\end{tabular}\end{center}
+
+作者称：``因三组人数相等，应用人群的先验概率必为各 \(1/3\)；回代总体正确率超过80\%，已证实本模型用于新对象时也有相同正确率。''共15分。
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  计算三类各自的回代正确率及总体回代正确率。（5分）
+\item
+  评价先验概率的设定及其理由。（5分）
+\item
+  评价对新对象分类能力的结论，并写出一种更合适的考核办法。（5分）
+\end{enumerate}
+
+
+\worklines{3}
+
+\end{minipage}\par\vspace{4pt}
+\clearpage\section{习题解析}
+
+\begin{keyidea}[核对方式]按题号核对。补写题目、原稿歧义及复算约定列在对应解析中。\end{keyidea}
+
+\Answer{L13-1}{文献中的研究设计}
+
+\textbf{答案：原参考标A，缺文献待核实。}
+
+若研究按是否患病选入病例、对照后比较既往暴露或指标，可属于病例对照设计；若按暴露随访则是队列。不能只凭其后用了判别分析决定研究设计。
+
+
+\Answer{L13-2}{利用文献指标建立诊断模型}
+
+\textbf{答案：原参考标E，缺文献待核实。}
+
+使用因子得分可能减轻共线性、降低维数，但也可能丢失有用判别信息。不存在脱离样本量、变量筛选与验证结果而永远最优的方法；应比较校准、区分度、内部/外部验证和临床代价。
+
+
+\Answer{M15-2}{三类两指标的判别函数}
+
+\textbf{答案：A。}
+
+3类通常对应3个类别评分函数；有效典型轴最多 \(\min(2, 3-1)=2\)。等代价下取后验最大类。一般Bayes原则可以用于非正态模型，但仍需合理的类条件概率/密度，不能把``无需正态''误作``无需概率模型''。
+
+
+\Answer{M15-4}{先验概率的解释与估计}
+
+\textbf{答案：原参考C；严格看C、D均需修正。}
+
+后验满足 \(P(G=k\mid x)=\pi_k f_k(x)/\sum_l\pi_lf_l(x)\)，仅说与 \(\pi_k\) 成正比漏掉类条件密度及归一化。D也不普遍成立：按类选样或病例对照数据的比例不代表目标总体。原单选题措辞不能保证严格唯一答案；不能为凑单选而认可D的``最佳''断言。
+
+
+\Answer{M17-2}{判别考核的错判率}
+
+\textbf{答案：B（经验口径）。}
+
+回代使用训练过的样本，通常最乐观；刀切留一较接近样本外误差；前瞻性独立人群可能更难，教材常用B排序。有限样本下三者没有必然大小关系，实际误差受随机波动与人群漂移影响。原2021回忆标C、参考解标B，此处区分记录差异与统计事实。
+
+
+\Answer{M21-2}{判别考核的错判率}
+
+\textbf{答案：B（经验口径）。}
+
+回代使用训练过的样本，通常最乐观；刀切留一较接近样本外误差；前瞻性独立人群可能更难，教材常用B排序。有限样本下三者没有必然大小关系，实际误差受随机波动与人群漂移影响。原2021回忆标C、参考解标B，此处区分记录差异与统计事实。
+
+
+\Answer{M17-1}{判别函数的分类规则}
+
+\textbf{答案：D。}
+
+有效典型轴最多 \(\min(p,k-1)\)，目的是增大类间相对类内变异；距离规则取距离小者。Bayes按最大后验或最小期望损失决策。
+
+
+\Answer{M21-1}{典型判别的类别判定}
+
+\textbf{答案：C。}
+
+典型判别最大化类间/类内变异；最大轴数为k−1与p的较小值。D在参考答案稿中有记录，用该版本补齐回忆稿空白，不是新编。
+
+
+\Answer{M21-6}{先验与后验的关系}
+
+\textbf{答案：F。}
+
+II遗漏类条件密度和归一化，不能孤立地断言后验只与先验成正比。I与III成立。
+
+
+\textbf{补写说明。} 原题A---E未提供``I与III''组合；保留原有选项并补入F，使修订题有严谨可选的答案。原稿曾标E，另一参考稿也对II提出疑问。
+
+
+\Answer{M21-7}{个体指标与总体关联指标}
+
+\textbf{答案：D。}
+
+典型相关系数概括两组变量在样本/总体层面的线性关联，是整体分析量；得分与加权分可对应个体，距离通常对应一对个体或个体与中心。严格说距离也与单个得分的索引结构不同，本题按原意选D。
+
+
+\Answer{M21-8}{一般Bayes判别的适用范围}
+
+\textbf{答案：E。}
+
+一般Bayes决策原理不限正态；常用线性/二次正态判别只是其特例。不能说既与总体分布无关、又完全不需要概率模型。
+
+
+\textbf{补写说明。} 原稿E只记大意、C/D重复且提问不全；补全``仅适用''表述并修复D为协方差不等，以区分一般Bayes原则与正态判别特例。
+
+
+\Answer{M19-4}{判别正确率的经验排序}
+
+\textbf{答案：A。}
+
+训练集回代一般最乐观；留一与前瞻性更接近样本外表现。但这不是任意样本中必成立的数学排序，独立验证的难度还与目标人群有关。
+
+
+\textbf{补写说明。} 2019回忆稿只记录主题，没有完整题干与选项；本题依据该主题补写，不宣称恢复原选项。
+
+
+\Answer{M19-5}{典型轴与Bayes类别函数}
+
+\textbf{答案：A。}
+
+典型空间维数受变量数与组间秩限制；Bayes可以写k个类别评分，也可用相对一个参照类的k−1个差值，二者只是等价表达，不能混淆为典型轴个数。
+
+
+\textbf{补写说明。} 2019回忆稿只记录主题，没有完整题干与选项；本题依据该主题补写，不宣称恢复原选项。
+
+
+\Answer{N19-10}{后验概率与分类代价}
+
+\textbf{答案：A。}
+
+判第1类的条件风险为 \(1   imes0.4=0.4\)；判第2类风险为 \(10    imes0.6=6\)。选择前者。
+
+
+\textbf{补写说明。} 2019卷该部分仅有总题数和部分回忆，整题内容未记录。本题为按课程知识点新编的补充练习，不是恢复的往年原题；编号只用于本包覆盖核对。
+
+
+\Answer{N21-18}{协方差不同的正态Bayes模型}
+
+\textbf{答案：A。}
+
+高斯对数密度含类特定逆协方差的二次型；共同协方差时相同二次项才相消为线性规则。
+
+
+\textbf{补写说明。} 2021卷该部分仅有总题数和部分回忆，整题内容未记录。本题为按课程知识点新编的补充练习，不是恢复的往年原题；编号只用于本包覆盖核对。
+
+
+\Answer{N21-19}{灵敏度的分母}
+
+\textbf{答案：A。}
+
+灵敏度是在实际患病者中被判为阳性的比例；特异度是在实际无病者中被判为阴性的比例。
+
+
+\textbf{补写说明。} 2021卷该部分仅有总题数和部分回忆，整题内容未记录。本题为按课程知识点新编的补充练习，不是恢复的往年原题；编号只用于本包覆盖核对。
+
+
+\Answer{N21-20}{回代正确率的局限}
+
+\textbf{答案：C。}
+
+预处理、变量筛选、因子提取与拟合应在每个训练折内部完成，再对未参与这些步骤的验证折评估。
+
+
+\textbf{补写说明。} 2021卷该部分仅有总题数和部分回忆，整题内容未记录。本题为按课程知识点新编的补充练习，不是恢复的往年原题；编号只用于本包覆盖核对。
+
+
+\Answer{DSLEG}{典型判别、Bayes判别与先验概率}
+
+典型/Fisher判别寻找使组间变异相对组内变异尽量大的线性组合，最多有 \(\min(p,k-1)\) 个有效典型轴；分类可在典型空间按适当距离、共同协方差及规则处理。作为构造判别方向的方法，不必先假定正态，但某些显著性检验需要分布前提。
+
+Bayes判别先结合类条件分布与先验概率，计算后验概率或后验误判风险。等误判损失时取后验概率最大类；一般损失时取条件期望损失最小类。正态且共同协方差给出线性规则，正态且协方差不同通常给出二次规则；一般Bayes原理不只适用于正态。
+
+先验概率描述应用人群中各类出现机会，可由代表性样本比例、外部流行病学资料、专业经验或明确的等先验假定给出。训练数据按类别人为平衡抽样时，其类别比例不应直接当人群先验。先验会改变判别边界，调整灵敏度与特异度的取舍，但并不保证两者同时提高。
+
+
+\Answer{DS17}{先验概率在医学实践中的作用}
+
+典型/Fisher判别寻找使组间变异相对组内变异尽量大的线性组合，最多有 \(\min(p,k-1)\) 个有效典型轴；分类可在典型空间按适当距离、共同协方差及规则处理。作为构造判别方向的方法，不必先假定正态，但某些显著性检验需要分布前提。
+
+Bayes判别先结合类条件分布与先验概率，计算后验概率或后验误判风险。等误判损失时取后验概率最大类；一般损失时取条件期望损失最小类。正态且共同协方差给出线性规则，正态且协方差不同通常给出二次规则；一般Bayes原理不只适用于正态。
+
+先验概率描述应用人群中各类出现机会，可由代表性样本比例、外部流行病学资料、专业经验或明确的等先验假定给出。训练数据按类别人为平衡抽样时，其类别比例不应直接当人群先验。先验会改变判别边界，调整灵敏度与特异度的取舍，但并不保证两者同时提高。
+
+例如同一检测结果用于普通筛查人群与高风险专科门诊时，患病先验概率不同，后验患病概率也不同；临床判断应结合检查结果、病史和人群背景。模型的先验应与实际使用场景一致。
+
+
+\Answer{DS20}{Bayes先验概率的确定方法}
+
+（1）若训练样本能代表应用总体，可用类别样本率；（2）利用外部患病率/登记资料或其他可靠总体资料；（3）根据专业知识和经验指定；（4）缺乏可用信息时明确采用等先验，并做敏感性分析。病例对照式按组抽样的比例通常不等于总体先验。
+
+
+\Answer{D19}{耳形的Fisher或Bayes判别}
+
+选择Fisher/典型判别。训练样本300人，5类。复算的4个线性方向系数如下，列为4个函数：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrrr@{}}
+\toprule
+变量 & 函数1 & 函数2 & 函数3 & 函数4 \\
+\midrule
+
+EC & 8.01625 & -11.50316 & -14.47448 & 4.53311 \\
+EK & -11.42975 & 7.19042 & 29.59817 & -21.49590 \\
+EZ & -8.65812 & 23.51615 & -2.27270 & 19.00190 \\
+EI & 0.87494 & -1.35891 & -1.94492 & 0.44230 \\
+AI & 0.31286 & -0.68655 & 0.02237 & -0.68256 \\
+\bottomrule\end{tabular}\end{center}
+
+因此 \(u_1=8.01625EC-11.42975EK-8.65812EZ+.87494EI+.31286AI\)，其余依列写出。典型方向的整体符号可改变。\texttt{predict(lda\_fit)}还使用组中心和先验完成分类，不能只凭单个 \(u_1\) 大小决定5分类。
+
+回代混淆矩阵（行真类、列预测类）：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+实际类别 & 1 & 2 & 3 & 4 & 5 \\
+\midrule
+
+1 & 0 & 0 & 0 & 10 & 2 \\
+2 & 0 & 16 & 0 & 27 & 2 \\
+3 & 0 & 6 & 0 & 52 & 3 \\
+4 & 0 & 7 & 0 & 108 & 5 \\
+5 & 0 & 4 & 0 & 44 & 14 \\
+\bottomrule\end{tabular}\end{center}
+
+各类正确率依次 \textbf{0、35.556\%、0、90.000\%、22.581\%}；总正确率 \((0+16+0+108+14)/300=46\%\)，为回代结果，不能当外部预测正确率。
+
+第3问先按原始三项计算两个指数，再用包含相同变量名与顺序的一行数据框调用预测；因三项数值缺失，无法确定该新人的类别。原参考代码的 \texttt{predict(out,c(...))} 不是可靠的新样本数据结构，应用 \texttt{data.frame(EC=...,EK=...,EZ=...,EI=...,AI=...)}。
+
+
+\Answer{D20}{视网膜病变：变量筛选与Bayes判别}
+
+按课程算法，先求标准化典型系数矩阵，各典型轴的系数单位化，再将各原变量的行平方和占总行平方和之比作为``相对重要性''。这是一种课程规定的指标，不是唯一的变量重要性定义。
+
+所有原变量的重要性百分比如下：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lr@{}}
+\toprule
+变量 & 重要性\% \\
+\midrule
+
+vision & 37.8938 \\
+at & 28.0556 \\
+age & 21.1977 \\
+bv & 7.8943 \\
+qpv & 1.4588 \\
+time & 1.1147 \\
+qpt & 0.9059 \\
+glucose & 0.7399 \\
+bt & 0.5548 \\
+av & 0.1844 \\
+\bottomrule\end{tabular}\end{center}
+
+保留 \textbf{vision、at、age、bv}。不要按固定列号误选变量。前三组样本数为68、43、20，先验为这些数除以131。
+
+Box M：\(M=32.6304\)，校正卡方30.6765，\(df=20\)，\(P=0.05961\)；在0.1水平拒绝协方差相等，采用各类协方差的二次Bayes函数 \[\delta_k(x)=\log\pi_k-\tfrac12\log|S_k|-\tfrac12(x-\bar x_k)^TS_k^{-1}(x-\bar x_k).\] case指数据行序，不是可能重复的id字段。所求函数值为：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrr@{}}
+\toprule
+行序 & 类别1 & 类别2 & 类别3 \\
+\midrule
+
+1 & -8.8368 & -22.3069 & -22.6786 \\
+100 & -6.7589 & -7.1790 & -13.4610 \\
+130 & -25.2455 & -22.0986 & -8.6438 \\
+\bottomrule\end{tabular}\end{center}
+
+回代矩阵为
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrrr@{}}
+\toprule
+实际类别 & 1 & 2 & 3 \\
+\midrule
+
+1 & 65 & 3 & 0 \\
+2 & 4 & 39 & 0 \\
+3 & 1 & 1 & 18 \\
+\bottomrule\end{tabular}\end{center}
+
+总一致率 \(122/131=93.1298\%\)。第132行的三个函数值约 \textbf{−9.0802、−15.2381、−11.1166}，最大者为第1类，判为第1类。不同软件若整体加同一与类别无关的常数，函数值会不同，但类别不会变。
+
+
+\Answer{D21}{视网膜病变：典型相关与重要性}
+
+两个典型相关系数为 \textbf{0.852131、0.645393}。令 \(\lambda_j=\rho_j^2/(1-\rho_j^2)\)，按 \(\lambda_j/\sum\lambda\) 得典型变量重要性为 \textbf{78.786\%、21.214\%}。
+
+按课程的标准化典型系数单位化后行平方和方法，原变量前4名为 \textbf{vision、at、age、bv}，对应原指标序号 \textbf{4、5、1、8}，重要性分别约37.894\%、28.056\%、21.198\%、7.894\%。应使用实际group列，而不是未经核对地按行数手造分组。
+
+
+\Answer{DLIP}{血脂与心梗的Bayes二分类}
+
+两组及合并协方差如下（次序为TC、HDL）：
+
+第0组：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrr@{}}
+\toprule
+指标 & TC & HDL \\
+\midrule
+
+TC & 1600.5851 & 33.4724 \\
+HDL & 33.4724 & 47.3897 \\
+\bottomrule\end{tabular}\end{center}
+
+第1组：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrr@{}}
+\toprule
+指标 & TC & HDL \\
+\midrule
+
+TC & 972.0966 & -17.6966 \\
+HDL & -17.6966 & 170.8092 \\
+\bottomrule\end{tabular}\end{center}
+
+合并协方差：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrr@{}}
+\toprule
+指标 & TC & HDL \\
+\midrule
+
+TC & 1286.3408 & 7.8879 \\
+HDL & 7.8879 & 109.0994 \\
+\bottomrule\end{tabular}\end{center}
+
+原Excel的空分隔列不能作预测变量，分组也不能按错误的列索引读取。Box M为13.42655，校正卡方12.92498，\(df=3\)，\(P=0.004802\)；在常用0.05水平拒绝协方差相等，采用二次Bayes判别。
+
+回代矩阵（行实际0/1，列预测0/1）：
+
+\begin{center}\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.18}\begin{tabular}{@{}lrr@{}}
+\toprule
+实际类别 & 0 & 1 \\
+\midrule
+
+0 & 26 & 4 \\
+1 & 6 & 24 \\
+\bottomrule\end{tabular}\end{center}
+
+总一致率为 \textbf{50/60\allowbreak=83.333\%}。以组1为阳性，灵敏度 \textbf{24/30\allowbreak=80.000\%}，特异度 \textbf{26/30\allowbreak=86.667\%}。若把另一组定义为阳性，两项会交换。回代正确率有乐观偏倚，实际预测应再做交叉验证或独立验证。
+
+
+\Answer{L13-5}{诊断准确率95.3\%的评议}
+
+先查95.3\%来自训练集回代、交叉验证还是独立样本；若变量筛选、因子提取与评价在同一数据上完成，可能有信息泄漏和乐观偏倚。报告分母、混淆矩阵、类别不平衡、灵敏度与特异度、置信区间，以及先验和阈值选择。只有总体准确率不足以评价诊断价值；原图缺失，不能反推95.3\%的真实计数或断言它必然错误。
+
+\subsection{补充练习解析}
+
+\Answer{SUP-D1}{判别函数值换算后验概率}
+
+\textbf{答案：E。}
+
+先把三个评分都减去最大值1000，得到 \((0,-1,-2)\)，再计算 \[P(1\mid x)=\frac{1}{1+e^{-1}+e^{-2}}\approx0.6652.\] 减去共同常数不改变后验概率，可避免直接计算 \(e^{1000}\) 导致数值溢出。第1类虽评分最大，其后验概率并非1；也不能把原始评分直接除以评分之和。
+
+
+
+
+\Answer{SUP-D2}{最近马氏距离与最大后验的关系}
+
+若各类使用共同协方差矩阵，且先验概率相等，则最大后验与最小马氏距离等价。设 \[D_k^2=(x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k),\] 略去与类别无关的共同项后，正态Bayes评分为 \[\delta_k(x)=\log q_k-\frac12\log|\Sigma_k|-\frac12D_k^2.\] 共同协方差使行列式项对各类相同；等先验又使先验项相同，此时最大化评分等价于最小化距离。
+
+协方差不等时，即使先验相等，也不能略去各类不同的 \(-\tfrac12\log|\Sigma_k|\)。若先验也不等，还需考虑 \(\log q_k\)。因此按各类协方差算出的最近马氏距离类别，未必就是最大后验类别。
+
+
+
+
+\Answer{SUP-D3}{先验概率改变后的判别界值}
+
+\textbf{（1）等先验。} 略去共同项后， \[u_1=\log q_1,\qquad u_2=\log q_2-2+2x.\] 等先验时，\(u_2-u_1=2x-2\)。故 \(x>1\) 判第2类，\(x<1\) 判第1类，\(x=1\) 时按预先约定处理平局。
+
+\textbf{（2）待判样品。} 在 \(x=1.2\) 处，评分差为0.4，故 \[P(G_2\mid x)=\frac{e^{0.4}}{1+e^{0.4}}\approx0.5987,\] 判入第2类。
+
+\textbf{（3）改变先验。} 此时评分差为 \[u_2-u_1=\log(0.2/0.8)+2x-2=-\log4+2x-2.\] 界值变为 \(x=1+\tfrac12\log4\approx1.6931\)。同一个样品的后验概率为 \[P(G_2\mid1.2)=\frac{0.2e^{0.4}}{0.8+0.2e^{0.4}}\approx0.2716,\] 因此改判第1类。第2类先验降低后，需要更支持第2类的指标值，才能使其后验超过第1类。改变的是使用场景的类别出现概率，本题的两类均值和方差保持不变。
+
+
+
+
+\Answer{SUP-D4}{Fisher方向与主成分方向的比较}
+
+\textbf{（1）判别方向。} \[W^{-1}B=\begin{pmatrix}0.25&0\\0&4\end{pmatrix}.\] 按特征值从大到小，\(\lambda_1=4\)、\(\lambda_2=0.25\)。方向为 \(a_1=(0,1)^T\)、\(a_2=(1,0)^T\)，因此可写 \(F_1=X_2\)、\(F_2=X_1\)；统一中心化只会改变常数项，不改变方向。有效典型轴最多为 \(\min(2,3-1)=2\)，本题两个特征值均为正。
+
+\textbf{（2）相关与相对分类能力。} \[R_{1,\rm Can}=\sqrt{4/(1+4)}\approx0.8944,\qquad
+R_{2,\rm Can}=\sqrt{0.25/(1+0.25)}\approx0.4472.\] 按正文特征值比例，两轴的相对分类能力分别为 \(4/4.25=94.12\%\)、\(0.25/4.25=5.88\%\)。这些百分比不是回代分类正确率。
+
+\textbf{（3）与PCA比较。} 总离差阵为 \(W+B=\operatorname{diag}(125,5)\)，样本协方差阵与它只差同一个正比例因子，所以第一主成分沿 \(X_1\)。PCA寻找总方差最大的方向；Fisher寻找组间相对组内变异最大的方向。\(X_1\) 总变异虽大，但组内也很分散；\(X_2\) 的组间/组内比为4，明显大于 \(X_1\) 的0.25。
+
+
+
+
+\Answer{SUP-D5}{分类研究摘要与回代结果评议}
+
+\textbf{（1）正确率。} 三类分别为 \(27/30=90\%\)、\(24/30=80\%\)、\(24/30=80\%\)；总体为 \((27+24+24)/90=83.33\%\)。应按真实类别的行合计计算各类正确率。
+
+\textbf{（2）先验。} 研究者人为按类各抽30例，所以样本类别比例由抽样安排决定，不能据此断定应用人群先验相等。等先验可以作为明确的工作假定；若有目标人群的类别比例或可靠专业资料，应据此设定并说明来源。
+
+\textbf{（3）考核。} 回代使用参与建模的样品，容易高估新对象的分类效果，83.33\%不能直接视为新样品正确率。可按正文所述采用留一法（刀切法）考核：每次去掉一例，以其余样品重新拟合后判别该例，再汇总结果；更直接的办法是在独立取得、能代表使用场景的新样本上考核。不同考核得到的正确率可能不同，不存在任意样本下固定不变的大小关系。
+\EndExercises

@@ -1,0 +1,827 @@
+\chapter{一般线性模型}
+完全随机设计、随机区组设计、析因设计的方差分析与协方差分析，通常各有一套平方和公式。本章将它们统一表述为线性模型$Y=X\beta+\varepsilon$，各种设计的区别仅在于设计矩阵$X$的构成：分组因素以哑变量列表示，协变量为数值列，交互作用为相应列的乘积。第2、3章关于最小二乘估计、$t$检验、增量$F$检验与模型诊断的内容均适用于本章。
+
+对每一种设计，可从以下三方面理解：
+\begin{enumerate}
+\item 设计矩阵包含哪些列，即模型的写法；
+\item 各系数的含义，它取决于编码方式，参照组编码与效应编码给出的系数不同；
+\item 误差项包含哪些变异。随机区组设计将窝别差异从误差中分离，协方差分析将年龄的作用从误差中分离，误差减小，检验效能随之提高。
+\end{enumerate}
+第三点体现了试验设计的基本原则：通过合理设计，使误差中只保留无法控制的随机变异。
+\section{一般线性模型概述}
+一般线性模型（General Linear Model，GLM）是一种用于分析因变量与一个或多个自变量之间线性关系的统计模型。它通过建立变量间的线性关系，利用最小二乘法估计参数，从而解释或预测因变量的变化。
+\begin{enumerate}
+\item 应用范围：不仅包含线性回归，还涵盖方差分析、协方差分析等模型。
+\item 参数估计：通常采用最小二乘法，但在数据存在异方差或非正态分布时可能使用更复杂方法。
+\item 建模目的：既可用于预测变量间关系，也可用于假设检验，如组间均值差异。
+\end{enumerate}
+一般线性模型与多重线性回归是同一个模型$Y=X\beta+\varepsilon$：多重线性回归本来就可以通过哑变量纳入分类自变量，通过变量变换、多项式项和交互项刻画非线性关系与效应修饰。称“一般线性模型”时，通常强调自变量中含有分类因素，把方差分析、协方差分析统一写成回归形式。其因变量仍为连续变量，假设为误差独立、正态、等方差（即第3章的LINE条件）。
+
+须与广义线性模型（Generalized Linear Model，常缩写为GLM或GLiM）区分：后者允许因变量服从二项、Poisson等指数族分布，并通过连接函数$g(E(Y))=X\beta$建立联系，如logistic回归、Poisson回归。二者英文缩写相同，阅读软件文档时须留意。
+
+一般线性模型广泛应用于医学、金融、社会科学等领域，尤其适合需要同时分析连续和分类自变量或进行复杂假设检验的研究。
+\section{完全随机设计方差分析}
+例1：为研究饮食对小鼠肥胖的干预作用，将30只肥胖小鼠随机等分为3组，每组10只，分别给予普通饮食NR、高大豆蛋白饮食HSP、高猪肉蛋白饮食HPP，进行为期12周的膳食干预，记录前后小鼠体重的变化值（g）。
+\question{三种不同喂养方式对肥胖小鼠体重变化值的影响有无差别？}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{表1\quad 三种不同喂养方式下小鼠体重变化值（g）}
+\begin{center}\begin{tabular}{crrrr}
+\toprule &$\mathrm{NR}$组&$\mathrm{HSP}$组&$\mathrm{HPP}$组&合计\\\midrule
+\multirow{10}{*}{$X_{ij}$}&3.98&1.98&2.68&\\
+&5.51&2.83&4.02&\\&4.93&2.30&3.46&\\&5.92&3.20&4.40&\\
+&5.54&2.86&4.05&\\&5.39&2.72&3.90&\\&5.20&2.55&3.72&\\
+&6.14&3.04&4.61&\\&5.95&3.23&4.43&\\&5.80&3.10&4.29&\\\midrule
+$n_i$&10&10&10&$30\ (N)$\\
+$\bar X_i$&5.4360&2.7810&3.9560&$4.0577\ (\bar X)$\\
+$S_i$&.6304&.4062&.5683&$1.2229\ (S)$\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\ann{分类变量需进行哑变量化。}
+\subsection{参数化}
+\[
+y_{ij}=\mu_{i}+\varepsilon_{ij},\qquad
+y=X\beta+\varepsilon,\quad i=1,2,3,\quad j=1,\ldots,10.
+\]
+\par\noindent\begin{rcode}
+x <- c(3.98,5.51,4.93,5.92,5.54,5.39,5.20,6.14,5.95,5.80,   # NR
+       1.98,2.83,2.30,3.20,2.86,2.72,2.55,3.04,3.23,3.10,   # HSP
+       2.68,4.02,3.46,4.40,4.05,3.90,3.72,4.61,4.43,4.29)   # HPP
+g <- factor(rep(1:3,each=10))
+\end{rcode}\par\smallskip
+不含截距的模型（单元均数参数化，$\beta_i=\mu_i$）：
+\par\noindent\begin{rcode}
+lm(x~g-1)
+\end{rcode}\par\smallskip
+\[
+\widehat\beta=\begin{bmatrix}\widehat\beta_1\\\widehat\beta_2\\\widehat\beta_3\end{bmatrix}
+=\begin{bmatrix}5.436\\2.781\\3.956\end{bmatrix},
+\]
+即三组样本均数，是总体均数$\mu_1,\mu_2,\mu_3$的估计值。
+
+包含总体均数与组效应项的模型：
+\[
+\mu_i=\mu+\alpha_i,\qquad
+\beta=\begin{bmatrix}\mu\\\alpha_1\\\alpha_2\\\alpha_3\end{bmatrix}.
+\]
+设计矩阵$X_\mu$的第1列等于后3列之和，$\rank(X_\mu)=3<4$（秩亏），$X_\mu^\top X_\mu$不可逆，$\mu$与各$\alpha_i$不能唯一确定：对任意$c$，$(\mu+c,\alpha_i-c)$给出完全相同的$\mu_i$。须加一个约束才能唯一求解：
+\begin{itemize}
+\item 和为零约束$\sum_i\alpha_i=0$（效应编码，\code{contr.sum}）：$\mu=\frac13\sum\mu_i$为各组总体均数的平均，$\alpha_i=\mu_i-\mu$为第$i$组相对于平均水平的效应。本例$\widehat\mu=4.0577$，$\widehat\alpha=(1.3783,\,-1.2767,\,-0.1017)$。各组例数相等时$\widehat\mu$就是30个观测的均数。
+\item 参考组约束$\alpha_1=0$（R默认的\code{contr.treatment}）：截距为参考组均数$\mu_1$，其余系数为与参考组之差。
+\end{itemize}
+\ann{$\mu$为30个观测的总体平均，$\alpha_i$为组效应项；\code{mean(y1)-mean(y)}。有的资料称“此模型只能手算，因为后面的列完全共线”：秩亏模型软件同样可以处理，\code{lm}会对冗余列给出\code{NA}（相当于令其系数为0），加约束或改用上述编码即可唯一求解。}
+\par\noindent\begin{rcode}
+X_mu <- cbind(1,model.matrix(~g-1))   # 设计矩阵X_mu
+qr(X_mu)$rank                         # 3：4列但秩为3
+lm(x~X_mu-1)                          # 冗余的最后一列系数为NA
+options(contrasts=c("contr.sum","contr.poly")); lm(x~g)   # 和为零编码
+options(contrasts=c("contr.treatment","contr.poly"))       # 恢复默认
+\end{rcode}\par\smallskip
+\Needspace{6\baselineskip}
+以第1组为参照：
+\par\noindent\begin{rcode}
+lm(x~g)
+\end{rcode}\par\smallskip
+\[
+\gamma_0=\mu+\alpha_1=\mu_1,\qquad
+\gamma_2=\alpha_2-\alpha_1=\mu_2-\mu_1,\qquad\gamma_3=\alpha_3-\alpha_1=\mu_3-\mu_1.
+\]
+\[
+(\widehat\gamma_0,\widehat\gamma_2,\widehat\gamma_3)=(\mathrm{Intercept},g2,g3)=(5.436,-2.655,-1.480).
+\]
+\ann{$\gamma_2$为第2组与第1组的效应差，$\gamma_3$为第3组与第1组的效应差。为避免与回归系数向量$\beta$混淆，参考组编码下的系数记为$\gamma$。}
+\textbf{可估计性。}线性函数$c^\top\beta$称为可估计的，若存在$a$使$c^\top\beta=a^\top E(Y)=a^\top X\beta$对一切$\beta$成立，即$c^\top$位于$X$的行空间内。秩亏模型中，$\mu_i=\mu+\alpha_i$、组间差$\alpha_2-\alpha_1$以及一般的对比$\sum c_i\alpha_i$（$\sum c_i=0$）都可估计；$\mu$与单个$\alpha_i$不可估计，其数值取决于所加的约束。
+\begin{derivation}{列空间相同的参数化给出相同的拟合与对比}
+\dpart{条件}两个设计矩阵$X_1$、$X_2$的列空间相同（如上面的$X_0$、$X_\mu$、$X_{\mathrm{ref}}$，或任意一种对比编码），可以满秩，也可以秩亏。
+\dpart{结论}两者的拟合值、残差、残差平方和以及据此构造的$F$检验完全相同；任何可估计函数的估计值相同。
+\dpart{推导}最小二乘拟合值$\widehat Y$是在列空间$\mathcal C(X)$中离$Y$最近的点，即$Y$在$\mathcal C(X)$上的正交投影。投影只由子空间决定，与用哪组列向量（以及秩亏时用哪个广义逆、哪种约束）表示该子空间无关，故$\widehat Y$、$e=Y-\widehat Y$相同。可估计函数$c^\top\beta=a^\top X\beta=a^\top E(Y)$的最小二乘估计为$a^\top\widehat Y$，只依赖$\widehat Y$，因此也相同。
+\dpart{统计解释}三种写法下，第2组与第1组之差都估计为$2.781-5.436=-2.655$；变的只是参数的名字与含义。解读系数前必须先弄清所用的编码。
+\end{derivation}
+{\small\setlength{\arraycolsep}{3.5pt}\renewcommand{\arraystretch}{.75}\[X_0=\begin{bmatrix}1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&1&0\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\\0&0&1\end{bmatrix},\qquad X_\mu=\begin{bmatrix}1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&1&0&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&1&0\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\\1&0&0&1\end{bmatrix},\qquad X_{\mathrm{ref}}=\begin{bmatrix}1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&0&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&1&0\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\\1&0&1\end{bmatrix}.\]}
+\subsection{检验过程}
+\[
+H_0:\alpha_1=\alpha_2=\alpha_3=0;\qquad
+H_1:\text{至少有一个效应项不为0},\qquad\alpha=0.05.
+\]
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{表7-4\quad 案例7-1资料的方差分析表}
+\begin{center}\begin{tabular}{lrrrrr}
+\toprule 变异来源&$SS$&$\nu$&$MS$&$F$&$P$\\\midrule
+总变异&43.3685&29&&&\\
+组间变异&35.4002&2&17.7001&59.9800&$<.05$\\
+组内变异&7.9683&27&.2951&&\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\[
+F=\frac{\ms{组间}}{\ms{组内}}=59.98\sim F(2,27),\qquad P<0.05.
+\]
+按0.05水准拒绝$H_0$，接受$H_1$，认为至少两组的干预作用有不同。
+\begin{sikao}[$F$检验后的多重比较]
+方差分析的$F$检验只能判断各组总体均数是否全部相等。拒绝$H_0$后，需进一步确定哪些组之间存在差异及差异的大小，即进行多重比较。常用Tukey法，它将“三对比较中至少犯一次第一类错误”的概率控制在0.05：
+\par\noindent\begin{rcode}
+g <- factor(rep(c("NR","HSP","HPP"),each=10),levels=c("NR","HSP","HPP"))
+TukeyHSD(aov(x~g))
+\end{rcode}
+\begin{routput}
+          diff        lwr        upr     p adj
+HSP-NR  -2.655 -3.2573759 -2.0526241 0.0000000
+HPP-NR  -1.480 -2.0823759 -0.8776241 0.0000049
+HPP-HSP  1.175  0.5726241  1.7773759 0.0001362
+\end{routput}
+三对比较均有统计学意义：普通饮食组体重变化最大，高大豆蛋白组最小。其中差值$-2.655$、$-1.480$即参照组编码中$\gamma_2$、$\gamma_3$的估计值，区别仅在于置信区间按多重比较作了加宽。
+
+多组比较不宜直接进行多次$t$检验。每次检验犯第一类错误的概率为0.05，进行3次比较时，至少犯一次第一类错误的概率最高可达$1-0.95^3\approx0.14$。组数越多，该概率越大（5组共10对比较，约为0.40）。
+\end{sikao}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{完全随机设计方差分析的变异分解表}
+\begin{center}\small\setlength{\tabcolsep}{5pt}\begin{tabular}{ccccc}
+\toprule 来源&平方和&自由度&均方的期望&$F$\\\midrule
+组间&$\sum_i n_i(\bar Y_{i\cdot}-\bar Y)^2$&$a-1$&$\sigma^2+\dfrac{\sum n_i\alpha_i^2}{a-1}$&$\dfrac{\ms{组间}}{\ms{组内}}$\\[8pt]
+组内&$\sum_i\sum_j(Y_{ij}-\bar Y_{i\cdot})^2$&$N-a$&$\sigma^2$&\\[4pt]
+总&$\sum_i\sum_j(Y_{ij}-\bar Y)^2$&$N-1$&&\\\bottomrule
+\end{tabular}\end{center}
+（均方期望中的$\alpha_i$按$\sum n_i\alpha_i=0$定义。）
+\end{minipage}\par\medskip
+
+\[
+\ms{处理}=\frac{\SSq{处理}}{a-1},\qquad
+\ms{组内}=\frac{\SSq{组内}}{N-a}.
+\]
+\ann{$a$为组数，$N$为实验对象总数。}
+\section{随机区组设计方差分析}
+两因素方差分析，无交互作用。
+
+例2：为研究某改良型富血小板纤维蛋白（A-PRF）在软骨再生中的作用，建立兔膝关节软骨缺损模型，选取造模成功的8窝，每窝3只，共24只兔子。按窝别将每窝3只随机分配到三个处理组，在缺损处分别给予植入A-PRF、植入A-PRF+BMSCs（骨髓间充质干细胞）、不植入三种处理。手术后12周处死兔，采用国际软骨修复协会宏观评估评分（ICRS评分）评估再生组织的质量。
+\question{不同植入方式间ICRS评分是否不同？}
+\ann{有的资料称“两步随机”：先分到8窝，每窝内再随机处理方法。更准确地说，8窝是既有的区组，兔子按出生窝别自然归入区组，并非随机分配形成；随机化只有一步，即在每窝内将3只兔随机分配到三种处理。每个格子（窝$\times$处理）只有1个观测，处理与区组的交互作用和纯随机误差无法分别估计；下面的检验采用可加模型，假定处理效应在各窝间相同，若存在交互作用则被并入误差项。}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{不同植入方式下兔软骨修复ICRS评分}
+\begin{center}\begin{tabular}{crrr}
+\toprule 区组&植入A-PRF&植入A-PRF+BMSCs&不植入\\\midrule
+1&5.97&7.12&4.42\\2&9.92&9.37&5.56\\3&8.00&7.68&7.53\\
+4&11.25&10.51&8.90\\5&9.53&9.47&7.63\\6&10.01&9.03&7.12\\
+7&8.88&8.48&6.48\\8&11.95&11.19&9.64\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\subsection{模型与参数估计}
+可加模型（$i$为处理，$a=3$；$j$为区组，$n=8$）：
+\[
+y_{ij}=\mu+\alpha_i+\beta_j+\varepsilon_{ij},\qquad\sum_i\alpha_i=0,\quad\sum_j\beta_j=0,
+\quad i=1,2,3,\quad j=1,\ldots,8 .
+\]
+记$\mu_{i\cdot}$、$\mu_{\cdot j}$分别为第$i$个处理、第$j$个区组的总体均数，在和为零约束下$\alpha_i=\mu_{i\cdot}-\mu$，$\beta_j=\mu_{\cdot j}-\mu$。最小二乘估计为
+\[
+\widehat\mu=\bar y_{\cdot\cdot},\qquad
+\widehat\alpha_i=\bar y_{i\cdot}-\bar y_{\cdot\cdot},\qquad
+\widehat\beta_j=\bar y_{\cdot j}-\bar y_{\cdot\cdot},\qquad
+e_{ij}=y_{ij}-\bar y_{i\cdot}-\bar y_{\cdot j}+\bar y_{\cdot\cdot}.
+\]
+\ann{$\widehat\mu$为所有24个数据的均数（本例8.5683）；$\widehat\alpha_i$为处理效应估计，$\widehat\beta_j$为区组效应估计。下面的全组哑变量设计矩阵$X_{\mathrm{all}}$有12列，秩为$1+2+7=10$，需加约束或改用参照组编码；\code{lm}可直接拟合，冗余列给出\code{NA}。}
+以第一窝且植入A-PRF兔子的平均ICRS为参照（参照组编码，系数记为$\gamma$）：
+\begin{align*}
+\gamma_0&=\mu+\alpha_1+\beta_1=E(y_{11}),\\
+\gamma_{\mathrm{treat}i}&=\alpha_i-\alpha_1=\mu_{i\cdot}-\mu_{1\cdot},\quad i=2,3,\\
+\gamma_{\mathrm{block}j}&=\beta_j-\beta_1=\mu_{\cdot j}-\mu_{\cdot1},\quad j=2,\ldots,8.
+\end{align*}
+可加模型下，处理差$\alpha_i-\alpha_1$在每一窝中都相同，所以无需指明是哪一窝。
+\par\noindent\begin{rcode}
+y <- c(5.97,9.92,8.00,11.25,9.53,10.01,8.88,11.95,   # 植入A-PRF
+       7.12,9.37,7.68,10.51,9.47,9.03,8.48,11.19,    # A-PRF+BMSCs
+       4.42,5.56,7.53,8.90,7.63,7.12,6.48,9.64)      # 不植入
+treat <- factor(rep(1:3,each=8)); block <- factor(rep(1:8,3))
+mean(y)
+aggregate(y,by=list(treat),mean)
+X <- model.matrix(~treat+block)
+solve(t(X)%*%X)%*%t(X)%*%y
+lm(y~treat+block)
+\end{rcode}\par\smallskip
+{\footnotesize\setlength{\arraycolsep}{2.5pt}\renewcommand{\arraystretch}{.78}
+\[X_{\mathrm{all}}=\begin{bmatrix}1&1&0&0&1&0&0&0&0&0&0&0\\1&1&0&0&0&1&0&0&0&0&0&0\\1&1&0&0&0&0&1&0&0&0&0&0\\1&1&0&0&0&0&0&1&0&0&0&0\\1&1&0&0&0&0&0&0&1&0&0&0\\1&1&0&0&0&0&0&0&0&1&0&0\\1&1&0&0&0&0&0&0&0&0&1&0\\1&1&0&0&0&0&0&0&0&0&0&1\\1&0&1&0&1&0&0&0&0&0&0&0\\1&0&1&0&0&1&0&0&0&0&0&0\\1&0&1&0&0&0&1&0&0&0&0&0\\1&0&1&0&0&0&0&1&0&0&0&0\\1&0&1&0&0&0&0&0&1&0&0&0\\1&0&1&0&0&0&0&0&0&1&0&0\\1&0&1&0&0&0&0&0&0&0&1&0\\1&0&1&0&0&0&0&0&0&0&0&1\\1&0&0&1&1&0&0&0&0&0&0&0\\1&0&0&1&0&1&0&0&0&0&0&0\\1&0&0&1&0&0&1&0&0&0&0&0\\1&0&0&1&0&0&0&1&0&0&0&0\\1&0&0&1&0&0&0&0&1&0&0&0\\1&0&0&1&0&0&0&0&0&1&0&0\\1&0&0&1&0&0&0&0&0&0&1&0\\1&0&0&1&0&0&0&0&0&0&0&1\end{bmatrix},\quad\beta=\begin{bmatrix}\mu\\\alpha_1\\\alpha_2\\\alpha_3\\\beta_1\\\beta_2\\\beta_3\\\beta_4\\\beta_5\\\beta_6\\\beta_7\\\beta_8\end{bmatrix}.\]
+\[X_{\mathrm{ref}}=\begin{bmatrix}1&0&0&0&0&0&0&0&0&0\\1&0&0&1&0&0&0&0&0&0\\1&0&0&0&1&0&0&0&0&0\\1&0&0&0&0&1&0&0&0&0\\1&0&0&0&0&0&1&0&0&0\\1&0&0&0&0&0&0&1&0&0\\1&0&0&0&0&0&0&0&1&0\\1&0&0&0&0&0&0&0&0&1\\1&1&0&0&0&0&0&0&0&0\\1&1&0&1&0&0&0&0&0&0\\1&1&0&0&1&0&0&0&0&0\\1&1&0&0&0&1&0&0&0&0\\1&1&0&0&0&0&1&0&0&0\\1&1&0&0&0&0&0&1&0&0\\1&1&0&0&0&0&0&0&1&0\\1&1&0&0&0&0&0&0&0&1\\1&0&1&0&0&0&0&0&0&0\\1&0&1&1&0&0&0&0&0&0\\1&0&1&0&1&0&0&0&0&0\\1&0&1&0&0&1&0&0&0&0\\1&0&1&0&0&0&1&0&0&0\\1&0&1&0&0&0&0&1&0&0\\1&0&1&0&0&0&0&0&1&0\\1&0&1&0&0&0&0&0&0&1\end{bmatrix},\quad\gamma=\begin{bmatrix}\gamma_0\\\gamma_{\mathrm{treat}2}\\\gamma_{\mathrm{treat}3}\\\gamma_{\mathrm{block}2}\\\gamma_{\mathrm{block}3}\\\gamma_{\mathrm{block}4}\\\gamma_{\mathrm{block}5}\\\gamma_{\mathrm{block}6}\\\gamma_{\mathrm{block}7}\\\gamma_{\mathrm{block}8}\end{bmatrix}.\]
+}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{模型参数估计结果}
+\begin{center}\small\begin{tabular}{lrr}
+\toprule 参数&矩阵计算&\code{lm}输出\\\midrule
+Intercept&6.707083&6.7071\\
+treat2&$-.332500$&$-.3325$\\
+treat3&$-2.278750$&$-2.2788$\\
+block2&2.446667&2.4467\\
+block3&1.900000&1.9000\\
+block4&4.383333&4.3833\\
+block5&3.040000&3.0400\\
+block6&2.883333&2.8833\\
+block7&2.110000&2.1100\\
+block8&5.090000&5.0900\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\subsection{变异分解}
+\begin{align*}
+y_{ij}&=\bar y_{\cdot\cdot}+(\bar y_{i\cdot}-\bar y_{\cdot\cdot})+(\bar y_{\cdot j}-\bar y_{\cdot\cdot})
++(y_{ij}-\bar y_{i\cdot}-\bar y_{\cdot j}+\bar y_{\cdot\cdot}),\\
+y_{ij}-\bar y_{\cdot\cdot}&=\widehat\alpha_i+\widehat\beta_j+e_{ij},\\
+\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar y_{\cdot\cdot})^2
+&=n\sum_{i=1}^a(\bar y_{i\cdot}-\bar y_{\cdot\cdot})^2+a\sum_{j=1}^n(\bar y_{\cdot j}-\bar y_{\cdot\cdot})^2
++\sum_{i=1}^a\sum_{j=1}^n(y_{ij}-\bar y_{i\cdot}-\bar y_{\cdot j}+\bar y_{\cdot\cdot})^2.
+\end{align*}
+三部分两两正交，交叉项求和为0。前两项的系数$n$、$a$分别是每个处理、每个区组包含的观测数。
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{随机区组设计方差分析的变异分解表}
+\begin{center}\small\setlength{\tabcolsep}{4pt}\begin{tabular}{ccccc}
+\toprule 来源&平方和&自由度&均方的期望&$F$\\\midrule
+处理&$n\sum_i(\bar Y_{i\cdot}-\bar Y)^2$&$a-1$&$\sigma^2+\dfrac{n\sum\alpha_i^2}{a-1}$&$\dfrac{\ms{处理}}{\ms{误差}}$\\[8pt]
+区组&$a\sum_j(\bar Y_{\cdot j}-\bar Y)^2$&$n-1$&$\sigma^2+\dfrac{a\sum\beta_j^2}{n-1}$&$\dfrac{\ms{区组}}{\ms{误差}}$\\[8pt]
+误差&$\sum_i\sum_j(Y_{ij}-\bar Y_{i\cdot}-\bar Y_{\cdot j}+\bar Y)^2$&$(n-1)(a-1)$&$\sigma^2$&\\[4pt]
+总&$\sum_i\sum_j(Y_{ij}-\bar Y)^2$&$na-1$&&\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\[
+\ms{处理}=\frac{\SSq{处理}}{a-1},\quad
+\ms{区组}=\frac{\SSq{区组}}{n-1},\quad
+\ms{误差}=\frac{\SSq{误差}}{\nu_{\text{误差}}}.
+\]
+\ann{处理自由度为组数减1；区组自由度为每组个数减1。}
+误差自由度可由模型的秩得到：可加模型的设计矩阵秩为$1+(a-1)+(n-1)=a+n-1$，残差自由度为$an-(a+n-1)=(a-1)(n-1)$，本例为$2\times7=14$。若在每格一个观测时再加入处理$\times$区组交互项，模型秩将等于观测数$an$，残差自由度为0，误差方差无从估计。
+\subsection{处理因素的检验}
+\[
+H_0:\alpha_1=\alpha_2=\alpha_3=0;\qquad H_1:\text{至少有一个}\alpha\ne0,\quad\alpha=.05.
+\]
+\par\noindent\begin{rcode}
+anova(lm(y~treat+block))
+\end{rcode}\par\smallskip
+\begin{center}\small\begin{tabular}{lrrrrr}
+\toprule &Df&Sum Sq&Mean Sq&F value&$\Pr(>F)$\\\midrule
+treat&2&24.243&12.1215&26.354&$1.793\times10^{-5}\ (***)$\\
+block&7&51.088&7.2982&15.867&$1.152\times10^{-5}\ (***)$\\
+Residuals&14&6.439&.4600&&\\\bottomrule
+\end{tabular}\end{center}
+\[
+F=\frac{\ms{处理}}{\ms{误差}}=26.354\sim F(2,14),\qquad P<.05.
+\]
+按0.05水准拒绝$H_0$，接受$H_1$，认为三种植入方式的ICRS评分总体均数不全相同。三种处理的均数依次为9.439、9.106、7.160。
+\begin{sikao}[区组的作用]
+若忽略窝别，将同一资料按完全随机设计分析，结果如下：
+\par\noindent\begin{rcode}
+anova(lm(y~treat))         # 忽略区组
+\end{rcode}
+\begin{routput}
+          Df Sum Sq Mean Sq F value  Pr(>F)  
+treat      2 24.243 12.1215  4.4249 0.02491 *
+Residuals 21 57.527  2.7394                  
+\end{routput}
+处理平方和24.243不变，误差均方由0.460增至2.739，$F$值由26.35降至4.42。其原因在于窝间差异（平方和51.088）全部计入了误差。同窝兔子的遗传背景与体质相近，窝间差异较大，这部分变异与处理无关，却会掩盖处理效应。
+
+随机区组设计将已知的较大变异来源设为区组，在区组内比较处理，从而将这部分变异从误差中分离。配对$t$检验是其在两组时的特例。若区组间差异不大，单独估计区组效应会多消耗$n-1$个自由度，反而略有损失。
+
+分析方法应与设计相符。随机区组设计的资料若按完全随机设计分析，即使本例结论方向未变，标准误也是错误的。
+\end{sikao}
+\section{析因设计方差分析}
+两因素方差分析，考虑交互。
+
+例3：治疗缺铁性贫血病人12例，分为4组给予不同治疗，一个月后观察红细胞增加数（百万/mm$^3$）。现欲研究甲乙药单独使用的疗效如何，同时使用的疗效又如何（倪宗瓒，《医学统计学》第二版，92页）。
+\ann{《医学统计学》194页；平衡设计资料，一型与三型结果等价。}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{甲乙药治疗后的红细胞增加数（百万/mm$^3$）}
+\begin{center}\begin{tabular}{ccrr}
+\toprule &&\multicolumn{2}{c}{甲药}\\\cmidrule(lr){3-4}
+乙药&&用&不用\\\midrule
+\multirow{3}{*}{用}&&2.1&.9\\&&2.2&1.1\\&&2.0&1.0\\\midrule
+\multirow{3}{*}{不用}&&1.3&.8\\&&1.2&.9\\&&1.1&.7\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{数据格式}
+\begin{center}\small\begin{tabular}{rrrrrr}
+\toprule $a$&$b$&drug\_a&drug\_b&$y$&PRE\_1\\\midrule
+1&1&1&1&2.1&2.10\\1&1&1&1&2.2&2.10\\1&1&1&1&2.0&2.10\\
+1&0&1&2&1.3&1.20\\1&0&1&2&1.2&1.20\\1&0&1&2&1.1&1.20\\
+0&1&2&1&.9&1.00\\0&1&2&1&1.1&1.00\\0&1&2&1&1.0&1.00\\
+0&0&2&2&.8&.80\\0&0&2&2&.9&.80\\0&0&2&2&.7&.80\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\begin{center}\small\begin{tabular}{rrrr}
+\toprule 编号&druga&drugb&rbc\\\midrule
+1&1.00&1.00&2.10\\2&1.00&1.00&2.20\\3&1.00&1.00&2.00\\
+4&1.00&.00&1.30\\5&1.00&.00&1.20\\
+$\cdots$&$\cdots$&$\cdots$&$\cdots$\\\bottomrule
+\end{tabular}\end{center}
+\par\noindent\begin{rcode}
+y <- c(2.1,2.2,2.0, 1.3,1.2,1.1, 0.9,1.1,1.0, 0.8,0.9,0.7)
+a <- factor(rep(c(1,2),each=6))         # 甲药：1=用，2=不用
+b <- factor(rep(c(1,2,1,2),each=3))     # 乙药：1=用，2=不用
+\end{rcode}\par\smallskip
+\subsection{交互作用}
+\ann{$A$为列均数，$B$为行均数。}
+方差分析中的交互作用（Interaction effect）是指两个或多个因素共同影响因变量时，一个因素对因变量的影响会因另一个因素的水平不同而发生变化的现象。交互作用反映因素之间是否存在“联合效应”或“依赖关系”。
+\begin{center}\begin{tikzpicture}[font=\footnotesize]
+\begin{scope}[shift={(0.0,0.0)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,1.4)--(2.2,1.4);
+\draw[draw=ChartBrick,line width=.9pt] (.3,1.25)--(2.2,1.25);
+\draw[draw=ChartForest,fill=white] (0.3,1.4) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.4) circle (.04);
+\fill[ChartBrick] (0.3,1.25) circle (.035);
+\fill[ChartBrick] (2.2,1.25) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.6) {B1};\node[right,text=ChartBrick] at (2.2,1.05) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=不显著\\B=不显著};\end{scope}
+\begin{scope}[shift={(0.0,-3.3)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,1.6)--(2.2,1.6);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.6)--(2.2,0.6);
+\draw[draw=ChartForest,fill=white] (0.3,1.6) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.6) circle (.04);
+\fill[ChartBrick] (0.3,0.6) circle (.035);
+\fill[ChartBrick] (2.2,0.6) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.6) {B1};\node[right,text=ChartBrick] at (2.2,0.6) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=不显著\\B=显著};\end{scope}
+\begin{scope}[shift={(0.0,-6.6)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,0.65)--(2.2,1.65);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.5)--(2.2,1.5);
+\draw[draw=ChartForest,fill=white] (0.3,0.65) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.65) circle (.04);
+\fill[ChartBrick] (0.3,0.5) circle (.035);
+\fill[ChartBrick] (2.2,1.5) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.83) {B1};\node[right,text=ChartBrick] at (2.2,1.3) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=显著\\B=不显著};\end{scope}
+\begin{scope}[shift={(0.0,-9.899999999999999)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,0.9)--(2.2,1.9);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.2)--(2.2,1.2);
+\draw[draw=ChartForest,fill=white] (0.3,0.9) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.9) circle (.04);
+\fill[ChartBrick] (0.3,0.2) circle (.035);
+\fill[ChartBrick] (2.2,1.2) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.9) {B1};\node[right,text=ChartBrick] at (2.2,1.2) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=显著\\B=显著};\end{scope}
+\begin{scope}[shift={(7.5,0.0)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,1.6)--(2.2,0.6);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.6)--(2.2,1.6);
+\draw[draw=ChartForest,fill=white] (0.3,1.6) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,0.6) circle (.04);
+\fill[ChartBrick] (0.3,0.6) circle (.035);
+\fill[ChartBrick] (2.2,1.6) circle (.035);
+\node[right,text=ChartForest] at (2.2,0.6) {B1};\node[right,text=ChartBrick] at (2.2,1.6) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=不显著\\B=不显著};\end{scope}
+\begin{scope}[shift={(7.5,-3.3)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,0.9)--(2.2,1.6);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.8)--(2.2,0.3);
+\draw[draw=ChartForest,fill=white] (0.3,0.9) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.6) circle (.04);
+\fill[ChartBrick] (0.3,0.8) circle (.035);
+\fill[ChartBrick] (2.2,0.3) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.6) {B1};\node[right,text=ChartBrick] at (2.2,0.3) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=不显著\\B=显著};\end{scope}
+\begin{scope}[shift={(7.5,-6.6)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,0.3)--(2.2,1.65);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.9)--(2.2,1.15);
+\draw[draw=ChartForest,fill=white] (0.3,0.3) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.65) circle (.04);
+\fill[ChartBrick] (0.3,0.9) circle (.035);
+\fill[ChartBrick] (2.2,1.15) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.65) {B1};\node[right,text=ChartBrick] at (2.2,1.15) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=显著\\B=不显著};\end{scope}
+\begin{scope}[shift={(7.5,-9.899999999999999)}]
+\draw (0,0)--(2.9,0);\draw (0,0)--(0,2.1);
+\draw[draw=ChartForest,dashed,line width=.9pt] (.3,0.7)--(2.2,1.7);
+\draw[draw=ChartBrick,line width=.9pt] (.3,0.3)--(2.2,0.6);
+\draw[draw=ChartForest,fill=white] (0.3,0.7) circle (.04);
+\draw[draw=ChartForest,fill=white] (2.2,1.7) circle (.04);
+\fill[ChartBrick] (0.3,0.3) circle (.035);
+\fill[ChartBrick] (2.2,0.6) circle (.035);
+\node[right,text=ChartForest] at (2.2,1.7) {B1};\node[right,text=ChartBrick] at (2.2,0.6) {B2};
+\node[below] at (.3,0){A1};\node[below] at (2.2,0){A2};
+\node[align=left,right] at (3.1,1.1) {A=显著\\B=显著};\end{scope}
+\node at (1.5,2.6){交互作用不显著};\node at (9,2.6){交互作用显著};\end{tikzpicture}\end{center}
+\figtitle{两因素各两水平时交互作用的几种形态（示意图）。图中“显著”指效应存在；实际判断须结合误差方差和样本量作检验。}
+\begin{itemize}
+\item 不用乙药也不用甲药（$b=2,a=2$）：红细胞数平均增加至0.8。
+\item 不用乙药但用甲药（$b=2,a=1$）：红细胞数平均增加至1.2。
+\item 用乙药但不用甲药（$b=1,a=2$）：红细胞数平均增加至1.0。
+\item 两药同时使用：红细胞数平均增加至2.1。
+\end{itemize}
+\par\noindent\begin{rcode}
+aggregate(y,by=list(a,b),mean)
+\end{rcode}\par\smallskip
+\begin{center}\begin{tabular}{rrr}
+\toprule Group.1&Group.2&x\\\midrule
+1&1&2.1\\2&1&1.0\\1&2&1.2\\2&2&.8\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=10.5cm,height=7.2cm,xmin=.9,xmax=2.1,ymin=0,ymax=3,xtick={1,2},xticklabels={{$a=1$（用甲药）},{$a=2$（不用甲药）}},xlabel={甲药（A）的不同水平},ylabel={红细胞增加数},legend pos=north east]
+\addplot[mark=o,draw=ChartForest,mark size=2.6pt,line width=1.1pt] coordinates {(1,2.1) (2,1.0)};
+\addlegendentry{$b=1$（用乙药）}\addplot[mark=square,draw=ChartBrick,mark size=2.6pt,line width=1.1pt,dashed] coordinates {(1,1.2) (2,0.8)};
+\addlegendentry{$b=2$（不用乙药）}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\figtitle{四个组合的样本均数（由数据计算）}
+\ann{两线不平行，提示交互作用。图形只描述效应的形态；两线不平行的程度是否超出随机误差，须结合误差方差和样本量检验（见下文$F=36.75$）。}
+\subsection{效应估计}
+$i$为甲药（A）水平，$j$为乙药（B）水平，$k$为格内重复，每格$r=3$个观测：
+\[
+y_{ijk}=\mu+\alpha_i+\beta_j+(\alpha\beta)_{ij}+\varepsilon_{ijk},
+\quad i,j=1,2,\quad k=1,2,3,
+\]
+约束$\sum_i\alpha_i=\sum_j\beta_j=0$，$\sum_i(\alpha\beta)_{ij}=\sum_j(\alpha\beta)_{ij}=0$。估计为
+\[
+\widehat\mu=\bar y_{\cdots}=1.275,\quad
+\widehat\alpha_i=\bar y_{i\cdot\cdot}-\bar y_{\cdots},\quad
+\widehat\beta_j=\bar y_{\cdot j\cdot}-\bar y_{\cdots},\quad
+\widehat\mu_{ij}=\bar y_{ij\cdot},\quad e_{ijk}=y_{ijk}-\bar y_{ij\cdot}.
+\]
+甲药两水平的均数为$\bar y_{1\cdot\cdot}=(2.1+1.2)/2=1.65$、$\bar y_{2\cdot\cdot}=(1.0+0.8)/2=0.90$；乙药两水平的均数为$\bar y_{\cdot1\cdot}=(2.1+1.0)/2=1.55$、$\bar y_{\cdot2\cdot}=(1.2+0.8)/2=1.00$。全部计算统一采用总均数$1.275$：
+\begin{align*}
+\widehat\alpha_1&=1.65-1.275=0.375,&
+\widehat\alpha_2&=0.90-1.275=-0.375,\\
+\widehat\beta_1&=1.55-1.275=0.275,&
+\widehat\beta_2&=1.00-1.275=-0.275.
+\end{align*}
+\[
+\widehat{(\alpha\beta)}_{ij}=\bar y_{ij\cdot}-\bar y_{i\cdot\cdot}-\bar y_{\cdot j\cdot}+\bar y_{\cdots}.
+\]
+\begin{align*}
+\widehat{(\alpha\beta)}_{11}&=2.1-1.65-1.55+1.275=0.175,\\
+\widehat{(\alpha\beta)}_{12}&=1.2-1.65-1.00+1.275=-0.175,\\
+\widehat{(\alpha\beta)}_{21}&=1.0-0.90-1.55+1.275=-0.175,\\
+\widehat{(\alpha\beta)}_{22}&=0.8-0.90-1.00+1.275=0.175.
+\end{align*}
+\par\noindent\begin{rcode}
+aggregate(y,by=list(a),mean)[,2]        # 1.65 0.90
+aggregate(y,by=list(a,b),mean)
+\end{rcode}\par\smallskip
+\textbf{简单效应、主效应与回归系数的区别。}
+\begin{itemize}
+\item 简单效应：固定另一因素的水平时，一个因素两水平之差。甲药的简单效应在用乙药时为$2.1-1.0=1.1$，不用乙药时为$1.2-0.8=0.4$。
+\item 交互对比：两个简单效应之差$1.1-0.4=0.7$，等于$4\widehat{(\alpha\beta)}_{11}=4\times0.175$。交互作用为0即两条线平行、两个简单效应相等。
+\item 平均主效应：简单效应的平均$(1.1+0.4)/2=0.75=\widehat\alpha_1-\widehat\alpha_2$。有交互时它只是对乙药两个水平的平均，不代表任一具体情形下甲药的效应。
+\item 回归系数：\code{lm(y~a*b)}采用参照组编码（参照水平为“用”），截距为2.1，\code{a2}、\code{b2}、\code{a2:b2}的系数依次为$-1.1$、$-0.9$、$0.7$。其中$a2=-1.1$是“用乙药时不用甲药相对用甲药之差”，即一个简单效应，并非主效应；交互系数0.7即交互对比。换用和为零编码时，系数又变为$\widehat\alpha_i$、$\widehat\beta_j$、$\widehat{(\alpha\beta)}_{ij}$。
+\end{itemize}
+\subsection{变异分解与检验}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{析因设计方差分析的变异分解表}
+\begin{center}\small\setlength{\tabcolsep}{4pt}\begin{tabular}{ccccc}
+\toprule 来源&平方和&自由度&均方&$F$\\\midrule
+主效应A&$br\sum_i(\bar Y_{i\cdot\cdot}-\bar Y)^2$&$a-1$&$SS_A/\nu_A$&$MS_A/\ms{误差}$\\
+主效应B&$ar\sum_j(\bar Y_{\cdot j\cdot}-\bar Y)^2$&$b-1$&$SS_B/\nu_B$&$MS_B/\ms{误差}$\\
+交互效应AB&$r\sum_i\sum_j(\bar Y_{ij\cdot}-\bar Y_{i\cdot\cdot}-\bar Y_{\cdot j\cdot}+\bar Y)^2$&$(a-1)(b-1)$&$SS_{AB}/\nu_{AB}$&$MS_{AB}/\ms{误差}$\\
+误差&$\sum_i\sum_j\sum_k(Y_{ijk}-\bar Y_{ij\cdot})^2$&$ab(r-1)$&$\SSq{误差}/\nu_{\text{误差}}$&\\
+总&$\sum_i\sum_j\sum_k(Y_{ijk}-\bar Y)^2$&$N-1=abr-1$&&\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+$a$、$b$为两因素的水平数，$r$为每格重复数。$SS_A$中的权重$br$是甲药每个水平包含的观测数，$SS_B$中的$ar$、$SS_{AB}$中的$r$同理。本例$a=b=2$，$r=3$：
+\begin{gather*}
+SS_A=6\times(0.375^2+0.375^2)=1.6875,\qquad
+SS_B=6\times(0.275^2+0.275^2)=0.9075,\\
+SS_{AB}=3\times4\times0.175^2=0.3675,
+\end{gather*}
+与下面R输出一致。
+\ann{交互项显著时，即使单个变量不显著也要留在方程中；交互项不显著，再讨论单个变量的效应。}
+\[
+H_0:(\alpha\beta)_{ij}=0\ \text{对一切}\ i,j\ \text{成立};\quad
+H_1:\text{至少一个}\ (\alpha\beta)_{ij}\ne0;\quad\alpha=.05.
+\]
+\par\noindent\begin{rcode}
+anova(lm(y~a+b+a*b))   # 平衡设计，各型平方和相同
+\end{rcode}\par\smallskip
+\begin{center}\small\begin{tabular}{lrrrrr}
+\toprule &Df&Sum Sq&Mean Sq&F value&$\Pr(>F)$\\\midrule
+a&1&1.6875&1.6875&168.75&$1.169\times10^{-6}\ (***)$\\
+b&1&.9075&.9075&90.75&$1.218\times10^{-5}\ (***)$\\
+a:b&1&.3675&.3675&36.75&$.0003018\ (***)$\\
+Residuals&8&.0800&.0100&&\\\bottomrule
+\end{tabular}\end{center}
+\[
+F=\frac{\ms{交互}}{\ms{误差}}=36.75\sim F(1,8),\qquad P<.05.
+\]
+按0.05水准拒绝$H_0$，接受$H_1$，认为甲乙两药存在交互作用：甲药的效应随是否合用乙药而不同。
+
+按模型层级原则，模型中保留交互项时，构成它的主效应项也应保留（无论其$P$值大小），否则交互项的含义会随编码方式改变。交互作用存在时，应以简单效应及其置信区间为主报告结果，平均主效应的意义有限。误差均方$\ms{误差}=0.01$，$\nu=8$，$t_{0.025}(8)=2.306$：
+\begin{align*}
+\text{甲药简单效应（用乙药）}&:\ 1.1\pm2.306\times0.1\sqrt{2/3}=1.1\pm0.188=(0.91,\ 1.29),\\
+\text{甲药简单效应（不用乙药）}&:\ 0.4\pm0.188=(0.21,\ 0.59),\\
+\text{交互对比}&:\ 0.7\pm2.306\times0.1\sqrt{4/3}=0.7\pm0.266=(0.43,\ 0.97).
+\end{align*}
+交互对比的$t=0.7/0.1155=6.06$，$t^2=36.75$，即上表交互项的$F$值（单自由度时$F=t^2$）。结论：单用甲药平均使红细胞增加0.4百万/mm$^3$，与乙药合用时增加1.1，增量相差约0.7。
+\begin{sikao}[交互作用的报告]
+本例主效应与交互作用均有统计学意义。报告时宜围绕研究问题给出简单效应：单用甲药红细胞增加0.4，单用乙药增加0.2，两药合用增加1.3（$2.1-0.8$），大于$0.4+0.2=0.6$，表明两药有协同作用。
+
+交互作用的有无与所用尺度有关。线性模型中，无交互作用指两药效应可以相加；广义线性模型中的logistic回归，无交互作用指比值比可以相乘。同一资料在两种尺度下判断交互作用，结论可能不同，因此报告交互作用时应说明所用尺度。
+\end{sikao}
+\section{协方差分析}
+协方差分析是将直线回归和方差分析结合应用的统计方法。比较各组结局均数时，对与结局有关的数值型协变量$x$作线性调整，以减少协变量组间分布不同带来的偏差，并减小误差方差、提高检验效能。
+\[
+y_{ij}=\mu+\alpha_i+\beta x_{ij}+\varepsilon_{ij}.
+\]
+它能调整的只是模型中纳入的、已测量的协变量，并且是在线性和共同斜率假定下的调整；在非随机分组的观察性研究中，未测量的混杂仍可能存在。
+\ann{类别变量加数值变量。}
+例4（例1.7）：某医生欲了解成人体重正常者与超重者的血清胆固醇是否不同，而胆固醇含量与年龄有关。
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{正常组与超重组的年龄、胆固醇资料}
+\begin{center}\begin{tabular}{rr@{\qquad}rr}
+\toprule \multicolumn{2}{c}{正常组}&\multicolumn{2}{c}{超重组}\\\cmidrule(lr){1-2}\cmidrule(lr){3-4}
+年龄&胆固醇&年龄&胆固醇\\\midrule
+48&3.5&58&7.3\\33&4.6&41&4.7\\51&5.8&71&8.4\\43&5.8&76&8.8\\
+44&4.9&49&5.1\\63&8.7&33&4.9\\49&3.6&54&6.7\\42&5.5&65&6.4\\
+40&4.9&39&6.0\\47&5.1&52&7.5\\41&4.1&45&6.4\\41&4.6&58&6.8\\56&5.1&67&9.2\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{图1.16\quad 数据格式}
+\begin{center}\small\begin{tabular}{clrr}
+\toprule 编号&group&age&chol\\\midrule
+1&正常组&48.00&3.50\\2&正常组&33.00&4.60\\3&正常组&51.00&5.80\\
+4&正常组&43.00&5.80\\5&正常组&44.00&4.90\\6&正常组&63.00&8.70\\
+7&正常组&49.00&3.60\\8&正常组&42.00&5.50\\9&正常组&40.00&4.90\\10&正常组&47.00&5.10\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12cm,height=7.4cm,xmin=28,xmax=80,ymin=3.2,ymax=10.1,xtick={30,40,50,60,70,80},ytick={4,6,8,10},xlabel={年龄},ylabel={胆固醇},legend pos=north west]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.25pt] coordinates {(48,3.5) (33,4.6) (51,5.8) (43,5.8) (44,4.9) (63,8.7) (49,3.6) (42,5.5) (40,4.9) (47,5.1) (41,4.1) (41,4.6) (56,5.1)};
+\addlegendentry{正常组}
+\addplot[only marks,draw=ChartBrick,mark=triangle,mark options={fill=white},mark size=2.6pt] coordinates {(58,7.3) (41,4.7) (71,8.4) (76,8.8) (49,5.1) (33,4.9) (54,6.7) (65,6.4) (39,6) (52,7.5) (45,6.4) (58,6.8) (67,9.2)};
+\addlegendentry{超重组}
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+提示：两组中年龄和胆固醇都有线性趋势且斜率相近。
+\subsection{含交互项的完整模型}
+有的资料称为“饱和模型”。严格说，饱和模型指参数个数等于观测数（或格子数）的模型，这里只是允许两组斜率不同、含组别$\times$年龄交互项的完整模型：
+\[
+\widehat y_{ij}=\widehat\mu+\widehat\alpha_i+\widehat\beta_i x.
+\]
+\par\noindent\begin{rcode}
+y <- c(3.5,4.6,5.8,5.8,4.9,8.7,3.6,5.5,4.9,5.1,4.1,4.6,5.1,   # 正常组胆固醇
+       7.3,4.7,8.4,8.8,5.1,4.9,6.7,6.4,6.0,7.5,6.4,6.8,9.2)   # 超重组
+x <- c(48,33,51,43,44,63,49,42,40,47,41,41,56,                # 正常组年龄
+       58,41,71,76,49,33,54,65,39,52,45,58,67)                # 超重组
+g <- factor(rep(1:2,each=13))
+lm(y~x+g+x*g)
+anova(lm(y~x+g+x*g))
+\end{rcode}\par\smallskip
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12cm,height=7.4cm,xmin=28,xmax=80,ymin=3.2,ymax=10.1,xtick={30,40,50,60,70,80},ytick={4,6,8,10},xlabel={年龄},ylabel={胆固醇},legend pos=north west]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.25pt] coordinates {(48,3.5) (33,4.6) (51,5.8) (43,5.8) (44,4.9) (63,8.7) (49,3.6) (42,5.5) (40,4.9) (47,5.1) (41,4.1) (41,4.6) (56,5.1)};
+\addlegendentry{正常组}
+\addplot[only marks,draw=ChartBrick,mark=triangle,mark options={fill=white},mark size=2.6pt] coordinates {(58,7.3) (41,4.7) (71,8.4) (76,8.8) (49,5.1) (33,4.9) (54,6.7) (65,6.4) (39,6) (52,7.5) (45,6.4) (58,6.8) (67,9.2)};
+\addlegendentry{超重组}
+\addplot[domain=33:63,draw=ChartForest,line width=1.05pt] {.64090+.09677*x};\addplot[domain=33:76,draw=ChartBrick,line width=1.05pt,dashed] {1.70552+.09326*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{含交互项的完整模型的参数估计}
+\begin{center}\begin{tabular}{rrrr}
+\toprule Intercept&x&g2&x:g2\\\midrule
+.64090&.09677&1.06462&$-.00351$\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+\begin{align*}
+\widehat y&=.64+.097x+1.07z-.004xz,\\
+\text{正常组 }(z=0):\quad\widehat y&=.64+.097x,\\
+\text{超重组 }(z=1):\quad\widehat y&=1.71+.093x.
+\end{align*}
+\ann{以第1列为参照。}
+\begin{center}\small\begin{tabular}{lrrrrr}
+\toprule &Df&Sum Sq&Mean Sq&F value&$\Pr(>F)$\\\midrule
+x&1&38.537&38.537&40.2955&$2.181\times10^{-6}\ (***)$\\
+g&1&4.458&4.458&4.6612&$.04202\ (*)$\\
+x:g&1&.006&.006&.0068&.93505\\
+Residuals&22&21.040&.956&&\\\bottomrule
+\end{tabular}\end{center}
+\ann{$P>0.05$，应用简略模型。}
+交互项$F=0.0068$，$P=0.935$，说明没有发现两组斜率不同的证据，可以采用共同斜率的简略模型。这不等于证明了斜率相等：每组只有13例，检验效能有限，还应结合专业知识与图形判断。
+\subsection{简略模型：平行性}
+\[
+\widehat y_{ijw}=\widehat\mu+\widehat\alpha_i+\widehat\beta_w x.
+\]
+\ann{删去交互项。原例写作“交互$P>0.05$，平行”，即在未发现斜率差异的前提下假定两组回归线平行。}
+\par\noindent\begin{rcode}
+fit2 <- lm(y~x+g)
+summary(fit2)    # g2：0.8955，SE 0.4057，t=2.207，P=0.03755
+anova(fit2)
+\end{rcode}\par\smallskip
+\begin{center}\small\begin{tabular}{lrrrrr}
+\toprule &Df&Sum Sq&Mean Sq&F value&$\Pr(>F)$\\\midrule
+x&1&38.537&38.537&42.1141&$1.272\times10^{-6}$\\
+g&1&4.458&4.458&4.8716&$.03755$\\
+Residuals&23&21.047&.915&&\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12cm,height=7.4cm,xmin=28,xmax=80,ymin=3.2,ymax=10.1,xtick={30,40,50,60,70,80},ytick={4,6,8,10},xlabel={年龄},ylabel={胆固醇},legend pos=north west]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.25pt] coordinates {(48,3.5) (33,4.6) (51,5.8) (43,5.8) (44,4.9) (63,8.7) (49,3.6) (42,5.5) (40,4.9) (47,5.1) (41,4.1) (41,4.6) (56,5.1)};
+\addlegendentry{正常组}
+\addplot[only marks,draw=ChartBrick,mark=triangle,mark options={fill=white},mark size=2.6pt] coordinates {(58,7.3) (41,4.7) (71,8.4) (76,8.8) (49,5.1) (33,4.9) (54,6.7) (65,6.4) (39,6) (52,7.5) (45,6.4) (58,6.8) (67,9.2)};
+\addlegendentry{超重组}
+\addplot[domain=33:63,draw=ChartForest,line width=1.05pt] {.761+.0942*x};\addplot[domain=33:76,draw=ChartBrick,line width=1.05pt,dashed] {1.656+.0942*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\begin{align*}
+\text{正常组}:\quad\widehat y&=.761+.0942x,\\
+\text{超重组}:\quad\widehat y&=.761+.895+.0942x=1.656+.0942x,\\
+b_w&=\frac{\sum_{i=1}^2 l_{x_i y_i}}{\sum_{i=1}^2 l_{x_i x_i}}
+=\frac{68.9+190}{712+2037}=.0942.
+\end{align*}
+\subsection{重合性}
+如果截距相等，满足重合性假设：
+\[
+\widehat y_{ijt}=\widehat\mu+\widehat\beta x.
+\]
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=12cm,height=7.4cm,xmin=28,xmax=80,ymin=3.2,ymax=10.1,xtick={30,40,50,60,70,80},ytick={4,6,8,10},xlabel={年龄},ylabel={胆固醇},legend pos=north west]
+\addplot[only marks,draw=ChartForest,mark=o,mark options={fill=white},mark size=2.25pt] coordinates {(48,3.5) (33,4.6) (51,5.8) (43,5.8) (44,4.9) (63,8.7) (49,3.6) (42,5.5) (40,4.9) (47,5.1) (41,4.1) (41,4.6) (56,5.1)};
+\addlegendentry{正常组}
+\addplot[only marks,draw=ChartBrick,mark=triangle,mark options={fill=white},mark size=2.6pt] coordinates {(58,7.3) (41,4.7) (71,8.4) (76,8.8) (49,5.1) (33,4.9) (54,6.7) (65,6.4) (39,6) (52,7.5) (45,6.4) (58,6.8) (67,9.2)};
+\addlegendentry{超重组}
+\addplot[domain=33:76,draw=ChartForest,line width=1.05pt] {.439+.109*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\[
+\widehat y=.439+.109x,\qquad
+b_t=\frac{\sum_{i=1}^2\sum_{j=1}^{n_i}(x_{ij}-\bar x)(y_{ij}-\bar y)}
+{\sum_{i=1}^2\sum_{j=1}^{n_i}(x_{ij}-\bar x)^2}
+=\frac{351.97}{3214.615}=.109.
+\]
+\subsection{平方和分解}
+\begin{align*}
+\sum(Y_{ij}-\bar Y)^2
+&=\underbrace{\sum(Y_{ij}-\widehat Y_{ijt})^2}_{SS_{qw}+SS_{qb}}
++\underbrace{\sum(\widehat Y_{ijt}-\bar Y)^2}_{x},\\
+\sum(Y_{ij}-\widehat Y_{ijt})^2
+&=\underbrace{\sum(Y_{ij}-\widehat Y_{ijw})^2}_{SS_{qw}=SS_{q1}+SS_{q2}}
++\underbrace{\sum(\widehat Y_{ijw}-\widehat Y_{ijt})^2}_{SS_{qb},\ g},\\
+\sum(Y_{ij}-\widehat Y_{ijw})^2
+&=\underbrace{\sum(Y_{ij}-\widehat Y_{ij})^2}_{SS_{q1},\ \mathrm{residuals}}
++\underbrace{\sum(\widehat Y_{ij}-\widehat Y_{ijw})^2}_{SS_{q2},\ x:g}.
+\end{align*}
+\[
+F_1=\frac{\sum(\widehat Y_{ij}-\widehat Y_{ijw})^2/(k-1)}
+{\sum(Y_{ij}-\widehat Y_{ij})^2/(n-2k)},\qquad
+F_2=\frac{\sum(\widehat Y_{ijw}-\widehat Y_{ijt})^2/(k-1)}
+{\sum(Y_{ij}-\widehat Y_{ijw})^2/(n-k-1)}.
+\]
+$F_1$推断$x:g$有无意义，$F_2$推断$g$的主效应有无意义。$k$为组数，$n$为总例数。
+
+\textbf{嵌套模型的逐级比较。}三个模型依次嵌套，$M_1\subset M_2\subset M_3$：
+\begin{center}\small\begin{tabular}{llcc}
+\toprule 模型&含义&残差平方和$Q$&残差自由度\\\midrule
+$M_1$：\code{y~x}&重合（共同截距、共同斜率）&25.504&24\\
+$M_2$：\code{y~x+g}&平行（截距不同、共同斜率）&21.047&23\\
+$M_3$：\code{y~x*g}&完整（截距、斜率均不同）&21.040&22\\\bottomrule
+\end{tabular}\end{center}
+相邻模型用增量$F$检验（第\ref{sec:glh}节）比较：
+\begin{enumerate}
+\item $M_2$对$M_3$（斜率是否相同），即$F_1$：
+\[
+F=\frac{(21.047-21.040)/1}{21.040/22}=0.0068,\qquad P=0.935 .
+\]
+\item 在平行假定下，$M_1$对$M_2$（调整年龄后两组截距是否相同），即$F_2$：
+\[
+F=\frac{(25.504-21.047)/1}{21.047/23}=4.8716,\qquad P=0.03755 .
+\]
+\end{enumerate}
+完整模型的\code{anova(lm(y~x+g+x*g))}中$g$行的$P=0.04202$与上面的$P=0.03755$分子相同（都是$Q_{M_1}-Q_{M_2}=4.458$），差别在分母：前者用完整模型$M_3$的误差均方$0.956$（$\nu=22$），后者用平行模型$M_2$的误差均方$0.915$（$\nu=23$）。\code{anova(fit1,fit2,fit3)}同时比较三个模型时，各行都以最大模型的误差均方为分母，也给出$0.04202$。删去交互项后报告组别效应，通常采用$M_2$下的$0.03755$。
+\par\noindent\begin{rcode}
+fit1 <- lm(y~x); fit3 <- lm(y~x*g)
+anova(fit2,fit3)        # 斜率是否相同：F=0.0068，P=0.935
+anova(fit1,fit2)        # 平行前提下组别：F=4.8716，P=0.03755
+anova(fit1,fit2,fit3)   # 分母均为fit3的误差均方：P=0.04202、0.935
+\end{rcode}\par\smallskip
+\ann{一型平方和与自变量进入顺序有关，先放$x$和先放$g$得到的结果不同；若要与进入顺序无关，应选三型平方和；软件中在“单变量：模型-平方和”里选型。}
+各类平方和对应不同的假设，应先明确要检验什么，再选类型：
+\begin{itemize}
+\item 一型（序贯）：每一项检验“前面各项已在模型中时，再加入该项”的假设，结果依赖进入顺序。\code{anova(lm(y~x+g))}中$g$行检验的是调整年龄后的组别差异；若写成\code{y~g+x}，$g$行检验的是未调整的组间差异，问题不同。
+\item 二型：每一项在“所有不含该项的其他项”都在模型中时检验，遵守层级原则。无交互的平行模型中，$g$的二型检验即$M_1$对$M_2$（$P=0.03755$），与顺序无关。R：\code{car::Anova(fit2,type=2)}。
+\item 三型：每一项在其余全部项（含交互）都在模型中时检验。含交互项时，主效应的三型检验检验的是“协变量取0处（或在所用编码的特定平均意义下）组间是否有差异”，结果依赖编码方式（须用和为零编码），本例相当于检验年龄为0岁时两组的差异，通常不是研究问题。
+\end{itemize}
+各组例数相等、因素间正交的平衡设计（如上节析因例题）中，三类平方和一致；协方差分析中协变量与组别一般不正交，须按研究问题选择。
+\subsection{修正均数比较}
+在两条直线平行但不重合的情况下，进行修正均数比较。修正均数（调整均数，estimated marginal mean）是各组在协变量取同一值$x_0$时的估计均数。
+\begin{derivation}{修正均数及其差值的来源}
+\dpart{条件}平行模型$y_{ij}=\mu+\alpha_i+\beta x_{ij}+\varepsilon_{ij}$，误差独立同分布于$N(0,\sigma^2)$。
+\dpart{结论}
+\[
+\widehat\mu_i(x_0)=\bar y_i+\widehat\beta_w(x_0-\bar x_i),\qquad
+\widehat\beta_w=\frac{\sum_i l_{xy,i}}{\sum_i l_{xx,i}},
+\]
+两组修正均数之差及其标准误为
+\[
+\widehat\mu_2(x_0)-\widehat\mu_1(x_0)=(\bar y_2-\bar y_1)-\widehat\beta_w(\bar x_2-\bar x_1),\qquad
+\mathrm{SE}=s\sqrt{\frac1{n_1}+\frac1{n_2}+\frac{(\bar x_2-\bar x_1)^2}{\sum_il_{xx,i}}},
+\]
+差值与$x_0$无关，按$t(n-k-1)$构造置信区间与检验。
+\dpart{推导}由Frisch--Waugh--Lovell定理，先用组别哑变量（即各组均数）对$x$、$y$作“组内中心化”，再回归，得到共同斜率$\widehat\beta_w$即组内合并斜率。组别的正规方程给出每组残差和为0：$\bar y_i=\widehat\mu+\widehat\alpha_i+\widehat\beta_w\bar x_i$，故$x=x_0$处的拟合值为$\bar y_i+\widehat\beta_w(x_0-\bar x_i)$。两组相减时$x_0$项抵消。$\bar y_1$、$\bar y_2$与$\widehat\beta_w$两两不相关，$\Var(\bar y_i)=\sigma^2/n_i$，$\Var(\widehat\beta_w)=\sigma^2/\sum_il_{xx,i}$，相加得方差公式。
+\dpart{统计解释}修正均数差是“若两组年龄相同，胆固醇均数相差多少”在线性、共同斜率假定下的估计。若存在交互（斜率不同），组差$(\alpha_2-\alpha_1)+(\beta_2-\beta_1)x_0$随$x_0$而变，应在若干有代表性的$x_0$处分别报告，而不能只报告一个“修正均数差”。
+\end{derivation}
+本例$\bar y_1=5.0923$，$\bar x_1=46.00$；$\bar y_2=6.7846$，$\bar x_2=54.46$；$\widehat\beta_w=(68.9+190.0)/(712+2037.2)=0.09417$；$s^2=0.9151$（$\nu=23$）。取$x_0=\bar x=50.23$：
+\begin{align*}
+\widehat\mu_1(50.23)&=5.0923+0.09417\times(50.23-46.00)=5.491,\\
+\widehat\mu_2(50.23)&=6.7846+0.09417\times(50.23-54.46)=6.386,\\
+\widehat\mu_2-\widehat\mu_1&=1.6923-0.09417\times8.4615=0.895,\\
+\mathrm{SE}&=\sqrt{0.9151\times\Bigl(\tfrac1{13}+\tfrac1{13}+\tfrac{8.4615^2}{2749.2}\Bigr)}=0.406,
+\end{align*}
+$t=0.895/0.406=2.207$，$\nu=23$，$P=0.038$，95\%置信区间$0.895\pm2.069\times0.406=(0.056,\ 1.735)$，与下面SPSS输出一致。这个差值就是平行模型\code{lm(y~x+g)}中\code{g2}的系数。
+
+本例为观察性资料，体重分组并非随机分配。调整年龄后两组胆固醇的差异仍有统计学意义，但只能说明“在年龄相同的人中，超重者的胆固醇均数较高”这一关联，年龄以外的因素（如饮食、运动）未被调整。两组年龄范围（33--63岁与33--76岁）基本重叠，$x_0=50.23$位于两组数据范围之内；若比较点落在某组数据范围以外，修正均数依赖外推。
+\begin{sikao}[调整协变量前后的比较]
+未调整年龄与调整年龄后的组间比较结果如下：
+\par\noindent\begin{rcode}
+coef(summary(lm(y~g)))       # 不调整：等价于两样本t检验
+coef(summary(lm(y~x+g)))     # 调整年龄
+t.test(x~g,var.equal=TRUE)   # 两组年龄是否相同
+\end{rcode}
+\begin{routput}
+            Estimate Std. Error   t value     Pr(>|t|)
+(Intercept) 5.092308  0.3815713 13.345626 1.343163e-12
+g2          1.692308  0.5396233  3.136091 4.481431e-03
+             Estimate Std. Error   t value     Pr(>|t|)
+(Intercept) 0.7605338 0.88016398 0.8640819 3.964652e-01
+x           0.0941690 0.01824403 5.1616348 3.126741e-05
+g2          0.8954931 0.40572196 2.2071596 3.755356e-02
+
+t = -2.0156, df = 24, p-value = 0.05517
+mean in group 1 mean in group 2 
+       46.00000        54.46154 
+\end{routput}
+调整后两组差值由1.692降至0.895，标准误由0.540降至0.406。这两个变化分别对应协变量的两种作用：
+\begin{itemize}
+\item \textbf{校正偏倚。}超重组平均年龄大8.5岁，胆固醇随年龄升高（每岁约0.094），$0.094\times8.46\approx0.80$，即粗差值中约0.8来自两组的年龄差异。调整后的0.895为年龄相同条件下的组间差值。
+\item \textbf{提高精度。}年龄解释了胆固醇的一部分变异，误差均方减小，标准误随之减小。
+\end{itemize}
+本例两组年龄差异的$P=0.055$，无统计学意义，但不能据此认为无需调整。是否调整取决于协变量对结局的影响大小及其在组间的不平衡程度，而非组间差异的$P$值。随机对照试验中基线协变量的组间差异均为随机误差，此时调整的主要目的是提高精度。
+\end{sikao}
+\par\noindent\begin{rcode}
+x0 <- mean(x)                                   # 50.23
+predict(fit2,data.frame(x=x0,g=factor(1:2)),se.fit=TRUE)   # 5.491、6.386，SE 0.276
+confint(fit2)["g2",]                            # 0.056  1.735
+\end{rcode}\par\smallskip
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{Estimates\quad 因变量：胆固醇}
+\begin{center}\begin{tabular}{crrrr}
+\toprule 组别&Mean&Std. Error&95\%下限&95\%上限\\\midrule
+1&5.491&.276&4.919&6.062\\
+2&6.386&.276&5.815&6.958\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+协变量年龄在$x=50.23$处计算。
+\par\noindent\begin{minipage}{\linewidth}
+\tbltitle{Pairwise Comparisons\quad 因变量：胆固醇}
+\begin{center}\small\begin{tabular}{ccrrrrr}
+\toprule $(I)$组别&$(J)$组别&均数差$(I-J)$&标准误&Sig.&95\%下限&95\%上限\\\midrule
+1&2&$-.895^*$&.406&.038&$-1.735$&$-.056$\\
+2&1&$.895^*$&.406&.038&.056&1.735\\\bottomrule
+\end{tabular}\end{center}
+\end{minipage}\par\medskip
+
+{\small 基于估计边际均数。$^*$均数差在0.05水准有统计学意义。多重比较调整：Least Significant Difference（相当于无调整）。}
+\ann{SPSS中50.23为$x$的均数；$P$值为.038，均数间的差异有统计学意义。}
+
+\begin{fuxi}
+\begin{enumerate}
+\item 方差分析与协方差分析均为线性回归，区别在于设计矩阵。$k$个水平的分类变量用$k-1$个哑变量表示；再增加一列将与截距完全共线（秩亏）。
+\item 系数的含义取决于编码方式：参照组编码中，截距为参照组均数，其余系数为与参照组之差；和为零编码中，截距为各组均数的平均，系数为相对于平均水平的效应。拟合值、残差与$F$检验不受编码方式影响。
+\item 完全随机设计：$\SSq{总}=\SSq{组间}+\SSq{组内}$，自由度$N-1=(a-1)+(N-a)$。$F$检验拒绝$H_0$后，以多重比较（如Tukey法）确定差异所在。
+\item 随机区组设计：另分离出区组平方和，误差自由度为$(a-1)(n-1)$；每格仅一个观测时无法估计交互作用，只能采用可加模型。
+\item 析因设计：交互作用指一个因素的效应随另一因素的水平而变化，在图中表现为两线不平行。存在交互作用时报告简单效应，并按层级原则保留构成交互项的主效应。
+\item 协方差分析的步骤：先检验各组斜率是否相同（交互项），再在平行假定下比较截距（修正均数），必要时检验重合性。修正均数差为$(\bar y_2-\bar y_1)-\widehat\beta_w(\bar x_2-\bar x_1)$。
+\item 平方和类型：一型依赖变量顺序，二型遵循层级原则，三型在含交互项时依赖编码方式。平衡设计中三者一致。
+\end{enumerate}
+\end{fuxi}
+
+\begin{fuxi}[常见错误表述]
+\begin{itemize}
+\item “方差分析$P<0.05$，说明三组均数各不相同。”应表述为：三组总体均数不全相同，具体差异需经多重比较确定。
+\item “交互作用有统计学意义，故主效应无意义，可从模型中删去。”主效应项应保留，只是不宜单独解释平均主效应。
+\item “两组协变量差异无统计学意义，故无需进行协方差分析。”协变量与结局关联较强时，即使组间差异无统计学意义，调整仍可校正偏倚、提高精度。
+\item “交互项无统计学意义，证明两组回归线平行。”应表述为：未发现斜率存在差异；小样本时检验效能有限。
+\end{itemize}
+\end{fuxi}
