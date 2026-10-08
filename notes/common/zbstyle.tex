@@ -165,7 +165,7 @@
    {\color{PKURed}\rule{\linewidth}{.7pt}}\par}\vspace{22pt}%
   \pdfbookmark[1]{习题与解析：#1}{ex:\exsetno}}
 \newcommand{\EndExercises}{\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}\setcounter{secnumdepth}{2}}
-% 简约封面：仅课程名、英文名、居中校徽与日期。
+% 简约封面：课程名、英文名、居中校徽、学习网站与日期。
 \newcommand{\MakeCover}[2]{%
   \begin{titlepage}\thispagestyle{empty}\hypersetup{pageanchor=false}%
   \begin{tikzpicture}[remember picture,overlay]
@@ -177,6 +177,9 @@
       {{\sffamily\fontsize{14}{20}\selectfont\color{Muted}#2}};
     \node at (current page.center)
       {\includegraphics[width=44mm]{../common/pku-emblem.jpg}};
+    \node[align=center,text width=.88\paperwidth]
+      at ([yshift=39mm]current page.south)
+      {{\small\sffamily\color{Muted}学习网站：\url{https://fxt-gw-pb.github.io/public-health-statistics-notes/}}};
     \node at ([yshift=24mm]current page.south)
       {{\small\color{Muted}2026年10月}};
   \end{tikzpicture}%
