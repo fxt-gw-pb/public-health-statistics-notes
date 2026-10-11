@@ -95,3 +95,16 @@ assert.deepEqual(mergeLearning({ ...blank, wrong: ['q'], fixed: [] }, { ...blank
 assert.deepEqual(mergeLearning(merged, merged), merged);
 assert.deepEqual(normalizeLearning({ completed: 'oops', levels: [], bestCombo: -3 }).completed, []);
 console.log(JSON.stringify({ progressMerge: 'passed' }));
+
+// Daily challenge scopes: all courses, one course or one chapter; stable within a day.
+const { dailyQuestions } = await import('../src/game.js');
+const allBank = [...bank.values()];
+const allDay = dailyQuestions(allBank, 'today', '2026-10-11');
+assert.equal(allDay.length, 5); assert.deepEqual(allDay, dailyQuestions([...allBank].reverse(), 'today', '2026-10-11'));
+assert.notDeepEqual(allDay.map(q => q.key), dailyQuestions(allBank, 'today', '2026-10-12').map(q => q.key));
+assert.ok(dailyQuestions(allBank, 'glm', '2026-10-11').every(q => q.course === 'glm'));
+for (const chapter of new Set(manifest.levels.map(l => l.chapter))) {
+  const picked = dailyQuestions(allBank, chapter, '2026-10-11');
+  assert.equal(picked.length, 5, chapter); assert.ok(picked.every(q => q.chapter === chapter), chapter);
+}
+console.log(JSON.stringify({ dailyScopes: 'passed' }));

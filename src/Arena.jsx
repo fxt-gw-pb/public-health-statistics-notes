@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Cloud, Trophy, Flame, Star, Heart, Zap, Timer, Lock, Crown, Swords, CalendarCheck, Volume2, VolumeX, Target, Sparkles, ArrowRight, Award, X, Check, BookOpen, RotateCcw, ChevronRight, Undo2 } from 'lucide-react';
 import { chapterHref, enrichContent } from './content.js';
 import { gradeChoice } from './quiz.js';
-import { RANKS, XP, LEVEL_HEARTS, BOSS_SIZE, DAILY_SIZE, REVIEW_SIZE, RUSH_SECONDS, BADGES, rankOf, xpBreakdown, streakOf, recordAnswer, recordLevel, starsFor, levelState, bossLevel, bossId, seeded, shuffle, today, cheer } from './game.js';
+import { RANKS, XP, LEVEL_HEARTS, BOSS_SIZE, DAILY_SIZE, REVIEW_SIZE, RUSH_SECONDS, BADGES, rankOf, xpBreakdown, streakOf, recordAnswer, recordLevel, starsFor, levelState, bossLevel, bossId, shuffle, today, cheer, dailyQuestions } from './game.js';
 import { confetti, celebrate, centerOf, floatText, shake, sound } from './fx.js';
 
 const asset = path => `${import.meta.env.BASE_URL}${path}`;
@@ -65,6 +65,41 @@ export function RankChip({ learning: s }) {
   </a>;
 }
 
+// What a daily-challenge scope covers: all courses, one course, or one exercise chapter.
+export function dailyScopeInfo(m, scope) {
+  if (scope === 'today') return { valid: true, label: '全部课程' };
+  const course = m.courses.find(c => c.id === scope);
+  if (course) return { valid: true, course, label: course.title };
+  const chapter = m.chapters.find(c => c.id === scope && c.kind === 'exercises' && m.levels.some(l => l.chapter === c.id));
+  if (!chapter) return { valid: false, label: '' };
+  const owner = m.courses.find(c => c.id === chapter.course);
+  return { valid: true, course: owner, chapter, label: `${owner.title} · 第 ${chapter.number} 章` };
+}
+const savedScope = (m, s) => dailyScopeInfo(m, s.dailyScope).valid ? s.dailyScope : 'today';
+
+function DailyCard({ manifest: m, learning: s, setLearning }) {
+  const scope = savedScope(m, s), info = dailyScopeInfo(m, scope), done = s.dailyDone.includes(today());
+  const chapters = info.course ? m.chapters.filter(d => d.course === info.course.id && d.kind === 'exercises' && m.levels.some(l => l.chapter === d.id)) : [];
+  const pick = value => setLearning(x => ({ ...x, dailyScope: value }));
+  return <div className={`mode-card mode-daily daily-card ${done ? 'done' : ''}`} style={{ '--i': 0 }}>
+    <div className="daily-card-info">
+      <span className="mode-icon">{done ? <CalendarCheck size={24} /> : <Sparkles size={24} />}</span>
+      <div><strong>每日挑战</strong><p>{done ? `今日已完成，+${XP.daily} XP 已领取；可以换个范围继续练。` : `每天 ${DAILY_SIZE} 道随机题，完成 +${XP.daily} XP。同一天同一范围题目固定。`}</p></div>
+      <span className="mode-tag">{done ? '已完成' : '今日未完成'}</span>
+    </div>
+    <div className="daily-scope">
+      <div className="daily-chips" role="radiogroup" aria-label="每日挑战的课程范围">
+        {[['today', '全部课程'], ...m.courses.map(c => [c.id, c.title])].map(([id, label]) => { const on = (info.course?.id || 'today') === id; return <button key={id} type="button" role="radio" aria-checked={on} className={on ? 'active' : ''} onClick={() => pick(id)}>{id !== 'today' && <span className="course-dot" data-course={id} />}{label}</button>; })}
+      </div>
+      {info.course && <select className="daily-chapter" aria-label="选择章节" value={info.chapter?.id || info.course.id} onChange={e => pick(e.target.value)}>
+        <option value={info.course.id}>全部章节</option>
+        {chapters.map(d => <option key={d.id} value={d.id}>第 {d.number} 章 · {d.title}</option>)}
+      </select>}
+      <a className="primary-button daily-start" href={`#/play/daily/${scope}`}><Sparkles size={16} />开始挑战<ArrowRight size={16} /></a>
+    </div>
+  </div>;
+}
+
 // Shown on the overview page as the entrance to the challenge mode.
 export function RankPanel({ learning: s, manifest: m, signedIn }) {
   const parts = xpBreakdown(s), rank = rankOf(parts.total), streak = streakOf(s.days), dailyDone = s.dailyDone.includes(today());
@@ -86,7 +121,7 @@ export function RankPanel({ learning: s, manifest: m, signedIn }) {
       <span><Award size={18} /><strong>{s.badges.length}</strong>/ {BADGES.length} 成就</span>
     </div>
     <div className="rank-panel-actions">
-      <a className={`daily-cta ${dailyDone ? 'done' : ''}`} href="#/play/daily/today">{dailyDone ? <CalendarCheck size={18} /> : <Sparkles size={18} />}<span><strong>{dailyDone ? '今日挑战已完成' : '每日挑战'}</strong><small>{dailyDone ? '明天还有新的 5 题' : `5 道随机题 · +${XP.daily} XP`}</small></span></a>
+      <a className={`daily-cta ${dailyDone ? 'done' : ''}`} href={`#/play/daily/${savedScope(m, s)}`}>{dailyDone ? <CalendarCheck size={18} /> : <Sparkles size={18} />}<span><strong>{dailyDone ? '今日挑战已完成' : '每日挑战'}</strong><small>{dailyScopeInfo(m, savedScope(m, s)).label} · {dailyDone ? '可换个范围继续练' : `5 道随机题 · +${XP.daily} XP`}</small></span></a>
       <a className="primary-button arena-cta" href="#/arena"><Trophy size={17} />进入闯关<ArrowRight size={16} /></a>
       {!signedIn && <button className="save-cta" onClick={() => window.dispatchEvent(new Event('ph-open-account'))}><Cloud size={15} />创建个人存档，换设备不丢进度</button>}
     </div>
@@ -155,7 +190,7 @@ export function ArenaPage({ manifest: m, learning: s, setLearning, route, toast 
     </section>
 
     <div className="mode-grid stagger">
-      <a className={`mode-card mode-daily ${dailyDone ? 'done' : ''}`} href="#/play/daily/today" style={{ '--i': 0 }}><span className="mode-icon">{dailyDone ? <CalendarCheck size={24} /> : <Sparkles size={24} />}</span><strong>每日挑战</strong><p>{dailyDone ? '今日已完成，明天再来。' : `每天 ${DAILY_SIZE} 道随机题，完成 +${XP.daily} XP。`}</p><span className="mode-tag">{dailyDone ? '已完成' : '今日未完成'}</span></a>
+      <DailyCard manifest={m} learning={s} setLearning={setLearning} />
       <a className={`mode-card mode-review ${s.wrong.length ? '' : 'empty'}`} href={s.wrong.length ? '#/play/review/all' : undefined} onClick={e => { if (!s.wrong.length) { e.preventDefault(); toast('错题本是空的，继续保持！'); } }} style={{ '--i': 1 }}><span className="mode-icon"><Undo2 size={24} /></span><strong>错题复活赛</strong><p>重做答错的题，订正一题 +{XP.fixed} XP。</p><span className="mode-tag">{s.wrong.length} 道待复活</span></a>
       <a className="mode-card mode-rush" href="#/play/rush/all" style={{ '--i': 2 }}><span className="mode-icon"><Timer size={24} /></span><strong>{RUSH_SECONDS} 秒极速</strong><p>限时连答，看看一分钟能对几题。</p><span className="mode-tag">最佳 {s.rushBest} 题</span></a>
     </div>
@@ -196,7 +231,8 @@ export function Play({ mode, target, manifest: m, learning: s, setLearning, toas
   const [run, setRun] = useState(null), [choice, setChoice] = useState(null), [attempt, setAttempt] = useState(0), [clock, setClock] = useState(RUSH_SECONDS);
   const card = useRef(null), nextButton = useRef(null), state = useRef(s), runRef = useRef(null);
   state.current = s; runRef.current = run;
-  const courses = useMemo(() => mode === 'level' || mode === 'boss' ? [level?.course].filter(Boolean) : mode === 'rush' && target !== 'all' ? [target] : m.courses.map(c => c.id), [mode, target, level, m]);
+  const daily = mode === 'daily' ? dailyScopeInfo(m, target) : null;
+  const courses = useMemo(() => mode === 'level' || mode === 'boss' ? [level?.course].filter(Boolean) : mode === 'rush' && target !== 'all' ? [target] : daily?.course ? [daily.course.id] : m.courses.map(c => c.id), [mode, target, level, m, daily?.course]);
 
   useEffect(() => {
     let cancel = false;
@@ -216,7 +252,7 @@ export function Play({ mode, target, manifest: m, learning: s, setLearning, toas
     let list = [];
     if (mode === 'level' && level) list = level.questions.map(k => bank.questions.get(k)).filter(Boolean);
     else if (mode === 'boss') list = shuffle(all).slice(0, BOSS_SIZE);
-    else if (mode === 'daily') list = shuffle(all.sort((a, b) => a.key.localeCompare(b.key)), seeded(today())).slice(0, DAILY_SIZE);
+    else if (mode === 'daily') list = dailyQuestions(all, target);
     else if (mode === 'review') list = shuffle(state.current.wrong.map(k => bank.questions.get(k)).filter(Boolean)).slice(0, REVIEW_SIZE);
     else if (mode === 'rush') list = shuffle(all);
     setRun({ list, index: 0, hearts: LEVEL_HEARTS, combo: 0, maxCombo: 0, correct: 0, log: [], xpStart: xpBreakdown(state.current).total, bestBefore: state.current.rushBest, done: false, failed: false, stars: 0 });
@@ -299,8 +335,8 @@ export function Play({ mode, target, manifest: m, learning: s, setLearning, toas
     return () => window.removeEventListener('keydown', key);
   }, [q, choice, pick, next, mode]);
 
-  const title = level?.boss ? level.title : level ? `第 ${level.number} 章 · 第 ${level.stage} 关` : MODES[mode];
-  if (!MODES[mode] || (['level', 'boss'].includes(mode) && !level)) return <div className="empty-state"><h2>没有找到这一关</h2><a className="primary-button" href="#/arena">返回闯关地图</a></div>;
+  const title = level?.boss ? level.title : level ? `第 ${level.number} 章 · 第 ${level.stage} 关` : daily ? `${MODES[mode]} · ${daily.label}` : MODES[mode];
+  if (!MODES[mode] || (['level', 'boss'].includes(mode) && !level) || (daily && !daily.valid)) return <div className="empty-state"><h2>没有找到这一关</h2><a className="primary-button" href="#/arena">返回闯关地图</a></div>;
   if (locked) return <div className="empty-state page-enter"><Lock size={38} /><h2>这一关还没有解锁</h2><p>{level.boss ? '通过本课程全部关卡后即可挑战。' : '先通过本章上一关。'}</p><a className="primary-button" href={`#/arena/${level.course}`}>返回闯关地图</a></div>;
   if (error) return <div className="empty-state"><h2>题库未能加载</h2><p>{error}</p><button className="secondary-button" onClick={() => { setError(''); setAttempt(a => a + 1); }}><RotateCcw size={16} />重试</button></div>;
   if (!run) return <div className="reader-loading play-loading" aria-live="polite"><Swords size={28} />正在准备关卡…</div>;

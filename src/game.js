@@ -97,6 +97,12 @@ export function shuffle(items, random = Math.random) {
   return a;
 }
 
+// Daily challenge scope: 'today' (all courses), a course id, or an exercise chapter id.
+export function dailyQuestions(all, scope = 'today', day = today()) {
+  const pool = all.filter(q => scope === 'today' || q.course === scope || q.chapter === scope).sort((a, b) => a.key.localeCompare(b.key));
+  return shuffle(pool, seeded(scope === 'today' ? day : `${day}:${scope}`)).slice(0, DAILY_SIZE);
+}
+
 export const BADGES = [
   { id: 'first', name: '首战告捷', desc: '第一次答对选择题', glyph: '✓', test: s => s.fixed.length > 0 || Object.values(s.firstTry).some(v => v !== 'incorrect') },
   { id: 'answer100', name: '百题斩', desc: '作答 100 道选择题', glyph: '100', test: s => Object.keys(s.firstTry).length >= 100 },
@@ -123,7 +129,7 @@ export const cheer = (right, random = Math.random) => (right ? PRAISE : COMFORT)
 
 // The learning record kept in localStorage and, for signed-in learners, in the cloud.
 export const DEFAULT_LEARNING = { bookmarks: [], completed: [], mastered: [], last: null, positions: {}, fontSize: 18, sidebarCollapsed: false, quizAnswers: {},
-  firstTry: {}, wrong: [], fixed: [], levels: {}, days: [], badges: [], dailyDone: [], bestCombo: 0, rushBest: 0, rankSeen: -1, soundOn: false };
+  firstTry: {}, wrong: [], fixed: [], levels: {}, days: [], badges: [], dailyDone: [], bestCombo: 0, rushBest: 0, rankSeen: -1, soundOn: false, dailyScope: 'today' };
 const strings = value => Array.isArray(value) ? value.filter(v => typeof v === 'string') : [];
 const object = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 const count = value => Number.isFinite(value) && value >= 0 ? value : 0;
@@ -132,7 +138,8 @@ export function normalizeLearning(s) {
   return { ...DEFAULT_LEARNING, bookmarks: strings(s.bookmarks), completed: strings(s.completed), mastered: strings(s.mastered), last: typeof s.last === 'string' ? s.last : null,
     positions: object(s.positions), fontSize: [16, 18, 20, 22].includes(s.fontSize) ? s.fontSize : 18, sidebarCollapsed: s.sidebarCollapsed === true, quizAnswers: object(s.quizAnswers),
     firstTry: object(s.firstTry), wrong: strings(s.wrong), fixed: strings(s.fixed), levels: object(s.levels), days: strings(s.days), badges: strings(s.badges), dailyDone: strings(s.dailyDone),
-    bestCombo: count(s.bestCombo), rushBest: count(s.rushBest), rankSeen: Number.isInteger(s.rankSeen) ? s.rankSeen : -1, soundOn: s.soundOn === true };
+    bestCombo: count(s.bestCombo), rushBest: count(s.rushBest), rankSeen: Number.isInteger(s.rankSeen) ? s.rankSeen : -1, soundOn: s.soundOn === true,
+    dailyScope: typeof s.dailyScope === 'string' && /^[a-z0-9-]{1,40}$/.test(s.dailyScope) ? s.dailyScope : 'today' };
 }
 
 // Combine two copies of a record so that no progress is lost. The cloud copy keeps

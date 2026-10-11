@@ -512,3 +512,25 @@
   .board-side { display: none; }
   .board-metric { min-width: 0; font-size: 16px; }
 }
+
+/* Daily challenge scope picker */
+.mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.daily-card { grid-column: 1 / -1; cursor: default; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 16px 24px; background: linear-gradient(120deg, #fff8e6, #fff 55%); border-color: #f3dfa6; }
+.daily-card:hover { transform: translateY(-3px); }
+.daily-card-info { display: flex; align-items: center; gap: 14px; flex: 1 1 320px; min-width: 0; }
+.daily-card-info .mode-icon { margin: 0; flex-shrink: 0; }
+.daily-card .mode-tag { position: static; align-self: flex-start; white-space: nowrap; }
+.daily-scope { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex: 1 1 420px; justify-content: flex-end; }
+.daily-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.daily-chips button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #fff; border: 1px solid #ecdcae; color: #6c5a2a; font-size: 13px; transition: transform .18s var(--spring), background .2s, color .2s; }
+.daily-chips button:hover { transform: translateY(-2px); }
+.daily-chips button.active { background: #f08a24; border-color: #f08a24; color: #fff; }
+.daily-chips button.active .course-dot { background: #fff; }
+.daily-chapter { padding: 8px 12px; border-radius: 10px; border: 1px solid #ecdcae; background: #fff; color: #4b3c14; font: inherit; font-size: 13px; max-width: 100%; }
+.daily-start { padding: 9px 16px; border-radius: 12px; font-weight: 700; }
+.daily-card.done { background: linear-gradient(120deg, #e8f7ef, #fff 55%); border-color: #bfe6d3; }
+@media (max-width: 800px) {
+  .mode-grid { grid-template-columns: 1fr; }
+  .daily-scope { justify-content: flex-start; }
+  .daily-chapter, .daily-start { width: 100%; justify-content: center; }
+}
