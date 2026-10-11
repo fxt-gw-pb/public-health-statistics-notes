@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Trophy, Flame, Star, Heart, Zap, Timer, Lock, Crown, Swords, CalendarCheck, Volume2, VolumeX, Target, Sparkles, ArrowRight, Award, X, Check, BookOpen, RotateCcw, ChevronRight, Undo2 } from 'lucide-react';
+import { Cloud, Trophy, Flame, Star, Heart, Zap, Timer, Lock, Crown, Swords, CalendarCheck, Volume2, VolumeX, Target, Sparkles, ArrowRight, Award, X, Check, BookOpen, RotateCcw, ChevronRight, Undo2 } from 'lucide-react';
 import { chapterHref, enrichContent } from './content.js';
 import { gradeChoice } from './quiz.js';
 import { RANKS, XP, LEVEL_HEARTS, BOSS_SIZE, DAILY_SIZE, REVIEW_SIZE, RUSH_SECONDS, BADGES, rankOf, xpBreakdown, streakOf, recordAnswer, recordLevel, starsFor, levelState, bossLevel, bossId, seeded, shuffle, today, cheer } from './game.js';
@@ -66,7 +66,7 @@ export function RankChip({ learning: s }) {
 }
 
 // Shown on the overview page as the entrance to the challenge mode.
-export function RankPanel({ learning: s, manifest: m }) {
+export function RankPanel({ learning: s, manifest: m, signedIn }) {
   const parts = xpBreakdown(s), rank = rankOf(parts.total), streak = streakOf(s.days), dailyDone = s.dailyDone.includes(today());
   const answered = Object.keys(s.firstTry).length, right = Object.values(s.firstTry).filter(v => v !== 'incorrect').length;
   return <section className="rank-panel" style={{ '--rank': rank.color, '--rank-light': rank.light }} aria-label="我的段位">
@@ -88,6 +88,7 @@ export function RankPanel({ learning: s, manifest: m }) {
     <div className="rank-panel-actions">
       <a className={`daily-cta ${dailyDone ? 'done' : ''}`} href="#/play/daily/today">{dailyDone ? <CalendarCheck size={18} /> : <Sparkles size={18} />}<span><strong>{dailyDone ? '今日挑战已完成' : '每日挑战'}</strong><small>{dailyDone ? '明天还有新的 5 题' : `5 道随机题 · +${XP.daily} XP`}</small></span></a>
       <a className="primary-button arena-cta" href="#/arena"><Trophy size={17} />进入闯关<ArrowRight size={16} /></a>
+      {!signedIn && <button className="save-cta" onClick={() => window.dispatchEvent(new Event('ph-open-account'))}><Cloud size={15} />创建个人存档，换设备不丢进度</button>}
     </div>
   </section>;
 }

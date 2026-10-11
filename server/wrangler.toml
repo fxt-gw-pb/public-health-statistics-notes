@@ -1,0 +1,12 @@
+name = "medstats-sync"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "medstats-sync"
+database_id = "56262adc-1fd9-4f4d-91ba-a9aea02ea144"
+
+[observability]
+enabled = true

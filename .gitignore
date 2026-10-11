@@ -6,3 +6,5 @@ dist/
 *.aux
 *.out
 *.synctex.gz
+.dev.vars
+.wrangler/

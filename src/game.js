@@ -120,3 +120,42 @@ export const newBadges = s => BADGES.filter(b => !s.badges.includes(b.id) && b.t
 const PRAISE = ['漂亮！', '稳如最小二乘！', 'p < 0.05，显著正确！', '置信区间稳稳覆盖！', '残差为零，完美拟合！', '这一题拿下了！', '方向找对了！'];
 const COMFORT = ['别灰心，残差也是信息。', '再看看解析，下次就对了。', '错误是最好的样本。', '方差大一点没关系，继续！', '记进错题本，回头复活它。'];
 export const cheer = (right, random = Math.random) => (right ? PRAISE : COMFORT)[Math.floor(random() * (right ? PRAISE : COMFORT).length)];
+
+// The learning record kept in localStorage and, for signed-in learners, in the cloud.
+export const DEFAULT_LEARNING = { bookmarks: [], completed: [], mastered: [], last: null, positions: {}, fontSize: 18, sidebarCollapsed: false, quizAnswers: {},
+  firstTry: {}, wrong: [], fixed: [], levels: {}, days: [], badges: [], dailyDone: [], bestCombo: 0, rushBest: 0, rankSeen: -1, soundOn: false };
+const strings = value => Array.isArray(value) ? value.filter(v => typeof v === 'string') : [];
+const object = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+const count = value => Number.isFinite(value) && value >= 0 ? value : 0;
+export function normalizeLearning(s) {
+  if (!s || typeof s !== 'object' || Array.isArray(s)) return DEFAULT_LEARNING;
+  return { ...DEFAULT_LEARNING, bookmarks: strings(s.bookmarks), completed: strings(s.completed), mastered: strings(s.mastered), last: typeof s.last === 'string' ? s.last : null,
+    positions: object(s.positions), fontSize: [16, 18, 20, 22].includes(s.fontSize) ? s.fontSize : 18, sidebarCollapsed: s.sidebarCollapsed === true, quizAnswers: object(s.quizAnswers),
+    firstTry: object(s.firstTry), wrong: strings(s.wrong), fixed: strings(s.fixed), levels: object(s.levels), days: strings(s.days), badges: strings(s.badges), dailyDone: strings(s.dailyDone),
+    bestCombo: count(s.bestCombo), rushBest: count(s.rushBest), rankSeen: Number.isInteger(s.rankSeen) ? s.rankSeen : -1, soundOn: s.soundOn === true };
+}
+
+// Combine two copies of a record so that no progress is lost. The cloud copy keeps
+// its earlier first attempts; display preferences stay with this device.
+export function mergeLearning(local, cloud) {
+  const a = normalizeLearning(local), b = normalizeLearning(cloud);
+  const union = key => [...new Set([...b[key], ...a[key]])];
+  const fixed = union('fixed');
+  const wrong = union('wrong').filter(k => !fixed.includes(k) || (a.wrong.includes(k) && b.wrong.includes(k)));
+  const levels = { ...b.levels };
+  for (const [id, l] of Object.entries(a.levels)) {
+    const o = levels[id] || {};
+    levels[id] = { stars: Math.max(l.stars || 0, o.stars || 0), best: Math.max(l.best || 0, o.best || 0), plays: Math.max(l.plays || 0, o.plays || 0) };
+  }
+  return { ...a, bookmarks: union('bookmarks'), completed: union('completed'), mastered: union('mastered'), badges: union('badges'), dailyDone: union('dailyDone'), days: union('days').sort().slice(-400),
+    fixed, wrong, levels, firstTry: { ...a.firstTry, ...b.firstTry }, quizAnswers: { ...b.quizAnswers, ...a.quizAnswers }, positions: { ...b.positions, ...a.positions },
+    last: a.last || b.last, bestCombo: Math.max(a.bestCombo, b.bestCombo), rushBest: Math.max(a.rushBest, b.rushBest), rankSeen: Math.max(a.rankSeen, b.rankSeen) };
+}
+export const hasProgress = s => xpBreakdown(normalizeLearning(s)).total > 0 || normalizeLearning(s).bookmarks.length > 0;
+
+// The figures shown on the leaderboard, sent with each cloud save.
+export function summaryOf(s) {
+  const parts = xpBreakdown(s), answered = Object.keys(s.firstTry).length;
+  return { xp: parts.total, stars: parts.starCount, answered, correct: Object.values(s.firstTry).filter(v => v !== 'incorrect').length,
+    streak: streakOf(s.days), lastDay: [...s.days].sort().at(-1) || '', rank: rankOf(parts.total).ordinal };
+}

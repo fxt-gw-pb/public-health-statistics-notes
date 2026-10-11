@@ -80,3 +80,18 @@ assert.equal(streakOf(['2026-10-08'], '2026-10-11'), 0);
 assert.deepEqual(newBadges(s), ['first']);
 assert.deepEqual(shuffle([1, 2, 3, 4, 5], seeded('2026-10-11')), shuffle([1, 2, 3, 4, 5], seeded('2026-10-11')));
 console.log(JSON.stringify({ challengeQuestions: bank.size, levels: manifest.levels.length, rankAndXpRules: 'passed' }));
+
+// Merging this device's record with the cloud copy never loses progress.
+const { mergeLearning, normalizeLearning } = await import('../src/game.js');
+const deviceA = { ...blank, completed: ['a'], firstTry: { q1: 'correct', q2: 'incorrect' }, wrong: ['q2'], levels: { L1: { stars: 1, best: .6, plays: 2 } }, bestCombo: 4, fontSize: 20, quizAnswers: { q1: 'A' } };
+const cloudB = { ...blank, completed: ['b'], firstTry: { q2: 'correct', q3: 'incorrect' }, wrong: ['q3'], fixed: [], levels: { L1: { stars: 3, best: 1, plays: 1 }, L2: { stars: 2, best: .8, plays: 1 } }, bestCombo: 9, fontSize: 16, quizAnswers: { q1: 'B' } };
+const merged = mergeLearning(deviceA, cloudB);
+assert.deepEqual(merged.completed.sort(), ['a', 'b']);
+assert.deepEqual(merged.firstTry, { q1: 'correct', q2: 'correct', q3: 'incorrect' });
+assert.deepEqual(merged.levels.L1, { stars: 3, best: 1, plays: 2 }); assert.equal(merged.levels.L2.stars, 2);
+assert.equal(merged.bestCombo, 9); assert.equal(merged.fontSize, 20); assert.equal(merged.quizAnswers.q1, 'A');
+assert.deepEqual(merged.wrong.sort(), ['q2', 'q3']);
+assert.deepEqual(mergeLearning({ ...blank, wrong: ['q'], fixed: [] }, { ...blank, wrong: [], fixed: ['q'] }).wrong, []);
+assert.deepEqual(mergeLearning(merged, merged), merged);
+assert.deepEqual(normalizeLearning({ completed: 'oops', levels: [], bestCombo: -3 }).completed, []);
+console.log(JSON.stringify({ progressMerge: 'passed' }));

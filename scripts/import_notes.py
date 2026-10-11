@@ -420,7 +420,7 @@ def arena_levels(record):
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True); LOCAL.mkdir(exist_ok=True)
-    manifest = dict(title='公卫统计 · 学习笔记', updated='2026-10-11', sourceUpdated='2026-10-11', courses=[], chapters=[])
+    manifest = dict(title='医学统计学 · 学习笔记', updated='2026-10-11', sourceUpdated='2026-10-11', courses=[], chapters=[])
     figure_manifest = {}; search = []; all_warnings = []; coverage = {}; levels = []
     for idx, course in enumerate(COURSES):
         course = dict(course)

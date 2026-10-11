@@ -1,4 +1,4 @@
-# 公卫统计 · 学习笔记
+# 医学统计学 · 学习笔记
 
 [在线阅读](https://fxt-gw-pb.github.io/public-health-statistics-notes/)
 
@@ -31,7 +31,22 @@
 - 闯关题目和共用资料来自 `public/data/arena-<课程>.json`，由 `scripts/import_notes.py` 与章节数据一起生成；一组题共用的案例材料只在同一题号系列内连续沿用。
 - 适配电脑和手机，提供三份原 PDF 下载。
 
-学习进度、收藏、已掌握题目、闯关记录、XP 和字号只保存在当前浏览器的 `localStorage`，无需登录。不同设备或浏览器之间不会自动同步；清理浏览器数据会清除这些记录。
+## 个人存档与排行榜
+
+- 不登录也能使用全部功能，进度保存在当前浏览器的 `localStorage`。
+- 点击右上角“登录存档”，用 **用户名 + 6 位 PIN** 创建或登录存档后，学习进度、闯关记录、XP、收藏会自动同步到云端，换设备登录即可继续；首次登录可选择把本机进度并入。两台设备同时修改时按版本号合并，不会互相覆盖。
+- **排行榜**（`#/leaderboard`）按总 XP、星星、连续天数排名，也可按用户名（拼音）排序；可在存档设置中随时隐藏自己。榜单数字来自各自的学习记录，服务器只检查数值是否合理。
+- 安全：PIN 以加盐 HMAC（服务器密钥）保存；同一账户连续输错 5 次锁定 15 分钟，同一网络地址每小时最多 20 次失败；禁止 123456、111111 等易猜 PIN。没有邮箱找回，忘记 PIN 无法恢复，可在存档设置中导出备份文件。可修改 PIN（其他设备需重新登录）或删除云端存档。
+- 后端是 `server/` 中的 Cloudflare Worker + D1（`medstats-sync`），接口地址写在 `src/sync.js`。本地开发：
+
+```sh
+cd server && npm ci
+echo 'PIN_PEPPER="<64 位十六进制>"' > .dev.vars
+npm run migrate:local && npm run dev          # http://127.0.0.1:8787
+VITE_SYNC_API=http://127.0.0.1:8787 npm run dev   # 在仓库根目录
+```
+
+部署：`npx wrangler deploy`（表结构变化时先 `npm run migrate`；密钥用 `npx wrangler secret put PIN_PEPPER` 设置，不入库）。
 
 ## 本地运行
 
@@ -56,6 +71,7 @@ npm run preview
 
 ```text
 src/                  网页界面、阅读样式和公式处理
+server/               个人存档与排行榜后端（Cloudflare Worker + D1）
 notes/                三门课程最终 LaTeX 正文、宏与配图
 public/data/          已转换的 36 份章节数据、目录及搜索索引
 public/figures/       原图渲染结果与原笔记配图
