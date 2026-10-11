@@ -8,3 +8,4 @@ dist/
 *.synctex.gz
 .dev.vars
 .wrangler/
+.relay-key

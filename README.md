@@ -37,7 +37,9 @@
 - 点击右上角“登录存档”，用 **用户名 + 6 位 PIN** 创建或登录存档后，学习进度、闯关记录、XP、收藏会自动同步到云端，换设备登录即可继续；首次登录可选择把本机进度并入。两台设备同时修改时按版本号合并，不会互相覆盖。
 - **排行榜**（`#/leaderboard`）按总 XP、星星、连续天数排名，也可按用户名（拼音）排序；可在存档设置中随时隐藏自己。榜单数字来自各自的学习记录，服务器只检查数值是否合理。
 - 安全：PIN 以加盐 HMAC（服务器密钥）保存；同一账户连续输错 5 次锁定 15 分钟，同一网络地址每小时最多 20 次失败；禁止 123456、111111 等易猜 PIN。没有邮箱找回，忘记 PIN 无法恢复，可在存档设置中导出备份文件。可修改 PIN（其他设备需重新登录）或删除云端存档。
-- 后端是 `server/` 中的 Cloudflare Worker + D1（`medstats-sync`），接口地址写在 `src/sync.js`。本地开发：
+- 后端是 `server/` 中的 Cloudflare Worker + D1（`medstats-sync`）。由于 `*.workers.dev` 在中国大陆无法直接访问，网页优先连接阿里云函数计算（香港）上的中转函数 `server/relay/`，它把 `/api/` 请求原样转给 Worker，并凭共享密钥 `RELAY_KEY` 报告访问者 IP 用于限流；中转不可用时自动改连 Worker。两个地址都写在 `src/sync.js`。
+- 更新中转：在 `server/relay/` 运行 `RELAY_KEY="$(cat ../.relay-key)" npx @serverless-devs/s@3.1.10 deploy -y`（需先用 `s config add` 配置只含 AliyunFCFullAccess 权限的 RAM 密钥；`.relay-key` 不入库，与 Worker 的 `RELAY_KEY` 密钥一致）。
+- 本地开发：
 
 ```sh
 cd server && npm ci

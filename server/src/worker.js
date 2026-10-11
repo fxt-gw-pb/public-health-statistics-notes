@@ -89,7 +89,14 @@ function checkProgress(progress) {
 }
 
 const pinHash = (env, salt, pin) => hmac(env.PIN_PEPPER, `${salt}:${pin}`);
-const clientKey = (env, request) => hmac(env.PIN_PEPPER, `ip:${request.headers.get('CF-Connecting-IP') || 'local'}`);
+// Requests relayed from mainland China arrive from the relay's address; the relay
+// reports the learner's address, which is trusted only with the shared relay key.
+function clientAddress(env, request) {
+  const key = request.headers.get('X-Relay-Key');
+  if (key && env.RELAY_KEY && sameString(key, env.RELAY_KEY) && request.headers.get('X-Client-IP')) return request.headers.get('X-Client-IP');
+  return request.headers.get('CF-Connecting-IP') || 'local';
+}
+const clientKey = (env, request) => hmac(env.PIN_PEPPER, `ip:${clientAddress(env, request)}`);
 
 async function ipCount(env, ip, kind, now) {
   await env.DB.prepare('DELETE FROM ip_events WHERE ip_hash = ? AND at < ?').bind(ip, now - 86400_000).run();

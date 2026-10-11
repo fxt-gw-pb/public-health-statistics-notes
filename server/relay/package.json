@@ -1,0 +1,6 @@
+{
+  "name": "medstats-relay",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js"
+}

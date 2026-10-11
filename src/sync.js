@@ -1,22 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_LEARNING, mergeLearning, normalizeLearning, summaryOf } from './game.js';
 
-// Cloudflare Worker in server/. Override with VITE_SYNC_API for local testing.
-export const SYNC_API = (import.meta.env.VITE_SYNC_API || 'https://medstats-sync.2210306202.workers.dev').replace(/\/$/, '');
+// The Alibaba Cloud relay (server/relay) is reachable from mainland China; the
+// Cloudflare Worker behind it (server/) is the fallback. VITE_SYNC_API overrides both.
+const RELAY_API = 'https://medstats-relay-kfepmywjpl.cn-hongkong.fcapp.run';
+const WORKER_API = 'https://medstats-sync.2210306202.workers.dev';
+const ENDPOINTS = (import.meta.env.VITE_SYNC_API ? [import.meta.env.VITE_SYNC_API] : [RELAY_API, WORKER_API]).filter(Boolean).map(u => u.replace(/\/$/, ''));
+let preferred = 0;
 const ACCOUNT_KEY = 'ph-statistics-account-v1';
 const PUSH_DELAY = 2500;
 
 export class SyncError extends Error {
   constructor(status, message, body = {}) { super(message); this.status = status; this.body = body; }
 }
+// Try the endpoint that last worked, then the others. A request moves on only when
+// it could not reach the backend (network failure, or the relay reporting 502).
 export async function api(path, { method = 'GET', body, token, keepalive = false } = {}) {
-  let response;
-  try {
-    response = await fetch(`${SYNC_API}${path}`, { method, keepalive, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
-  } catch { throw new SyncError(0, '无法连接存档服务，请检查网络。'); }
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new SyncError(response.status, data.error || data.message || '存档服务暂时不可用。', data);
-  return data;
+  const order = ENDPOINTS.map((_, i) => (preferred + i) % ENDPOINTS.length);
+  for (const index of order) {
+    let response;
+    try {
+      response = await fetch(`${ENDPOINTS[index]}${path}`, { method, keepalive, signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
+    } catch { continue; }
+    if (response.status === 502 && index !== order.at(-1)) continue;
+    preferred = index;
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new SyncError(response.status, data.error || data.message || '存档服务暂时不可用。', data);
+    return data;
+  }
+  throw new SyncError(0, '无法连接存档服务，请检查网络后重试。');
 }
 
 function readAccount() {
