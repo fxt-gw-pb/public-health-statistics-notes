@@ -1,0 +1,166 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-01}{延迟入组与风险集}
+某教学资料以确诊为时间起点，记录进入观察的时间$a$和退出观察的时间$t$（月）。采用$(a,t]$约定，即个体只在$a<u\le t$时属于时刻$u$的风险集。
+\begin{center}\begin{tabular}{crrr}\toprule
+对象 & $a$ & $t$ & 事件指示\\\midrule
+A & 0 & 2 & 1\\
+B & 1 & 4 & 1\\
+C & 3 & 5 & 0\\
+D & 4 & 6 & 1\\\bottomrule
+\end{tabular}\end{center}
+第4个月事件发生前的风险集为（\quad）。
+\begin{choices}
+\item A、B、C、D
+\item B、C、D
+\item B、C
+\item C、D
+\item 只有B
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-02}{独立删失的条件}
+某队列中轻症与重症各占一半。已知在每个严重程度组内，事件时间$T$与删失时间$C$相互独立；但重症者的事件时间和删失时间总体上都较短。关于不分严重程度而直接计算全队列KM曲线，下列哪项正确（\quad）？
+\begin{choices}
+\item 组内独立必然推出全队列$T$与$C$独立，因此直接合并一定适当
+\item 组内独立不足以保证合并后的独立删失，应考虑按基线严重程度分层估计并明确目标人群
+\item 只要两组人数相同，删失机制就不会影响合并KM估计
+\item 将所有重症删失者改记为事件即可消除偏倚
+\item 先删除所有删失者，再按严重程度合并就能得到无偏估计
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-03}{分组记录与区间内顺序}
+一份教学随访资料只保留某时间区间的汇总：期初20人，区间内死亡5人、右删失10人，区间末仍有5人。区间内没有新入组者，也没有记录精确事件/删失时间。设本区间开始时的生存率为1。关于本区间末的生存率，下列哪项正确（\quad）？
+\begin{choices}
+\item KM估计只能为$15/20=0.75$
+\item KM估计只能为$5/20=0.25$
+\item 寿命表估计为$0.50$，与删失发生时间无关
+\item 只凭这些汇总数就能唯一确定KM估计为$2/3$
+\item 可能的KM估计最小为$0.50$、最大为$0.75$；寿命表按半数删失修正得到$2/3$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-04}{生存率区间的反变换}
+某教学KM估计为$\widehat S=0.90$，Greenwood求和项为
+$G=\sum_i d_i/\{n_i(n_i-d_i)\}=1/90$。
+采用对数负对数变换
+\[
+g=\log(-\log\widehat S),\qquad
+SE(g)=\frac{\sqrt G}{|\log\widehat S|}.
+\]
+将$g\pm1.96SE(g)$反变换得到的95\%置信区间最接近（\quad）。
+\begin{choices}
+\item $(0.985,\,0.473)$
+\item $(0.714,\,1.086)$
+\item $(0.800,\,1.000)$
+\item $(0.473,\,0.985)$
+\item $(0.100,\,0.900)$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-05}{并列事件时的期望与方差}
+某教学比较中，一个事件时刻之前A、B两组分别有6人和4人在风险集中，该时刻共发生3个事件。在两组生存分布相同的原假设下，给定风险人数和总事件数，A组事件数的期望$E_A$与超几何方差$V_A$分别为（\quad）。
+\begin{choices}
+\item $1.80$与$0.56$
+\item $1.80$与$0.72$
+\item $1.80$与$1.80$
+\item $3.00$与$0.56$
+\item $0.60$与$0.24$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-06}{检验权重与软件选项}
+关于两组生存曲线比较，判断以下命题：
+\begin{enumerate}
+\item[I.] 普通logrank检验对各事件时刻的$O_i-E_i$贡献采用权重1。
+\item[II.] R中\rinline{survdiff(..., rho=1)}在任何资料上都与以总风险人数$n_i$为权重的Breslow广义Wilcoxon检验相同。
+\item[III.] 应根据预先关心的生存差异选择检验；两种检验都计算后只报告较小的$P$值，会改变原来宣称的检验程序。
+\end{enumerate}
+正确的组合是（\quad）。
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、III
+\item II、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG4-07}{相同中位数能说明什么}
+一组新编教学资料得到如下KM汇总，按$\inf\{t:\widehat S(t)\le0.5\}$定义，两组中位生存期均为12个月：
+\begin{center}\begin{tabular}{crrr}\toprule
+组别 & $\widehat S(6)$ & $\widehat S(12)$ & $\widehat S(24)$\\\midrule
+A & 0.750 & 0.500 & 0.250\\
+B & 0.875 & 0.500 & 0.125\\\bottomrule
+\end{tabular}\end{center}
+研究者说：“中位数相同，说明两组生存经历相同；即使logrank显著，也只是与中位数结论相矛盾。”请评议，并说明若科学问题是“24个月生存率是否不同”，应明确什么检验目标。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-08}{公开肺癌资料的生存输出}
+使用公开的\rinline{survival::veteran}完整137例肺癌试验资料，以入组后的时间（天）为时间轴，$\mathrm{status}=1$表示死亡、$0$表示右删失。以下按细胞类型分组的结果由完整资料重新计算：
+\begin{center}\begin{tabular}{lrrr}\toprule
+细胞类型 & 人数 & 死亡数 & KM中位数（天）\\\midrule
+鳞状细胞 & 35 & 31 & 118\\
+小细胞 & 48 & 45 & 51\\
+腺癌 & 27 & 26 & 51\\
+大细胞 & 27 & 26 & 156\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}\begin{tabular}{lrrrr}\toprule
+细胞类型 & $n(90)$ & $\widehat S(90)$ & $SE\{\widehat S(90)\}$ & $n(365)$\\\midrule
+鳞状细胞 & 20 & 0.622222 & 0.082839 & 6\\
+小细胞 & 14 & 0.291667 & 0.065606 & 2\\
+腺癌 & 8 & 0.288066 & 0.088652 & 0\\
+大细胞 & 20 & 0.740741 & 0.084337 & 2\\\bottomrule
+\end{tabular}\end{center}
+$n(t)$为时刻$t$之前的风险人数，$\widehat S(t)$计入$t$时刻事件后的估计。四组总体logrank统计量为25.4037。
+\begin{enumerate}
+\item 给出总体检验的自由度及$H_0$，在$\alpha=0.05$下作结论。能否据此断言任意两种细胞类型都有显著差异？
+\item 若事先指定比较大细胞与小细胞的90天生存率，按
+\[
+Z=\frac{\widehat S_{\mathrm L}(90)-\widehat S_{\mathrm S}(90)}
+{\sqrt{SE_{\mathrm L}^2+SE_{\mathrm S}^2}}
+\]
+求差值、$Z$及近似结论。它与总体logrank检验的目标有何不同？
+\item 结合$n(365)$，说明报告远期生存结果时还需注意什么。不同类型之间的差异可直接解释为随机化的治疗效应吗？
+\end{enumerate}
+供查用：$\chi^2_{3,0.95}=7.815$，$z_{0.975}=1.96$。
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG4-09}{两种生存检验的计算}
+以下为新编教学资料。A、B两组各50人，均从第0天开始随访；事件只出现在表列的四个记录时刻，此前无删失。最后存活的18名A组对象和2名B组对象均在第365天右删失。
+\begin{center}\begin{tabular}{rrrrr}\toprule
+时间（天） & $n_{Ai}$ & $n_{Bi}$ & $d_{Ai}$ & $d_{Bi}$\\\midrule
+30 & 50 & 50 & 20 & 0\\
+90 & 30 & 50 & 12 & 8\\
+180 & 18 & 42 & 0 & 20\\
+270 & 18 & 22 & 0 & 20\\\bottomrule
+\end{tabular}\end{center}
+记$n_i=n_{Ai}+n_{Bi}$、$d_i=d_{Ai}+d_{Bi}$，
+\[
+E_{Ai}=\frac{n_{Ai}d_i}{n_i},\qquad
+V_i=\frac{n_{Ai}n_{Bi}d_i(n_i-d_i)}{n_i^2(n_i-1)}.
+\]
+\begin{enumerate}
+\item 列出各时刻$O_{Ai}-E_{Ai}$，求普通logrank的$U=\sum(O-E)$、$V=\sum V_i$与$\chi^2=U^2/V$。
+\item 按课程中的Breslow广义Wilcoxon定义，取$w_i=n_i$，计算
+$U_w=\sum w_i(O-E)$、$V_w=\sum w_i^2V_i$及$\chi_w^2=U_w^2/V_w$。
+\item 已知$\chi^2_{1,0.95}=3.841$，比较两项大样本近似检验的结论。结合30天和270天KM生存率，说明这些结果能否支持某组在整个随访期始终更好。
+\end{enumerate}
+\end{minipage}\par\medskip
+
+\Question{SUPG4-10}{诊断后登记的生存报告}
+某新编登记案例只纳入确诊后满6个月仍存活并完成登记的120人，此后开始正式随访。部分患者因病情恶化而停止来院。分析者将所有人确诊至登记之间的6个月补作“已观察、无事件”，从确诊日画KM曲线，报告“全体初诊患者5年生存率为80\%”。5年前风险集仅余3人，最后一段曲线保持水平；他进一步解释“远期风险已降为0”。
+
+请指出这份报告在目标人群、观察起点、删失和尾部解释上的主要问题，并提出可实施的修改。仅改用含延迟入组的程序，能否从这批资料补出确诊后前6个月的生存概率？

@@ -1,0 +1,96 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-01}{事件率与至少一次事件的概率}
+教学设定某类可重复发生事件的恒定率为每人每月1.5次，个体间及不相交时段的计数独立。某人观察2个月，计数服从Poisson分布。以下哪一项正确？
+\begin{choices}
+\item 率为1.5大于1，因此不可能建立Poisson模型。
+\item 2个月内至少发生一次事件的概率为3。
+\item 2个月内计数均数为1.5，至少发生一次的概率为$1-e^{-1.5}$。
+\item 2个月内计数均数为3，至少发生一次的概率为$1-e^{-3}\approx0.9502$。
+\item 2个月内计数均数为3，至少发生一次的概率为$e^{-3}\approx0.0498$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-02}{同协变量分组的合并率估计}
+教学设定两个独立观察组具有相同协变量和共同事件率$\lambda$。第一组100人年内观察到4次事件，第二组300人年内观察到3次事件；计数分别服从均数$100\lambda$和$300\lambda$的Poisson分布。$\lambda$的极大似然估计为多少次/人年？
+\begin{choices}
+\item $0.0175$。
+\item $0.0250$。
+\item $0.0350$。
+\item $0.0400$。
+\item $0.0100$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-03}{准Poisson的尺度调整}
+教学设定某Poisson拟合的一个系数估计为$\widehat\beta=-0.4$、模型标准误为0.1；Pearson统计量为147.2，剩余自由度为46。保持相同样本、公式、连接函数及权重，改用准Poisson，按$\widehat\phi=X_P^2/\mathrm{df}$估计尺度；按R的约定，估计尺度后的系数检验使用$t$分布。正确的结果是哪一项？
+\begin{choices}
+\item $\widehat\beta=-1.28$，标准误为0.32。
+\item $\widehat\beta=-0.4$，标准误约0.1789，检验量约$-2.236$，参照$t_{46}$。
+\item $\widehat\beta=-0.4$，标准误仍为0.1，检验量为$-4$。
+\item $\widehat\beta=-0.125$，标准误约0.0559。
+\item $\widehat\beta=-0.4$，标准误为0.32，检验量为$-1.25$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-04}{总样本的方差均数比能说明什么}
+教学设定$X$以相同概率取0或1，且$Y\mid X=0\sim\operatorname{Poisson}(1)$、$Y\mid X=1\sim\operatorname{Poisson}(9)$。以下关于边际分布及条件模型的判断，哪一项正确？
+\begin{choices}
+\item $E(Y)=5$、$\operatorname{Var}(Y)=5$，边际分布必为Poisson。
+\item $E(Y)=5$、$\operatorname{Var}(Y)=16$，所以条件Poisson假定不可能成立。
+\item $E(Y)=10$、$\operatorname{Var}(Y)=21$。
+\item $E(Y)=5$、$\operatorname{Var}(Y)=21$，足以证明给定$X$后仍有过离散。
+\item $E(Y)=5$、$\operatorname{Var}(Y)=21$；边际方差较大可由两组均数不同产生，不能据此否定已给定的条件Poisson模型。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-05}{NB2与准Poisson的方差形状}
+教学设定采用NB2参数化$\operatorname{Var}(Y\mid x)=\mu+\alpha\mu^2$，$\alpha=0.5$。两种协变量组合的均数分别为2和8。若试图用同一个准Poisson尺度$\phi$使$\operatorname{Var}(Y\mid x)=\phi\mu$在这两个均数处都相同，以下哪一项正确？
+\begin{choices}
+\item NB2方差分别为3和12，取$\phi=1.5$即可。
+\item NB2方差分别为4和16，取$\phi=2$即可。
+\item NB2方差分别为4和40，对应方差均数比分别为2和5，不能用同一个$\phi$精确匹配两处。
+\item NB2方差分别为2和8，取$\phi=1$即可。
+\item 只要$\alpha=0.5$，就总能取$\phi=0.5$使两种模型相同。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG7-06}{均值、相关性与零概率}
+判断以下命题。I中的估计均假定存在唯一有限解；III中$\mu>0,\alpha>0$。\begin{enumerate}[label=\Roman*.]\item 相同样本、设计矩阵、权重与log连接下，Poisson与准Poisson具有相同的回归系数估计。\item 对同一受试者的多次计数直接拟合独立NB2模型，就自动处理了受试者内相关。\item 在相同均数$\mu$下，NB2的零概率$(1+\alpha\mu)^{-1/\alpha}$大于Poisson的零概率$e^{-\mu}$。\end{enumerate}正确的组合是哪一项？
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I、II。
+\item I、III。
+\item I、II、III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG7-07}{基线计数能否当作offset}
+某重复事件研究中，所有患者基线观察8周，记录事件数$B_i$；随后随访$T_i$周，记录事件数$Y_i$。研究者希望估计随访期事件率。对$B_i>0$的患者，教学模型写为\[\log E(Y_i\mid B_i,x_i,T_i)=\log T_i+\beta_0+\gamma\log B_i+\beta_xx_i.\]设$\widehat\gamma=0.8$。\begin{enumerate}\item 在其他条件不变时，$B_i$加倍与$T_i$加倍分别意味着怎样的均数变化？\item 能否仅因$B_i$是计数，就把$\log B_i$也当成系数固定为1的offset？\item 应如何看待基线$B_i=0$者，以及所有随访均为2周时的$\log T_i$？\end{enumerate}
+
+\Question{SUPG7-08}{年龄交互与率比对比}
+以下为教学构造的独立Poisson组计数。$A=1$为高年龄组，$E=1$为暴露组，人时$T$的单位为人年。\begin{center}\small\begin{tabular}{@{}ccrr@{}}\toprule $A$ & $E$ & 事件数$Y$ & 人时$T$\\\midrule 0&0&20&1000\\0&1&40&1000\\1&0&60&1000\\1&1&45&1000\\\bottomrule\end{tabular}\end{center}拟合$\log\mu=\log T+\beta_0+\beta_EE+\beta_AA+\beta_{EA}EA$，重新计算得到$\widehat\beta_E=0.693147$、$\widehat\beta_{EA}=-0.980829$，以及\[\operatorname{Var}(\widehat\beta_E)=0.075000,\quad\operatorname{Var}(\widehat\beta_{EA})=0.113889,\quad\operatorname{Cov}(\widehat\beta_E,\widehat\beta_{EA})=-0.075000.\]\begin{enumerate}\item 求两个年龄层内暴露相对未暴露的发生率比，以及两层率比之比。\item 求高年龄层率比的95\% Wald置信区间，取$z_{0.975}=1.96$。\item 预测高年龄暴露组500人年内的期望事件数。此四组资料能否检验该含交互模型的整体拟合优度？\end{enumerate}
+
+\Question{SUPG7-09}{完整就诊资料的计数模型输出}
+使用AER公开$\mathrm{DoctorVisits}$全部5190人的资料，保留全部零就诊者。结局为过去两周就诊次数，其中4141人计数为0。Poisson和NB2均包含性别、年龄、年龄平方、收入、疾病数$\mathrm{illness}$、减少活动天数$\mathrm{reduced}$、健康评分、三种保险指标及两种慢病指标，共13个均数参数。基于完整数据的本次Python复算摘要如下；NB2的标准误采用估计$\alpha$下的GLM期望信息矩阵。\begin{center}\small\begin{tabular}{@{}lrr@{}}\toprule 项目 & Poisson & NB2\\\midrule $\widehat\beta_{\rm illness}$ & 0.186948 & 0.214341\\$\widehat\beta_{\rm reduced}$ & 0.126846 & 0.143754\\$SE(\widehat\beta_{\rm reduced})$ & 0.005034 & 0.007311\\Pearson统计量$X_P^2$ & 6873.982 & 5180.054\\剩余自由度$n-p$ & 5177 & 5177\\$\widehat\alpha$ & 0 & 1.077038\\预测零就诊人数$\sum_i\widehat P(Y_i=0)$ & 4013.761 & 4172.744\\\bottomrule\end{tabular}\end{center}采用NB2方差$\mu+\alpha\mu^2$，零概率$(1+\alpha\mu)^{-1/\alpha}$。\begin{enumerate}\item 解释NB2中疾病数增加1的条件均数比，求减少活动天数增加1所对应均数比的95\% Wald区间，取$z_{0.975}=1.96$。\item 若仅在相同均数$\mu=0.5$下比较两种分布，求NB2方差与零概率，并与Poisson零概率比较。\item 计算Poisson的Pearson尺度。结合观察与预测零人数，能否仅凭这些摘要认定必须采用零膨胀模型，或认定NB2已完全拟合资料？\end{enumerate}
+
+\Question{SUPG7-10}{校园犯罪案例的代码与版本审阅}
+教材作者公开的校园犯罪文件共有81校；其中$\mathrm{Enrollment}=5590$、事件数30的一校每千人率为5.3667，且这是唯一每千人率不低于5的学校。另一校原始在校人数为540、事件数0、$\mathrm{enroll1000}=0.54$。其余79校的在校人数均大于1000。按所核对的教材网页代码整理，先合并东南与西南地区，再保留每千人率小于5的学校，得到80行$\mathtt{c.data}$，随后执行：
+\begin{rcode}
+c.data2 <- transform(c.data,
+  enroll1000 = pmax(enroll1000, 1))
+fit <- MASS::glm.nb(nv ~ type * region,
+  offset(log(enroll1000)), data = c.data2)
+\end{rcode}
+本题提供现行函数形参次序$\mathtt{glm.nb(formula,data,weights,\ldots)}$；R先匹配有名字的实参，再把剩余未命名实参按位置匹配。\begin{enumerate}\item 说明这段处理中的81校、80行数据及540人学校分别发生了什么，是否只是改变人数的计量单位。\item 分析第二个未命名实参实际上匹配到什么；540人学校在该调用中的数值权重是多少？$\log(0.54)<0$本身是否妨碍它作为offset？\item 给出将原始每千人在校人数正确用作offset的核心公式，并说明删除高率学校后的分析应如何报告与核查。\end{enumerate}

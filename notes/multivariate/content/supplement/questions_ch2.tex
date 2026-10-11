@@ -1,0 +1,89 @@
+% 独立题号标签SUPM；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-01}{单因子模型对相关的约束}
+四个标准化变量满足单因子模型$Z_j=a_jF+u_j$，其中$\operatorname{Var}(F)=1$，特殊因子互不相关且与$F$不相关。已知总体相关系数$r_{12}=0.48$、$r_{13}=0.40$、$r_{14}=0.32$、$r_{23}=0.30$、$r_{24}=0.24$。若该模型精确成立，则$r_{34}$应为（\quad）。
+\begin{choices}
+\item $0.12$
+\item $0.16$
+\item $0.20$
+\item $0.24$
+\item $0.32$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-02}{斜交模式负荷能否超过1}
+在一个斜交因子模型中，标准化变量$Z_1$的模式负荷为$(1.10,-0.40)$，即$Z_1=1.10F_1-0.40F_2+u_1$。已知$\operatorname{Cov}(u_1,F)=0$，因子相关矩阵为\[\Phi=\begin{pmatrix}1&0.60\\0.60&1\end{pmatrix}.\]以下判断正确的是（\quad）。
+\begin{choices}
+\item 因模式负荷1.10超过1，特殊方差必为负值
+\item $\operatorname{Corr}(Z_1,F_1)=1.10$
+\item $Z_1$的共同度为$1.10^2+(-0.40)^2=1.37$
+\item 只要两个因子相关，特殊方差就不能作方差解释
+\item $Z_1$的共同度为0.842，特殊方差为0.158；该行本身不构成Heywood现象的证据
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-03}{样本量在相关矩阵分析中的作用}
+$R$为一个$8\times8$的相关矩阵。研究者先运行\texttt{factanal(covmat=R,factors=2)}，再使用同一$R$、同一起始值及旋转设置，补上\texttt{n.obs=305}重新运行。假定两次均收敛到同一内部最优解。补充样本量主要带来的变化是（\quad）。
+\begin{choices}
+\item 负荷和模型自由度不变，但可以计算依赖样本量的拟合检验统计量及$P$值
+\item 每个负荷都应乘以$\sqrt{305}$
+\item 模型自由度由13增加为304
+\item 软件自动恢复305人的原始观测及因子得分
+\item 两因子模型因此变为三因子模型
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-04}{空白负荷的阅读}
+某软件打印两因子负荷矩阵时，规定绝对值小于0.10的负荷不显示。$Z_1$所在行显示为“0.700、空白”。对这个空白项，解释最恰当的是（\quad）。
+\begin{choices}
+\item 该负荷在模型中已被约束为0
+\item 第二因子与$Z_1$的关系必定不存在
+\item 由空白即可认定$Z_1$的共同度恰为0.49
+\item 应查阅未截断的数值矩阵，不能直接把空白当作0计算共同度或还原相关
+\item 空白表示该负荷恰好等于0.10
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-05}{不同软件的因子方向}
+同一资料使用软件A、B，所得正交负荷矩阵满足$L_B=L_A\operatorname{diag}(-1,1)$，其余模型参数及标准化方式相同。两者均按各自负荷计算Bartlett得分。软件A中，受试者1、2的第一因子得分分别为1.2、0.4。以下判断正确的是（\quad）。
+\begin{choices}
+\item 软件B将两人的排序倒置，足以认定它计算错误
+\item 软件B的相应得分为$-1.2$、$-0.4$；解释高低前应统一因子方向
+\item 负荷变号时，两个个体的相应得分必须仍为1.2、0.4
+\item 软件B的第一因子贡献率因此成为负数
+\item 取负号必然使两个公因子从不相关变为相关
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM2-06}{因子与估计得分的区别}
+考虑零均值正交因子模型$Z=LF+u$，其中$\operatorname{Cov}(F)=I$、$\operatorname{Cov}(u)=\Psi$、$\operatorname{Cov}(F,u)=0$，$\Psi$为正对角矩阵。令$\Sigma=LL^T+\Psi$，采用模型型Thomson得分$\widehat F=L^T\Sigma^{-1}Z$。判断下列命题：\par I．只由$\operatorname{Cov}(F)=I$不能单独推出各因子相互独立。\par II．$\operatorname{Cov}(\widehat F)$必等于$I$。\par III．$\widehat F$是对未观测因子的估计，不能一般地当作无误差的因子真值。\par 正确的组合为（\quad）。
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、III
+\item II、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPM2-07}{相关矩阵能支持怎样的复现}
+研究团队公开了相关矩阵$R$、样本量$n$、正交负荷矩阵$L$和特殊方差矩阵$\Psi$，但未公开个体观测及变量原量纲下的均值、标准差。团队声称：“这些信息足以复算每个人的因子得分，并与另一批人的得分直接比较。”\par (1) 说明现有资料能复算哪些结果，为什么不能恢复每个人的得分。\par (2) 若要计算某个新受试者的Bartlett或Thomson得分，还需哪些资料和约定？\par (3) 为什么不能把两批资料分别标准化后，直接将得分均值差解释为潜在水平差？
+
+\Question{SUPM2-08}{八项体格指标的因子模型}
+305名7--17岁女孩的8项体格指标相关矩阵来自公开资料。以相关矩阵作最大似然两因子提取，并进行Kaiser标准化的varimax旋转，复算结果如下。以下均按标准化变量解释。\begin{center}\small\setlength{\tabcolsep}{5pt}\begin{tabular}{lrrr}\toprule 变量 & 因子1 & 因子2 & 特殊方差\\\midrule 身高 & 0.8649 & 0.2867 & 0.1698\\ 臂展 & 0.9275 & 0.1808 & 0.1071\\ 前臂长 & 0.8954 & 0.1790 & 0.1662\\ 小腿长 & 0.8587 & 0.2516 & 0.1994\\ 体重 & 0.2333 & 0.9254 & 0.0891\\ 髋宽 & 0.1945 & 0.7736 & 0.3637\\ 胸围 & 0.1342 & 0.7521 & 0.4163\\ 胸宽 & 0.2778 & 0.6214 & 0.5367\\\bottomrule\end{tabular}\end{center}两列负荷平方和分别为3.334811、2.616864；拟合统计量$\chi^2=75.73754$。身高与小腿长的样本相关为0.859，全部非对角残差相关绝对值的最大值为0.04499。\par (1) 计算模型自由度，在$\alpha=0.05$下作总体拟合检验。给定相应自由度下的临界值为22.3620，并假定常规近似卡方检验的条件可接受。\par (2) 计算胸宽的共同度、身高与小腿长的还原相关及残差相关。\par (3) 计算累计解释比例，评议“解释比例超过70\%，且所有残差都小于0.05，因此模型已经通过总体拟合检验”。
+
+\Question{SUPM2-09}{Bartlett与Thomson得分的收缩}
+以下为手算而构造的已知参数模型，不是实际样本估计结果：\[Z_j=0.6F+u_j,\quad j=1,2,3.\]设$F\sim N(0,1)$，三个$u_j$相互独立，均服从$N(0,0.64)$，并与$F$独立。令$L=(0.6,0.6,0.6)^T$、$\Psi=0.64I$、$\Sigma=LL^T+\Psi$及$c=L^T\Psi^{-1}L$。某人的标准化观测为$z=(1,1,1)^T$。\par (1) 用\[\widehat F_B=c^{-1}L^T\Psi^{-1}z,\qquad \widehat F_T=(1+c)^{-1}L^T\Psi^{-1}z\]分别计算Bartlett与模型型Thomson得分，并写出两者的比例。\par (2) 若固定$F=2$，求$E(\widehat F_B\mid F=2)$与$E(\widehat F_T\mid F=2)$，指出哪一种条件无偏。\par (3) 计算总体均方误差并评价“Bartlett条件无偏，所以在任何评价准则下都更好”。可使用$\operatorname{MSE}_B=1/c$、$\operatorname{MSE}_T=1/(1+c)$；这里总体均方误差对$F$与$u$共同取平均。
+
+\Question{SUPM2-10}{边界估计与研究解释}
+继续分析第\ref{q:SUPM2-08}题的公开体格相关矩阵，最大似然提取3个因子，并将特殊方差下界设为0.005。复算发现臂展的特殊方差估计恰为0.005。某研究者据此拟写：“臂展几乎没有测量误差；合并7--17岁资料提取的因子，必定代表在所有年龄层都相同的生物学机制。今后只需把估计得分当作直接测得的因子真值放入结局回归，通常回归标准误就包括了全部评分不确定性。”\par 请从边界估计、年龄合并与因子解释、后续得分使用三个方面评议，并各提出一项合理改进。

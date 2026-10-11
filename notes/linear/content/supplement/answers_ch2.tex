@@ -1,0 +1,48 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPL2-01}{参数线性}
+选C。其设计矩阵的列为$1,\log x,x^2$，都不含未知参数，条件均数是$\beta_0,\beta_1,\beta_2$的线性组合。其余四式的某个未知参数位于指数、分母或对数内部；按题目指定的原参数，它们不是线性回归模型。自变量的函数形式有曲线，并不妨碍模型对参数线性。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L2]{[4]}。\par}
+
+\Answer{SUPL2-02}{误差方差的两种估计}
+选A。模型参数个数$p=4+1=5$，剩余自由度为$27-5=22$。正态模型中$\widehat\sigma^2_{\rm ML}=Q/n=88.841167/27=3.2904$，无偏估计为$s^2=Q/(n-p)=88.841167/22=4.0382$。最大似然估计的分母是$n$；截距也占一个回归参数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:SUN15-1]{[5]}。\par}
+
+\Answer{SUPL2-03}{联合变化的标准误}
+选D。估计变化为$\widehat\Delta=b_1+b_2=0.493911$；其估计方差为\[\widehat{\operatorname{Var}}(\widehat\Delta)=0.133702+0.041699+2(-0.047757)=0.079887,\]因此$\operatorname{SE}(\widehat\Delta)=\sqrt{0.079887}=0.2826$。两个系数来自同一个模型，必须计入协方差；$0.0799$是方差，不是标准误。这里描述条件关联的联合变化，不赋予因果含义。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:SUN15-1]{[5]}。\par}
+
+\Answer{SUPL2-04}{响应单位与模型比较}
+选B。改变单位后$Q^*=10^6Q$，故每个模型的$A^*=A+2n\log1000$。两个模型使用同一批$n$个观测，增加的是相同常数，因此差值及排序不变。$R^2$中总平方和与残差平方和同时乘以$10^6$；斜率及其标准误同时乘以1000，所以$R^2$和$t$统计量也不变。该结论要求响应采用相同的单位变换，不能把只变换其中一个模型后的$A$值直接比较。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:R-AIC]{[8]}。\par}
+
+\Answer{SUPL2-05}{四个新个体的平均响应}
+选E。四个新个体平均响应的误差方差为$\sigma^2/4$，原模型均值估计的方差为$\sigma^2h_0$；二者独立，故预测误差方差为$\sigma^2(1/4+h_0)$，估计为$4(0.25+0.10)=1.4$。此时既不是预测一个新个体，也不是只估计总体条件均数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L2]{[4]}。\par}
+
+\Answer{SUPL2-06}{最小二乘结论的条件}
+选C。I由$b=\beta+(X^\top X)^{-1}X^\top\varepsilon$及零条件均值得到；II是Gauss--Markov定理，不要求正态性。III一般不成立：有限样本精确$t$分布还依赖正态模型提供的正态分子、卡方方差估计以及独立性。不能把最小二乘的无偏性、BLUE性质与精确分布推断的条件混为一谈。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L2]{[4]}。\par}
+
+\Answer{SUPL2-07}{两个约束的联合检验}
+按$\beta=(\beta_0,\beta_1,\beta_2,\beta_3)^\top$，可取\[L=\begin{pmatrix}0&1&-1&0\\0&0&0&1\end{pmatrix},\qquad c=\begin{pmatrix}0\\0\end{pmatrix}.\]两个约束线性独立，$q=2$。零假设下令$\gamma=\beta_1=\beta_2$，简化模型为$Y=\beta_0+\gamma(x_1+x_2)+\varepsilon$，含2个参数；完整模型含4个参数。两模型须用同一批观测拟合，记残差平方和为$Q_R,Q_F$，则\[F=\frac{(Q_R-Q_F)/2}{Q_F/(n-4)}\overset{H_0}{\sim}F(2,n-4).\]该题是两个约束的联合检验，不能以某一个系数的$t^2$代替。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:PSU-GENERAL-F]{[7]}。\par}
+
+\Answer{SUPL2-08}{糖尿病资料的增量检验}
+(1) $H_0:\beta_2=\beta_3=0$，并保留$x_1,x_4$。完整模型$p_F=5$，简化模型$p_R=3$，\[F=\frac{(114.761543-88.841167)/2}{88.841167/22}=3.2094,\quad\nu=(2,22).\]因$3.2094<3.4434$，在0.05水平不拒绝$H_0$；精确右尾$P=0.05984$。这不等于证明两个系数都为0。\par (2) $A_R=27\log(114.761543/27)+2\times3=45.0695$，$A_F=27\log(88.841167/27)+2\times5=42.1574$。按此准则选择完整模型，$A_F-A_R=-2.9122$。\par (3) 不矛盾。0.05水平的假设检验与AIC式准则的惩罚标准不同，不能预期它们在所有样本中作出相同选择。这里报告的是一次既定模型比较；后续预测性能仍需另行评价。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:SUN15-1]{[5]}、\hyperref[src:PSU-GENERAL-F]{[7]}、\hyperref[src:R-AIC]{[8]}。\par}
+
+\Answer{SUPL2-09}{肺活量的两个差值区间}
+(1) 令$d=(10,5)^\top$，记题给斜率估计的协方差阵为$\widehat\Sigma_b$；截距在差值中抵消。\[\widehat\Delta=10b_h+5b_w=0.320471\ \mathrm L,\quad\operatorname{SE}(\widehat\Delta)=\sqrt{d^\top\widehat\Sigma_b d}=0.070899\ \mathrm L.\]95\%置信区间为$0.320471\pm2.05553\times0.070899=(0.1747,0.4662)$ L。必须保留协方差交叉项。\par (2) 两个独立新个体的误差之差额外具有方差$2\sigma^2$，所以预测标准误为\[\sqrt{0.070899^2+2(0.098380259)}=0.449207\ \mathrm L.\]95\%预测区间为$0.320471\pm2.05553\times0.449207=(-0.6029,1.2438)$ L。\par (3) 第一段区间针对两种条件的总体均数差；第二段针对两名新个体的实际响应差。虽然均数差区间全为正，仍可能出现条件B的新个体肺活量低于条件A的新个体。该比较依赖给定模型和人群，不是增重或增高的因果效应。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:CHEN-LUNG29]{[6]}。\par}
+
+\Answer{SUPL2-10}{缺失值后的模型比较}
+第一、二行使用不同观测，不能直接把其$A$值差解释为同一数据上的模型优劣；当$n$不同，省略的似然常数也不同。适当比较是第二、三行：同为24人、同一响应尺度，$A_B=23.6670<A_A=30.3134$，本准则在这24人中选择B。其差为$-6.6464$，只支持该次样本内准则下的选择，不能保证新患者预测更好；还应评价样本外误差，并考虑缺失导致的样本选择问题。\par 可先取全部候选变量的共同完整记录，再拟合两个模型：
+\begin{rcode}
+cc <- complete.cases(d[, c("y","x1","x2","x3","x4")])
+dc <- d[cc, ]
+a <- lm(y ~ x1 + x4, data = dc)
+b <- lm(y ~ x1 + x2 + x3 + x4, data = dc)
+AIC(a, b)
+\end{rcode}
+R的\texttt{AIC()}与题中省略常数的$A$值可能有公共平移，但在共同的24人中，模型排序及差值一致。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:SUN15-1]{[5]}、\hyperref[src:R-AIC]{[8]}。\par}

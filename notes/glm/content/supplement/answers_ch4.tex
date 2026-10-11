@@ -1,0 +1,89 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG4-01}{延迟入组与风险集}
+\textbf{答案：C。} 根据$a<u\le t$逐人判断：A已于2月发生事件；B在4月发生事件，仍在当时风险集中；C已于3月进入且到5月才删失；D的进入时刻恰为4，按题设左开右闭的区间约定不属于该时刻的风险集。因此$R(4)=\{\mathrm B,\mathrm C\}$。不能把尚未进入观察的人当作已经随访，也不能提前移除本时刻的事件者。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}、\hyperref[src:G4-SURV]{[20]}。\par}
+
+\Answer{SUPG4-02}{独立删失的条件}
+\textbf{答案：B。} 独立性依赖于所条件化的信息。严重程度同时关联事件时间与删失时间时，混合两个组可以使$T$与$C$在总体中相关，即使在每一组内独立。按基线严重程度分别估计生存曲线较符合题设；若要描述目标总体，还需按该总体的组别构成进行恰当汇总，并有相应随访范围的支持。两组样本量相等不消除这种关联；把删失当事件或预先删除删失者都会改变资料含义。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}。\par}
+
+\Answer{SUPG4-03}{分组记录与区间内顺序}
+\textbf{答案：E。} 若10例删失全部早于5例死亡，死亡前只剩10人，KM估计为$(10-5)/10=0.50$；若死亡全部早于删失，则为$(20-5)/20=0.75$。把删失逐个移到死亡之前会减少后续风险人数，从而降低KM乘积，所以这两个顺序给出端点。寿命表采用$n'=20-10/2=15$，得$1-5/15=2/3$，依赖区间内删失分布的近似；它不能替代已经丢失的精确顺序信息。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}。\par}
+
+\Answer{SUPG4-04}{生存率区间的反变换}
+\textbf{答案：D。} 由题给公式，$g=-2.2504$、$SE(g)=1.0005$。反变换$S=\exp\{-\exp(g)\}$是单调递减函数，因此下限对应变换尺度的上限：
+\[
+\left[
+e^{-\exp\{g+1.96SE(g)\}},
+e^{-\exp\{g-1.96SE(g)\}}
+\right]
+=(0.4730,\ 0.9853).
+\]
+不能保持变换前的端点次序。普通Wald区间为$0.90\pm1.96(0.09487)$，约$(0.7141,1.0859)$；B不是本题指定变换的结果。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}、\hyperref[src:G4-SURVFIT]{[21]}。\par}
+
+\par\noindent\begin{minipage}{\linewidth}
+\Answer{SUPG4-05}{并列事件时的期望与方差}
+\textbf{答案：A。} A组占风险集的比例为$6/10$，故$E_A=3(6/10)=1.8$。给定总事件数的分配采用超几何方差，含有限总体修正：
+\[
+V_A=\frac{6\times4\times3\times(10-3)}
+{10^2(10-1)}=0.56.
+\]
+$3(0.6)(0.4)=0.72$漏掉了$(10-3)/(10-1)$；也不能把方差直接取为期望事件数。并列事件越多，这项修正越不宜省略。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}。\par}
+\end{minipage}\par\medskip
+
+\Answer{SUPG4-06}{检验权重与软件选项}
+\textbf{答案：C。} I、III正确。普通logrank取$w_i=1$，Breslow广义Wilcoxon按课程定义取$w_i=n_i$，后者相对更强调风险人数较多的早期。R的\rinline{survdiff(rho=1)}属于Peto--Peto修正，使用相应生存估计的权重，不能一般地当作$n_i$加权的Breslow检验；在特殊删失结构下二者可以一致，仍不能推出“任何资料都相同”。检验选择应对应预先确定的问题，不能事后只保留较小的$P$值。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}、\hyperref[src:G4-SURVDIFF]{[22]}。\par}
+
+\Answer{SUPG4-07}{相同中位数能说明什么}
+中位数只给出生存曲线首次达到0.5的位置，不能概括整条曲线。这里两组在12月都为0.5，但6月B组估计较高，24月A组估计较高，说明样本中的时间变化形态不同。由这张汇总表本身还不能判定总体差异是否显著。
+
+logrank通常检验两组总体生存分布相同，涉及整个观察过程中的风险集与事件分配；它并不专门检验中位数相等。因此相同的样本中位数与显著的全曲线检验可以同时出现，逻辑上并不矛盾。曲线交叉时，logrank贡献可能抵消，未拒绝也不代表等效。
+
+若问题预先限定在24月，应把目标写为$H_0:S_A(24)=S_B(24)$，使用该时点生存率之差及相应标准误或区间，并说明删失假定和该时点风险人数。不能用全曲线检验的$P$值直接替代这个固定时点的检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}。\par}
+
+\Answer{SUPG4-08}{公开肺癌资料的生存输出}
+\textbf{（1）} $H_0$为四种细胞类型的总体生存分布相同，自由度$4-1=3$。$\chi^2=25.4037$对应$P\approx1.27\times10^{-5}$，拒绝$H_0$；只能说明至少存在生存分布差异，不能把总体检验当作六个两两比较均显著的证据。
+
+\textbf{（2）} 预先指定的90天生存率之差为
+\[
+0.740741-0.291667=0.449074,\qquad
+SE_{\rm diff}=0.106850,
+\]
+所以$Z=4.2029$，双侧$P\approx2.64\times10^{-5}$。大细胞组90天生存率的点估计较高约44.9个百分点。这是一个特定组别对比、特定时间点的检验；总体logrank则利用四组完整随访过程，二者不能互相替代。
+
+\textbf{（3）} 365天前仅余0--6人在风险集中，远期估计缺少支持，应同时呈现风险人数和区间，避免把曲线尾部或零风险人数解读成稳定的总体规律。虽然原研究的治疗分配是随机化的，细胞类型本身不是随机分配的；这里的比较也未调整其他预后因素，不能直接称为治疗的因果效应。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G4-NOTE]{[19]}、\hyperref[src:G4-VETERAN]{[23]}、\hyperref[src:G4-DATA]{[24]}、\hyperref[src:G4-SURVFIT]{[21]}、\hyperref[src:G4-SURVDIFF]{[22]}。\par}
+
+\Answer{SUPG4-09}{两种生存检验的计算}
+\textbf{（1）} A组的期望事件数为$10,\ 7.5,\ 6,\ 9$，故$O-E$依次为
+\[
+10,\quad4.5,\quad-6,\quad-9.
+\]
+四个方差贡献约为$4.040404,\ 3.560127,\ 2.847458,\ 2.538462$，因此
+\[
+U=-0.5,\quad V=12.986450,\quad
+\chi^2=0.019251\quad(P\approx0.890).
+\]
+
+\textbf{（2）} 权重为$100,80,60,40$，加权贡献为$1000,360,-360,-360$：
+\[
+U_w=640,\quad V_w=77501.236450,\quad
+\chi_w^2=5.285077\quad(P\approx0.0215).
+\]
+方差应乘权重的平方，不能只乘一次，也不能只改分子。
+
+\textbf{（3）} 普通logrank未拒绝$H_0$，Breslow检验在0.05水平拒绝。普通贡献中的正负项几乎抵消，而风险人数加权保留了较强的早期差异。30天$\widehat S_A=0.60$、$\widehat S_B=1.00$；270天分别为$0.36$、$0.04$，优劣方向已经反转。检验差异不矛盾，也不能推出一组在各时刻均占优；更不能事后只保留显著的检验来宣称整体疗效。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}。\par}
+
+\Answer{SUPG4-10}{诊断后登记的生存报告}
+纳入条件已经筛掉确诊后6个月内死亡者，现有资料首先描述的是“活过6个月且进入登记者”。把进入观察前的时间补成完整随访，会把入组所要求的存活经历当作已经观察到的风险过程，不能据此报告所有初诊患者的生存率。
+
+应保存确诊日、登记日及事件/删失日，明确采用确诊时间轴的延迟入组，或明确从6个月界标开始描述后续条件生存。由于本例所有人最早都在6个月进入，即使正确使用$(a,t]$格式，仍没有前6个月死亡过程的信息，不能仅凭这些人估计$S(6)$，也不能据$S(t\mid T>6)$自动得到总体$S(t)$。若坚持原目标，需补充从确诊起的完整登记及早期死亡资料。
+
+因恶化而停止来院使独立删失假定受到质疑，应补查生存状态、记录失访原因并检查其与预后的关联。尾部只剩3人在风险集中，平坦段仅表示未再观察到事件，不能证明真实风险为0；报告应展示风险人数、区间、可支持的随访范围及上述限制。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G4-NOTE]{[19]}、\hyperref[src:G4-SURV]{[20]}。\par}

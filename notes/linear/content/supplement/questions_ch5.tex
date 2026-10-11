@@ -1,0 +1,147 @@
+% 独立题号标签SUPL；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-01}{组间差异的变化}
+UCLA重复测量教学资料有两组各4名对象、4个时点。由其原始表算得下列均数：
+\begin{center}\begin{tabular}{ccc}\toprule
+组别 & 时点2 & 时点4\\\midrule
+1 & 4 & 8\\
+2 & 3 & 10\\\bottomrule
+\end{tabular}\end{center}
+以“第2组减第1组”为组间差异的方向，时点4相对于时点2的组间差异变化为多少？
+\begin{choices}
+\item $-3$
+\item $2$
+\item $3$
+\item $3.5$
+\item $8.25$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-02}{随机截距与个体内差值}
+在一个教学模型中，同一对象的4次测量满足
+\[
+Y_{ij}=\mu_j+b_i+\varepsilon_{ij},\qquad
+\operatorname{Var}(b_i)=9,\quad \operatorname{Var}(\varepsilon_{ij})=4.
+\]
+随机截距与各次随机误差相互独立，各次随机误差也相互独立。$Y_{i4}-Y_{i1}$的方差为多少？
+\begin{choices}
+\item $4$
+\item $8$
+\item $13$
+\item $18$
+\item $26$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-03}{与基线比较的多重性}
+某重复测量研究预先规定3个随访时点分别与基线比较，每项检验均保留个体配对。为说明校正方法，设未校正的双侧$P$值依次为$0.012$、$0.028$、$0.041$。采用Holm法控制这3项比较的家族错误率为$0.05$：将$P$值从小到大排列，依次与$0.05/3$、$0.05/2$、$0.05$比较；遇到首个未拒绝的原假设即停止。应拒绝哪些原假设？
+\begin{choices}
+\item 仅第1项
+\item 仅第1、2项
+\item 仅第1、3项
+\item 3项均拒绝
+\item 3项均不拒绝
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-04}{不等间隔的变化率对比}
+家兔血钾资料在处理前及处理后$0.5$、$1$、$2$小时测量，记为$Y_0,Y_{0.5},Y_1,Y_2$。若预先规定比较“$1$至$2$小时平均变化率减去$0$至$0.5$小时平均变化率”，按上述变量顺序，其对比系数应为哪组？
+\begin{choices}
+\item $(-2,2,-1,1)$
+\item $(1,-1,-1,1)$
+\item $(2,-2,1,-1)$
+\item $(2,-2,-1,1)$
+\item $(-1,0,0,1)$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-05}{SEM能说明什么}
+Rueda等论文表II将结果写作均数$\pm$SEM。MF组第7天的对数大肠杆菌计数为$8.62\pm0.64$，来自同组20名婴儿。下列说法正确的是：
+\begin{choices}
+\item $0.64$是该时点个体观测值的样本标准差。
+\item 每组测量3次，故计算该SEM使用的独立样本量应为60。
+\item 已知第3天SEM为$0.78$，即可断定第3至第7天均数变化的SEM为$\sqrt{0.78^2+0.64^2}$。
+\item 利用各时点的均数和SEM，即可唯一还原组$\times$时间交互作用的检验。
+\item 按$\mathrm{SEM}=S/\sqrt n$换算，该时点个体观测值的样本标准差约为$2.86$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL5-06}{正交对比与独立性}
+设不同对象的$Y_i\sim N_k(\mu,\Sigma)$相互独立，$\Sigma$正定。考察下列说法：
+\begin{enumerate}
+\item[I.] 对预先固定且非零的$c$（$c^\top\mathbf1=0$），若只检验$c^\top\mu=0$，可对每人的$Z_i=c^\top Y_i$作单样本$t$检验；无须先要求整个$\Sigma$具有HF结构。
+\item[II.] 只要$c_1^\top c_2=0$，无论$\Sigma$为何，$c_1^\top Y_i$和$c_2^\top Y_i$均相互独立。
+\item[III.] 若$C^\top C=I$、$C^\top\mathbf1=0$且$\Sigma$具有讲义所定义的HF结构，则$C^\top Y_i$的各分量等方差；在上述多元正态模型下也相互独立。
+\end{enumerate}
+正确的是：
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item I、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\subsection{简答、计算与案例分析}
+
+\Question{SUPL5-07}{漏访与实际时间不一致}
+教学情境：两组对象拟在基线及第1、3、6个月测量同一连续结局。有些对象漏访，有些人的实际访视时间明显偏离计划；病情较重者更容易退出。研究者拟删除所有不完整对象后作经典重复测量方差分析。简述这一方案的两项主要局限，并提出一种可考虑的分析方法及其仍需审查的假定。
+
+\Question{SUPL5-08}{重复测量输出的误差分层}
+以下改编自UCLA的Demo Analysis \#4（教学示例），共8名对象，分为2组，各测量3次。为本题计算，假定单变量重复测量检验的条件成立，包括讲义所定义的HF广义球形条件。软件输出摘录如下，平方和有少量舍入：
+\begin{center}\small\begin{tabular}{lrrc}\toprule
+变异来源 & 平方和 & 自由度 & $F$\\\midrule
+组别 & 2542.041667 & 1 & (a)\\
+个体（组内）误差 & 24.250000 & 6 & ---\\\addlinespace
+时间 & 1.000000 & 2 & (b)\\
+组别$\times$时间 & 1736.333333 & 2 & (c)\\
+个体内误差 & 76.000000 & 12 & ---\\\bottomrule
+\end{tabular}\end{center}
+\begin{enumerate}
+\item 计算(a)、(b)、(c)，并写出各自使用的误差均方。
+\item 软件给出的时间效应$P=0.9246$，交互作用$P<0.0001$。能否据此说两组都没有随时间变化？能否只凭此表判断哪一组上升？
+\item 如需进一步定位组间变化模式的差异，应预先规定哪一类后续比较，并怎样处理多重性？
+\end{enumerate}
+
+\Question{SUPL5-09}{比较预设的0至2小时变化量}
+下表节录15只家兔血钾资料的第1、3组，数值保留原表量尺，未作单位换算。预先规定比较两组从处理前至2小时的变化量，方向为“第3组减第1组”。
+\begin{center}\small\begin{tabular}{rrrr}\toprule
+组别 & 兔号 & 处理前 & 2小时\\\midrule
+1 & 1 & 154.5 & 171.7\\
+1 & 2 & 173.0 & 168.6\\
+1 & 3 & 186.0 & 138.0\\
+1 & 4 & 161.0 & 128.0\\
+1 & 5 & 187.0 & 152.0\\
+3 & 11 & 173.3 & 401.4\\
+3 & 12 & 155.1 & 203.4\\
+3 & 13 & 177.9 & 240.3\\
+3 & 14 & 158.2 & 228.7\\
+3 & 15 & 180.4 & 267.7\\\bottomrule
+\end{tabular}\end{center}
+假定不同兔相互独立，各组的个体变化量近似正态；不要求两组变化量方差相等。
+\begin{enumerate}
+\item 令$D_i=Y_{i,2\mathrm h}-Y_{i,0}$，分别计算两组的$\bar D$及样本方差$s_D^2$。
+\item 对$H_0:\mu_{D,3}-\mu_{D,1}=0$作双侧Welch检验，给出差异估计、标准误、$t$和近似自由度。可使用
+\[
+\nu=\frac{(s_3^2/5+s_1^2/5)^2}{(s_3^2/5)^2/4+(s_1^2/5)^2/4}.
+\]
+\item 取相应$t_{0.975,\nu}\approx2.567$，求差异的95\%置信区间并解释。该检验是否等同于原3组4时点的全部交互作用检验？
+\end{enumerate}
+
+\Question{SUPL5-10}{重复测量文献的分析目标与结局定义}
+阅读Rueda等（1998）的下列资料摘述：研究将早产儿分为普通配方奶组（MF）和添加神经节苷脂的配方奶组（GMF）；初始共43人，最终每组20人完成，3人因未遵循喂养方案或发生胃肠炎而退出。两组均在生后第3、7、30天采集粪便。论文表II报告各菌种对数计数的均数$\pm$SEM，统计部分列出Kruskal--Wallis与Friedman检验。对“大肠杆菌阳性”，第3天定义为菌落数$>1000$，第7、30天定义为$>10000$。
+\begin{enumerate}
+\item 在各时点分别比较两组，再分别检验各组的时间效应，是否已经给出了“饮食组别$\times$时间”交互作用的检验？说明理由。
+\item 若要重做连续结局的重复测量分析，只有表II的均数和SEM是否足够？至少还需要什么信息？
+\item 能否把第3至第7天阳性率的差异直接解释为同一定义下定植率的变化？同一天的两组比较是否也面临完全相同的问题？
+\item 只分析40名完成者有什么潜在局限？指出需要补充报告的一项信息或一项敏感性分析。
+\end{enumerate}

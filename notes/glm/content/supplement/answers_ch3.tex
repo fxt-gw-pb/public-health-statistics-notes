@@ -1,0 +1,40 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG3-01}{跨方程对比的方差}
+\textbf{答案：C。} 新系数为$\hat b_A-\hat b_B$，应使用其联合估计协方差：$\operatorname{Var}(\hat b_A-\hat b_B)=0.30^2+0.40^2-2(0.08)=0.09$，标准误为0.30。原两方程在同一联合似然中估计，系数一般不独立。把两个方差直接相加得到0.50，或把两个标准误直接相减，均不正确。本题给定的$2\times2$协方差矩阵正定。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-MULTINOM]{[17]}。\par}
+
+\Answer{SUPG3-02}{正系数与类别概率的方向}
+\textbf{答案：A。} $x=0$时三类概率均为$1/3$。$x=1$时$P_A=e/(1+e+e^3)=0.1142$，而$P_A/P_C$的确乘以$e$。A/C方程正斜率描述A相对C的概率比上升；B的线性预测子增长更快，归一化分母增大得更多，仍可使A本身的概率下降。因此不能把多项Logit的正系数直接解释为该类别绝对概率一定上升。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-MULTINOM]{[17]}。\par}
+
+\Answer{SUPG3-03}{有序等级反向编码}
+\textbf{答案：E。} $P(Y^\ast\le j)=P(Y\ge4-j)=1-P(Y\le3-j)$，故$\operatorname{logit}P(Y^\ast\le j)=-\alpha_{3-j}+\beta x$。新阈值应先倒序再变号，得到$(-1.0,0.5)$；新共同斜率为$-0.8$。只给斜率变号而保留原阈值不够，直接逐个阈值变号也会破坏阈值次序。反向编码改变高低方向，原类别对应的预测概率并未改变。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-POLR]{[16]}。\par}
+
+\Answer{SUPG3-04}{累积概率的合法次序}
+\textbf{答案：D。} 有序结局必须满足$P(Y\le1)\le P(Y\le2)$，且$P(Y=2)=P(Y\le2)-P(Y\le1)$。给定值相减为$-0.10$，不可能是类别概率。两个数各自都落在$(0,1)$内并不够；它们还须彼此满足同一分布的次序约束。事后取绝对值或任意重新归一化会改变原模型，不能当作其合法预测。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-POLR]{[16]}。\par}
+
+\Answer{SUPG3-05}{多类别预测因子的联合检验}
+\textbf{答案：B。} 预测因子需要$3-1=2$个哑变量，无序结局有$4-1=3$个非参照方程，需同时约束$2\times3=6$个系数为0。这里按实际系数数目计数，不能只数原始变量1个、结局方程3个或预测因子水平3个。该结论要求比较同一分析集的嵌套、可识别模型并满足通常的大样本正则条件。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-MULTINOM]{[17]}。\par}
+
+\Answer{SUPG3-06}{比例优势的比较对象}
+\textbf{答案：C。} I为比例优势模型在题设方向下的定义。II将同一比较倒置，因此OR取倒数。III把累计切点两侧的比较换成了相邻类别比较，后者不是比例优势模型施加的约束。例如取阈值$(-0.5,1)$、$\beta=\log2$，$x$从0到1时，相邻概率比$P(Y=2)/P(Y=1)$的变化倍数约为1.5761，并非2。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-POLR]{[16]}。\par}
+
+\Answer{SUPG3-07}{分别二分拟合能做什么}
+分别二分拟合可作为诊断：在同一方向下比较两个切点的斜率或OR，查看差异是否提示比例优势假设需要进一步检查。但两个响应来自同一个$Y$，如$Y>2$必然意味着$Y>1$，并非两份独立样本。其二项似然相乘会重复计算同一受试者的信息，不能直接作为原有序结局的联合似然；斜率估计也不能默认相互独立。\par 正式似然应先定义同一协变量组合下两个合法递增的累积概率$F_1,F_2$，再使用\[P(Y=1)=F_1,\quad P(Y=2)=F_2-F_1,\quad P(Y=3)=1-F_2.\]每个个体只按其实际类别贡献相应概率；频数资料则将类别对数概率乘以频数。共同斜率模型与允许切点斜率不同的模型，必须在同一合法有序模型族及同一批资料中分别最大化这个联合似然，再按独立约束数计算LR检验自由度。分别拟合的累计概率还可能交叉，产生负的中间类别概率，因而不能不经检查就相减作为最终预测。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-POLR]{[16]}。\par}
+
+\Answer{SUPG3-08}{住宅满意度多项模型的联合与跨方程检验}
+Type在每个非参照方程中各占3个哑变量，原假设是这两套共6个Type系数同时为0。完整模型有$2(1+2+3+1)=14$个参数，删除Type后为8个。\[G^2=2[-1735.041933-(-1766.155394)]=62.2269,\qquad df=6.\]$P\approx1.59\times10^{-11}$，提示控制Infl、Cont后，住宅类型与满意度类别分布有关；这不代表每一种住宅类型的每个对比均显著。\par High与Medium直接比较，系数为两个原方程Cont系数之差：\[\begin{aligned}\hat d&=0.48182700-0.36085188=0.12097512,\\\mathrm{SE}(\hat d)&=\sqrt{0.01541001+0.01752911-2(0.00810855)}=0.129314,\\\widehat{\mathrm{RRR}}&=e^{\hat d}=1.1286,\\95\%\,CI&=\exp\{\hat d\pm1.96\,\mathrm{SE}(\hat d)\}=(0.8759,1.4542).\end{aligned}\]因此，在调整条件相同的情况下，Cont=High与Low相比，$P_{\rm High}/P_{\rm Medium}$的点估计约增加12.9\%；区间包含1，没有充分证据说明两原方程Cont效应存在差别。分别看两个系数是否显著、或只比较点估计大小，都不能替代这个使用联合协方差的差异检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-HOUSING]{[13]}、\hyperref[src:G3-HOUSING-DATA]{[14]}、\hyperref[src:G3-HOUSING-CSV]{[15]}、\hyperref[src:G3-MULTINOM]{[17]}。\par}
+
+\Answer{SUPG3-09}{住宅满意度的共同斜率模型}
+给定Infl=Low、Type=Tower，其他哑变量均为0，两种Cont条件的线性预测子分别为$\eta=0$与0.360284。记$F_j=\operatorname{logit}^{-1}(\alpha_j-\eta)$，则三类概率为$(F_1,F_2-F_1,1-F_2)$，得到\begin{center}\begin{tabular}{lrrr}\toprule Cont&Low&Medium&High\\\midrule Low&0.3784&0.2877&0.3339\\High&0.2981&0.2838&0.4181\\\bottomrule \end{tabular}\end{center}$e^{0.360284}=1.4337$，即控制Infl、Type后，较高接触程度相对较低接触程度，对任一切点“高于该切点”相对“不高于该切点”的优势乘以1.4337。这里Medium的概率从0.2877略降到0.2838，足以说明共同正斜率不要求每一类别的概率都上升；中间类别由两个同时变化的累积概率相减得到。\par 平行线原假设要求两切点的6个对应斜率分别相同，故有6个约束：\[G^2=2[-1735.289350-(-1739.574650)]=8.5706,\qquad df=6,\quad P=0.1992.\]在0.05水平未发现违背共同斜率约束的充分证据，不能说已证明该假设。题中备择是合法、嵌套的非平行累积Logit；不能把第08题无序多项模型的对数似然代入此处，后者与比例优势模型一般不是这种嵌套关系。预测和诊断仍应结合实际设计组合及样本信息解释。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-HOUSING]{[13]}、\hyperref[src:G3-HOUSING-DATA]{[14]}、\hyperref[src:G3-HOUSING-CSV]{[15]}、\hyperref[src:G3-POLR]{[16]}。\par}
+
+\Answer{SUPG3-10}{遗漏频数权重后分析了什么}
+72是列联表的行数，不是被调查者人数；实际频数总和为$567+446+668=1681$。真实三类构成分别为$567/1681=0.3373$、$446/1681=0.2653$和$668/1681=0.3974$，并不各占$1/3$。\par 代码没有使用Freq，每一行被当成一个等权观测。由于每个自变量组合恰好含三类各一行，软件看到的是一个人为构造的完全平衡数据集：每种组合的三类频数均为$(1,1,1)$。因此首类为参照时，零截距、零斜率就给出各类概率$1/3$并达到该人工资料的最大似然。这个输出是遗漏频数的结果，不能用于宣布原调查没有关联。\par 应明确满意度类别与自变量参照，使用$\texttt{weights=Freq}$拟合联合多项模型，或先把频数表按人数展开后拟合；两者使用相同的个体类别对数似然，系数和适当的模型比较应一致。若利用等级顺序，可以另拟合有序模型并检查共同斜率条件。这里首先需纠正资料单位和似然贡献，不能仅凭错误模型的输出去删掉预测因子。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G3-NOTE]{[12]}、\hyperref[src:G3-HOUSING]{[13]}、\hyperref[src:G3-HOUSING-DATA]{[14]}、\hyperref[src:G3-HOUSING-CSV]{[15]}、\hyperref[src:G3-MULTINOM]{[17]}。\par}

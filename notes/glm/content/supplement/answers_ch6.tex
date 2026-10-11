@@ -1,0 +1,40 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG6-01}{按层次原则删项}
+\textbf{答案：D。} 原模型包括$AB,AC,BC,ABC,AD,BD$及相应主效应。凡同时含$A,B$的项均须删除，故删去$AB$和$ABC$；$AC,BC,AD,BD$均可保留。删去$AB$却保留$ABC$不满足题意，也破坏层次原则；删除其他允许保留的交互项则额外施加了本题未要求的独立性约束。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}
+
+\Answer{SUPG6-02}{部分独立模型的拟合频数}
+\textbf{答案：B。} 模型允许$A,B$任意关联，但要求其联合分布与$C$独立，因此$\widehat p_{ijk}=(n_{ij+}/n)(n_{++k}/n)$，有\[\widehat m_{ijk}=\frac{n_{ij+}n_{++k}}{n}=\frac{20\times60}{200}=6.\]不能把$[AB][C]$误读为三个变量完全独立；拟合时保留的是$AB$联合边际和$C$边际。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}
+
+\Answer{SUPG6-03}{参数约束改变与优势比不变}
+\textbf{答案：C。} 零和约束下四个交互参数依次为$0.25,-0.25,-0.25,0.25$，故\[\log\mathrm{OR}=0.25+0.25-(-0.25)-(-0.25)=1.\]参照编码下，同一个四格对数交叉差等于$\gamma_{AB}$，所以$\gamma_{AB}=1$、$\mathrm{OR}=e$。约束改变了系数数值与解释方式，拟合频数和由其计算的OR保持不变。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}。\par}
+
+\Answer{SUPG6-04}{抽样零格的偏差贡献}
+\textbf{答案：E。} 代入得$d_i=2\{0-(0-2.5)\}=5$，且观察值小于拟合值，所以$r_{Di}=-\sqrt5\approx-2.2361$。在总拟合频数等于总观察频数时，整体偏差的线性项可相消；这种整体简化不能用于判定某一个零格的偏差贡献。抽样零格仍提供信息，不能与不可能发生的结构零格混同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-LOGLM]{[33]}。\par}
+
+\Answer{SUPG6-05}{Logistic交互项的对数线性对应}
+\textbf{答案：A。} 与结局$Y$无关的$[ABC]$饱和边际允许预测变量任意关联。Logistic中的$AB$交互对应对数线性模型中的$ABY$三阶交互；$C$主效应对应$CY$。$[ABY]$还自动包含$AY,BY$及相关低阶项。选项C遗漏Logistic中的$AB$交互，选项E则额外允许$AC,BC,ABC$改变结局的对数优势。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}。\par}
+
+\Answer{SUPG6-06}{同质关联与可折叠条件}
+\textbf{答案：C。} I正确：无三阶交互意味着$AB$对数OR不随$C$层改变。II错误：同质性本身不足以保证可折叠。例如两层表分别为$\bigl(\begin{smallmatrix}10&20\\30&120\end{smallmatrix}\bigr)$与$\bigl(\begin{smallmatrix}10&80\\60&960\end{smallmatrix}\bigr)$，两层OR均为2，合并后OR为2.4。III正确：$A\perp C\mid B$时，$A$在给定$B$后的分布不随$C$变化，条件OR等于折叠后的OR。这是可折叠的充分条件。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}。\par}
+
+\Answer{SUPG6-07}{固定边际与Poisson—二项联系}
+应选$M_1$。其$AB$边际饱和，允许四个预测变量组合有各自的总均数，并使拟合的$AB$边际等于固定的$n_{ab}$；与$Y$有关的项只形成$A,B$的Logistic主效应。令$\tau_{ab}=m_{ab0}+m_{ab1}$、$p_{ab}=m_{ab1}/\tau_{ab}$，则每组两格Poisson似然可分解为\[L_{ab}=\Pr\{N_{ab}=n_{ab};\tau_{ab}\}\Pr\{N_{ab1}=n_{ab1}\mid N_{ab}=n_{ab};p_{ab}\}.\]$M_1$下各$\tau_{ab}$可自由拟合为$n_{ab}$，与结局概率的参数分开优化，因而得到与条件二项分析相同的Logistic系数及相应检验。$M_2$删去了$AB$项，额外约束了预测变量的联合边际，一般不能保证上述分离。某个样本中的数值接近或偶然相同不能建立模型等价；应先核对抽样方式、固定边际和生成项。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}
+
+\Answer{SUPG6-08}{整体失拟与局部残差}
+条件独立模型在每个$C$层分别用行合计乘列合计除以层总数拟合。$C=0$的拟合表仍为$\bigl(\begin{smallmatrix}12&8\\18&12\end{smallmatrix}\bigr)$；$C=1$四格拟合值均为10。第一层对两种整体统计量贡献为0，第二层给出\[X^2=4\frac{5^2}{10}=10,\qquad G^2=2\{2\times15\log1.5+2\times5\log0.5\}=10.465.\]8格减去6个独立参数，自由度为2，$G^2$检验$P=0.00534$，提示条件独立模型失拟。指定格$r_P=(15-10)/\sqrt{10}=1.5811$，调整后为$1.5811/\sqrt{0.25}=3.1623$。\par 各普通残差绝对值小于2并非整体拟合优度检验；多个格子的偏离可以共同形成显著失拟，且拟合参数会影响各格残差的方差。调整残差有助定位偏离，但逐格筛查还涉及多重比较，不应只凭某一个阈值替代整体检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}
+
+\Answer{SUPG6-09}{官方内置教学列联表的输出阅读}
+$M_0$表示$S\perp(H,E)$，同时允许$H,E$关联。$M_1$增添$HS$的3个和$ES$的3个独立参数，故差异自由度为6；\[\Delta G^2=19.8566-6.7613=13.0953,\qquad P=0.04155.\]在预先指定的这次比较中，新增两组关联项改善了拟合。整体检验把$M_0$与饱和模型比较，考察15个方向；嵌套比较只考察新增的6个方向。原假设及检验针对的偏离不同，所得$P$值并不矛盾，整体检验未拒绝也不等于证明独立。\par 指定格$r_P=(30-44.3007)/\sqrt{44.3007}=-2.1486$，调整残差为$-2.1486/\sqrt{1-0.555235}=-3.2217$，提示该格比$M_0$所预期的少，可结合其他残差定位失拟。该格为事后查看，不能按一次预设检验解释；更不能把教学补入的性别分层作为真实人群性别差异的证据。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-HAIR]{[34]}、\hyperref[src:G6-HAIR-DATA]{[35]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}
+
+\Answer{SUPG6-10}{录取数据中的折叠与同质性}
+合并后男性录取/未录取为1198/1493，女性为557/1278，因此\[\mathrm{OR}_{\rm crude}=\frac{1198\times1278}{1493\times557}=1.8411.\]A院系条件OR为$512\times19/(313\times89)=0.3492$，C院系为$120\times391/(205\times202)=1.1331$，方向与大小并不相同。两模型的1自由度比较是在同质关联框架内检验一个共同性别关联参数；$P=0.2159$不能证明每层均无关联。尤其同质关联模型本身明显失拟，不能忽略院系间关联差异而只报告共同参数的显著性。\par 粗OR描述申请者混合各院系后的边际关联，院系分布及各院系录取难度会改变折叠结果；它也不是录取概率之比。这是观察性资料，表中没有申请资格、专业选择机制等信息，无法单凭性别项或模型拟合结果断言因果影响或“证明不存在歧视”。可报告分层关联及模型局限，并按事先明确的目标进一步收集、调整相关因素。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G6-NOTE]{[31]}、\hyperref[src:G6-UCB]{[36]}、\hyperref[src:G6-UCB-DATA]{[37]}、\hyperref[src:G6-LOGLIN]{[32]}。\par}

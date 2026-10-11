@@ -1,0 +1,145 @@
+% 独立题号标签SUPL；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-01}{响应换算与诊断量}
+对同一批观测、同一满秩设计矩阵，用普通最小二乘拟合含截距的线性回归；所有观测均满足$h_{ii}<1$，且以下诊断量均有定义。把响应改为$y_i^*=5+2y_i$并重新拟合。下列哪一个量一般会改变？
+\begin{choices}
+\item 杠杆值$h_{ii}$
+\item 外学生化残差$t_i$
+\item Cook距离$D_i$
+\item 同一观测顺序下的Durbin--Watson统计量
+\item 粗残差$e_i$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-02}{两两相关与完整共线性}
+三个非常数自变量的样本相关阵恰为\[R=\begin{pmatrix}1&0&1/\sqrt2\\0&1&1/\sqrt2\\1/\sqrt2&1/\sqrt2&1\end{pmatrix}.\]现把它们同时纳入含截距的普通线性回归。下列判断正确的是：
+\begin{choices}
+\item 两两相关绝对值都小于0.8，所以不可能有完整共线性
+\item 三个斜率不能同时被唯一估计
+\item 该相关阵含负特征值，故不可能由真实数据得到
+\item 只要因变量正态，就能使三个斜率唯一可估计
+\item 增大样本量且保持这个相关阵不变，一定能消除完整共线性
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-03}{任意排序下的DW值}
+27名相互不同的患者各测量一次，资料未记录有意义的时间或空间顺序。固定拟合$y\sim x_2+x_3+x_4$。按原记录编号排列得到$\mathrm{DW}=1.6447$；把完整的数据行按$x_2$从小到大排列后，同一模型得到$\mathrm{DW}=1.5289$。最恰当的判断是：
+\begin{choices}
+\item 排序后的DW较小，证明重新排序使患者的误差相关性增强
+\item 两次DW不等，说明两次普通最小二乘的系数必定不同
+\item 应选DW更接近2的排序，据此确认误差独立
+\item 在没有有意义的观测顺序时，不能据这两个DW值判断患者误差是否独立
+\item 排序后残差平方和必定减小
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-04}{逆方差权重}
+一项校准研究的三个观测具有相同的均值模型，但已知其误差方差依次为$\sigma^2,4\sigma^2,9\sigma^2$，误差相互独立。用加权最小二乘拟合，规定第一观测权重为1，则应采用的三项权重是：
+\begin{choices}
+\item $1,\ 1/4,\ 1/9$
+\item $1,\ 1/2,\ 1/3$
+\item $1,\ 4,\ 9$
+\item $1,\ 2,\ 3$
+\item $1,\ 1,\ 1$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-05}{偏相关检验的自由度}
+27例糖尿病资料分别把$x_3$和$y$对$x_2,x_4$作含截距回归，两组残差的样本相关系数为$r=-0.472350$。假定用于偏相关检验的正态线性模型条件成立。检验$y$与$x_3$控制$x_2,x_4$后的总体偏相关为0，应采用的$t$值和自由度约为：
+\begin{choices}
+\item $t=-2.6795,\ \nu=25$
+\item $t=-0.4724,\ \nu=23$
+\item $t=-2.5701,\ \nu=23$
+\item $t=-2.6795,\ \nu=23$
+\item $t=-2.5701,\ \nu=25$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL3-06}{岭回归的特征方向}
+自变量已经标准化，使用正文约定$\widetilde b(k)=(R_{XX}+kI)^{-1}r_y$，其中$R_{XX}$正定、$k>0$。考察下列说法：\par I. 相比$R_{XX}$，$R_{XX}+kI$的最大条件指数不会增大。\par II. 加入$kI$以后，原始样本中自变量之间的相关系数会变小。\par III. 最小二乘系数在较小特征值方向上的保留比例$\lambda_j/(\lambda_j+k)$更小。\par 正确的是：
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item I、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\subsection{简答、计算与案例分析}
+
+\Question{SUPL3-07}{三种异方差处理的目标}
+研究者认为$E(Y\mid X)=X\beta$的均值结构合理，观测相互独立，但误差方差随拟合均数增大；$Y$均为正数。准备比较三种处理：\par 甲：保留原最小二乘系数，改用异方差稳健标准误；\par 乙：在原$Y$尺度上采用合理的逆方差权重作WLS；\par 丙：以$\log Y$为响应重新拟合普通线性回归。\par 分别说明三种方法是否改变回归系数点估计、是否改变所拟合的条件均数对象，并说明它们能否自动修复遗漏非线性项造成的均值结构错误。
+
+\Question{SUPL3-08}{留一预测残差}
+固定使用$y\sim x_2+x_3+x_4$分析27例糖尿病资料，模型含截距。总平方和$T=222.551852$，普通残差平方和$Q=89.454020$。部分诊断输出为\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{crr}
+\toprule
+$\text{编号}$ & $e_i$ & $h_{ii}$ \\
+\midrule
+$25$ & $2.499330454$ & $0.475598363$ \\
+$26$ & $4.656976531$ & $0.131272662$ \\
+\bottomrule
+\end{tabular}
+\end{center}其余25个观测的留一预测残差平方和合计为89.963074。可用公式\[e_{(i)}=\frac{e_i}{1-h_{ii}},\qquad \mathrm{PRESS}=\sum_i e_{(i)}^2.\]\par (1) 计算25、26号的留一预测残差及各自对PRESS的贡献。\par (2) 计算训练$R^2=1-Q/T$及按PRESS定义的预测$R^2=1-\mathrm{PRESS}/T$。\par (3) 解释两种$R^2$的差别；若该模型结构先由全部27例筛选得出，上述固定模型的PRESS能否评价整个筛选流程？
+
+\Question{SUPL3-09}{校准资料的加权拟合}
+以下为教学设定数据，包含6次相互独立的校准测量。拟合均值$E(Y_i\mid x_i)=\beta_0+\beta_1x_i$，已知误差方差为$\sigma^2v_i$，表中的$v_i$由仪器精度资料预先给定。\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{crrrrrr}
+\toprule
+$\text{编号}$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\
+\midrule
+$x_i$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$ \\
+$y_i$ & $2.2$ & $2.9$ & $4.6$ & $4.9$ & $6.8$ & $6.7$ \\
+$v_i$ & $1$ & $1$ & $4$ & $4$ & $9$ & $9$ \\
+\bottomrule
+\end{tabular}
+\end{center}\par (1) 分别求OLS与WLS回归方程，并求$x=4$处的拟合均数。可用$W=\operatorname{diag}(1/v_i)$、$b_W=(X^\top WX)^{-1}X^\top Wy$。\par\Needspace{8\baselineskip}(2) 某软件输出如下，请核对各列应由哪种方法取较小值：\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{crr}
+\toprule
+ & $\sum e_i^2$ & $\sum e_i^2/v_i$ \\
+\midrule
+$\mathrm{OLS}$ & $0.944762$ & $0.221744$ \\
+$\mathrm{WLS}$ & $0.990744$ & $0.194607$ \\
+\bottomrule
+\end{tabular}
+\end{center}\par (3) 是否因为WLS的普通残差平方和较大，就应否定它？
+
+\Question{SUPL3-10}{相近摘要下的两组资料}
+下表两组资料各含11个观测，均拟合带截距的简单线性回归。\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{rrrrr}
+\toprule
+ & \multicolumn{2}{c}{甲} & \multicolumn{2}{c}{乙} \\
+$\text{编号}$ & $x$ & $y$ & $x$ & $y$ \\
+\midrule
+$1$ & $10$ & $9.14$ & $8$ & $6.58$ \\
+$2$ & $8$ & $8.14$ & $8$ & $5.76$ \\
+$3$ & $13$ & $8.74$ & $8$ & $7.71$ \\
+$4$ & $9$ & $8.77$ & $8$ & $8.84$ \\
+$5$ & $11$ & $9.26$ & $8$ & $8.47$ \\
+$6$ & $14$ & $8.10$ & $8$ & $7.04$ \\
+$7$ & $6$ & $6.13$ & $8$ & $5.25$ \\
+$8$ & $4$ & $3.10$ & $19$ & $12.50$ \\
+$9$ & $12$ & $9.13$ & $8$ & $5.56$ \\
+$10$ & $7$ & $7.26$ & $8$ & $7.91$ \\
+$11$ & $5$ & $4.74$ & $8$ & $6.89$ \\
+\bottomrule
+\end{tabular}
+\end{center}\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{crrr}
+\toprule
+ & $b_0$ & $b_1$ & $R^2$ \\
+\midrule
+$\text{甲}$ & $3.000909$ & $0.500000$ & $0.666242$ \\
+$\text{乙}$ & $3.001727$ & $0.499909$ & $0.666707$ \\
+\bottomrule
+\end{tabular}
+\end{center}有人据此认为：“两组直线模型同样合适；乙组第8点残差几乎为0，因此它不可能左右斜率。”\par 请评价这两句话，指出每组应优先检查的问题，并说明乙组删除第8点后，斜率能否仍被唯一估计。

@@ -1,0 +1,190 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-01}{改变协变量的参照点}
+某教学Cox模型写为
+\[
+h(t\mid A)=h_0(t)\exp\{0.04(A-60)\},
+\]
+其中$A$为年龄（岁）。现将同一个拟合模型改写为
+$h(t\mid A)=h_0^*(t)\exp\{0.04(A-70)\}$。
+哪项正确（\quad）？
+\begin{choices}
+\item $h_0^*(t)=h_0(t)$，所有个体的预测风险都降低
+\item $h_0^*(t)=e^{0.4}h_0(t)$，所有个体的预测风险及相同年龄差对应的HR保持不变
+\item $h_0^*(t)=e^{-0.4}h_0(t)$，各个体预测风险保持不变
+\item 只有重新估计年龄系数才能保证两种写法等价
+\item 改变中心点后，年龄系数必须变为$0.4$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-02}{并列事件的部分似然}
+某教学Cox模型只有一个固定协变量$X$。某事件时刻的5名风险集成员取值为$0,0,1,1,1$，其中$X=0$和$X=1$各有1人发生事件，其余3人当时不退出。取$\beta=\log2$。按常规近似部分似然、不附加与$\beta$无关的排列常数，该时刻的Breslow与Efron贡献依次为（\quad）。
+\begin{choices}
+\item $1/8$与$1/8$
+\item $1/32$与$1/32$
+\item $1/64$与$1/52$
+\item $1/32$与$1/26$
+\item $1/26$与$1/32$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-03}{变量检验与全局PH检验}
+一个含治疗、年龄和四水平细胞类型的Cox模型，其PH诊断表如下（为教学设定的输出结构，非真实数据的诊断结果）：
+\begin{center}\begin{tabular}{lrrr}\toprule
+项 & $\chi^2$ & $df$ & $P$\\\midrule
+治疗 & 8.41 & 1 & 0.0037\\
+年龄 & 0.16 & 1 & 0.6892\\
+细胞类型 & 0.49 & 3 & 0.9211\\
+GLOBAL & 9.06 & 5 & 0.1067\\\bottomrule
+\end{tabular}\end{center}
+在0.05水平下，最适当的解释是（\quad）。
+\begin{choices}
+\item 治疗项提示时间相关效应，应结合残差图和科学问题进一步检查，不能被不显著的全局检验掩盖
+\item 全局$P>0.05$已经证明全部变量均满足PH假设
+\item 治疗项$P=0.0037$说明治疗对死亡结局的主效应一定显著
+\item 年龄项$P>0.05$说明年龄与死亡风险没有关联，应从模型删除
+\item 细胞类型有4个水平，所以其PH检验一定应使用4个自由度
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-04}{分层Cox模型的解释}
+研究者不关心医院本身的效应，但怀疑两家医院的基线风险形态不同，拟合
+\[
+h_s(t\mid Z)=h_{0s}(t)\exp(\beta Z),\qquad s=1,2,
+\]
+其中$Z$表示治疗组。以下哪项正确（\quad）？
+\begin{choices}
+\item 两医院的基线风险必须相同，否则这个模型无法使用
+\item 模型必然估计两个互不相关的治疗系数$\beta_1,\beta_2$
+\item 把医院作为分层变量后，仍可直接读出一个医院2相对医院1的固定HR
+\item 医院分层自动保证治疗满足PH假设，无需再检查
+\item 允许医院有不同基线风险，在各层内使用共同治疗系数；模型本身不提供一个医院层间固定HR
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-05}{时间交互的代码判读}
+$Z$是固定的治疗指示，时间单位为天，所有事件时刻均大于0。研究者希望拟合
+\[
+h(t\mid Z)=h_0(t)\exp\{\beta Z+\gamma Z\log(t/30)\},
+\]
+其中$t$表示每个风险集共同的当前事件时刻。他准备采用以下R写法：
+
+\begin{rcode}
+coxph(Surv(time, status) ~ Z + I(Z*log(time/30)),
+      data=d)
+\end{rcode}
+d中的time为每个人最终观察到的事件或删失时间。对这段写法的正确评价是（\quad）。
+\begin{choices}
+\item 公式包含time，所以已经正确实现所要求的时变系数
+\item 只要把最终time改为月份，问题即可解决
+\item 右侧使用每人最终观察时间产生固定的新变量，不能代替事件时刻更新的交互，应使用正确的时间变换机制
+\item 删去右侧Z主效应就会自动得到正确的时变系数模型
+\item 必须把死亡者的time替换为0，才能构造风险集共同时间
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG5-06}{时依变量与分段记录}
+在每人最多一个终末事件的Cox分析中，判断以下命题：
+\begin{enumerate}
+\item[I.] 即使$X_i(t)$随时间变化，只要$\beta$为常数，任意两人的风险函数之比就必定不随时间变化。
+\item[II.] 一个未以事件结束的$(\mathrm{start},\mathrm{stop}]$区间，仍可在其覆盖的其他人事件时刻参与部分似然分母。
+\item[III.] 将同一受试者正确拆为不重叠区间时，他在任一风险集至多出现一次；相互重叠的重复区间可能把此人重复计入。
+\end{enumerate}
+正确的组合是（\quad）。
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item II、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG5-07}{重新表达时间尺度}
+对同一份右删失资料，所有人从时刻0开始观察，模型只含固定协变量，没有协变量与时间的交互。将所有事件和删失时间按
+$\tau=\log(1+t)$重新表达，保留全部观测且不作四舍五入，并采用相同的并列事件处理。
+有人认为：“时间数值都变了，所以普通Cox部分似然、回归系数和HR也一定改变。”
+请说明该说法是否成立，并区分哪些量保持不变、哪些时间解释需要改变。若原模型含$X\log t$项，可否机械地换成$X\log\tau$？
+
+\Question{SUPG5-08}{分类变量的整体检验与指定对比}
+使用公开\rinline{veteran}完整137人资料（128次死亡、9例删失），拟合Efron并列处理的Cox模型：
+\[
+h(t)=h_0(t)\exp\{\beta_Z Z+\beta_K K+
+\beta_{\mathrm S}I_{\mathrm S}+
+\beta_{\mathrm A}I_{\mathrm A}+
+\beta_{\mathrm L}I_{\mathrm L}\}.
+\]
+时间单位为入组后天数，status为死亡1、右删失0。
+$Z=1$为试验治疗、$0$为标准治疗；$K=(\mathrm{karno}-60)/10$；
+细胞类型以鳞状细胞为参照，S、A、L分别指小细胞、腺癌和大细胞。
+按完整数据重算得到：
+\begin{center}\begin{tabular}{lrr}\toprule
+项 & $\widehat\beta$ & $SE(\widehat\beta)$\\\midrule
+试验治疗 & 0.261744 & 0.200923\\
+K & $-0.312713$ & 0.051651\\
+小细胞 vs 鳞状细胞 & 0.824980 & 0.268911\\
+腺癌 vs 鳞状细胞 & 1.153994 & 0.295038\\
+大细胞 vs 鳞状细胞 & 0.394625 & 0.282243\\\bottomrule
+\end{tabular}\end{center}
+同一批137人、相同并列处理下，全模型的部分对数似然为$-474.914509$；
+仅含$Z,K$的模型为$-483.965694$。另有
+\[
+\widehat{\mathrm{Var}}
+\begin{pmatrix}\widehat\beta_{\mathrm S}\\\widehat\beta_{\mathrm A}\end{pmatrix}
+=
+\begin{pmatrix}
+0.072313&0.043484\\
+0.043484&0.087047
+\end{pmatrix}.
+\]
+\begin{enumerate}
+\item 构造细胞类型整体的似然比检验，写出约束、统计量和自由度，在0.05水平作结论。
+\item 在治疗与karno相同的条件下，求腺癌相对小细胞的HR和Wald 95\% CI；计算对数HR的方差时应如何使用协方差？
+\item 若整体检验显著而第（2）项区间包含1，是否矛盾？这些汇总是否已经足以证明PH假设成立以及生存概率预测校准良好？
+\end{enumerate}
+供查用：$\chi^2_{3,0.95}=7.815$，$z_{0.975}=1.96$。
+
+\Question{SUPG5-09}{时间更新用药状态的风险集}
+以下为新编教学资料。6人均从0月进入，开始用药后持续用药；“未用药”指整个观察期未用药，开始时刻0指入组即已用药。用$X_i(t)$表示事件发生前已知的当前用药状态。
+\begin{center}\begin{tabular}{crrl}\toprule
+对象 & 退出时间（月） & 事件指示 & 开始用药时刻（月）\\\midrule
+A & 2 & 1 & 未用药\\
+B & 4 & 1 & 3\\
+C & 6 & 1 & 5\\
+D & 8 & 1 & 7\\
+E & 9 & 0 & 未用药\\
+F & 10 & 1 & 0\\\bottomrule
+\end{tabular}\end{center}
+拟合$h_i(t)=h_0(t)\exp\{\beta X_i(t)\}$，采用$(\mathrm{start},\mathrm{stop}]$记录。
+\begin{enumerate}
+\item 写出B的两段记录，包括区间、事件指示和$X$。
+\item 在$\beta=0$时，记$p_k$为第$k$个事件时刻风险集中已用药者的比例。列出各事件时刻的风险人数、$p_k$及事件者$X$，计算
+\[
+U(0)=\sum_k(X_{\mathrm{event},k}-p_k),\qquad
+I(0)=\sum_k p_k(1-p_k),\qquad
+Q=\frac{U(0)^2}{I(0)}.
+\]
+仅按$\chi^2_1$大样本近似、临界值3.841给出计算结论；这不是小样本精确检验。
+\item 最后一次事件是否提供关于$\beta$的信息？如果把“随访中曾经用药”错当基线变量，2月时的$p_k$会怎样改变，为什么这种改法不合适？
+\end{enumerate}
+
+\Question{SUPG5-10}{检验值更新能否使用未来信息}
+以下示范记录改编自survival作者关于时依变量的教学文档，用于方法讨论，并非患者研究原始资料：某对象在第0、90、120天测得肌酐分别为$0.9,\ 1.5,\ 1.2$ mg/dL，于第185天死亡。
+研究者提出以下处理：
+\begin{enumerate}
+\item 在0--90天之间作线性插值，因此把第45天的协变量记为1.2 mg/dL。
+\item 拆成多段后，将每一条分段记录计作一名新的独立受试者。
+\item 只有加入“肌酐$\times$时间”交互才算处理了时依协变量。
+\item 如果以后拟合出的肌酐系数为正，即可断言降低肌酐本身一定降低死亡风险。
+\end{enumerate}
+请逐项评议。采用“截至当前最后已知测量值”的约定，写出该对象可用于标准Cox时依协变量分析的三段记录，并说明这种约定仍有什么解释限制。

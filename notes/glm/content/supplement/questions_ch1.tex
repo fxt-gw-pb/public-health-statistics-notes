@@ -1,0 +1,144 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-01}{比例响应中的试验次数权重}
+甲、乙两组分别有20人和80人，各人独立发生某事件的概率均为$p=0.25$。
+令$S_i$为组内事件数，$Y_i=S_i/n_i$为比例。以$Y_i$作为二项GLM的响应时，下列哪项正确？
+\begin{choices}
+\item 甲、乙比例的条件方差相同，均为$0.1875$。
+\item 甲的比例方差为乙的4倍；比例响应应分别给权重20和80。
+\item 乙的比例方差为甲的4倍；人数应作为待估协变量。
+\item 只要使用logit连接，软件不需要知道$n_i$。
+\item 把两个组的比例各重复一次，即可保留全部100人的二项信息。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-02}{线性预测子中的二次项}
+设相互独立的计数$Y_i\mid x_i\sim\operatorname{Poisson}(\mu_i)$，并指定
+$\log\mu_i=\beta_0+\beta_1x_i+\beta_2x_i^2$。关于该模型，下列哪项正确？
+\begin{choices}
+\item 含$x^2$，所以必定不属于GLM。
+\item 必须先检验$x^2$服从正态分布。
+\item 只要$\beta_2\ne0$，就没有线性预测子。
+\item $\exp(\beta_1)$始终是任意起点增加1单位的均值比。
+\item 它属于GLM；对参数线性与对原始$x$呈曲线并不矛盾。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-03}{由累积量函数恢复均值和方差}
+某指数分布族写为$f(y;\theta,\phi)=\exp\{[y\theta-b(\theta)]/\phi+c(y,\phi)\}$，
+其中$b(\theta)=-\log(-\theta)$、$\theta<0$、$\phi>0$。
+已知$\mu=b'(\theta)$、$\operatorname{Var}(Y)=\phi b''(\theta)$。以下哪组结论正确？
+\begin{choices}
+\item $\mu=1/\theta$，$\operatorname{Var}(Y)=\phi\mu^2$。
+\item $\mu=-1/\theta$，$\operatorname{Var}(Y)=\phi\mu$。
+\item $\mu=-1/\theta$，典型连接为$\log\mu$。
+\item $\mu=-1/\theta$，$\operatorname{Var}(Y)=\phi\mu^2$，典型连接为$-1/\mu$。
+\item $\mu=-1/\theta$，$\operatorname{Var}(Y)=\phi/\mu^2$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-04}{统一缩放相对精度权重}
+设$\operatorname{Var}(Y_i\mid X)=\sigma^2/w_i$，$w_i>0$仅给出相对精度，$\sigma^2$未知。
+均值为$X\beta$，采用加权最小二乘拟合。设计矩阵$X$满列秩，$p$为含截距的参数数目，且$n>p$；拟合后用
+$\hat\sigma^2=\sum_iw_i(y_i-\hat\mu_i)^2/(n-p)$及
+$\widehat{\operatorname{Cov}}(\hat\beta)=\hat\sigma^2(X^TWX)^{-1}$。
+若把所有$w_i$同时乘以7并重新估计尺度，下列哪项正确？
+\begin{choices}
+\item 回归系数和上述协方差估计均不变。
+\item 回归系数不变，协方差必定缩小为$1/7$。
+\item 回归系数缩小为$1/7$，协方差不变。
+\item 回归系数和协方差均乘以7。
+\item 样本量和残差自由度都自动乘以7。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-05}{相同线性预测值与不同逆连接}
+甲、乙分别使用二项logit和probit连接。对某一协变量组合，两模型都给出$\hat\eta=1$。
+已知$\Phi(1)=0.8413$。下列解释正确的是：
+\begin{choices}
+\item 两模型的事件概率均为1。
+\item 两模型的事件概率均为0.7311。
+\item 甲约0.7311、乙约0.8413；两模型的同名系数不能直接按同一种OR解释。
+\item 甲约0.8413、乙约0.7311。
+\item 两者均可不经逆连接，直接把$e^1$解释为事件概率。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG1-06}{含截距Poisson模型的得分性质}
+对相互独立的计数拟合普通、无惩罚的Poisson log连接模型；先验权重均为1，包含可自由估计的截距，MLE有限且处于参数空间内部。判断：
+\begin{enumerate}[label=\Roman*.]
+\item 拟合后$\sum_i(y_i-\hat\mu_i)=0$。
+\item 拟合后Pearson残差之和$\sum_i(y_i-\hat\mu_i)/\sqrt{\hat\mu_i}=0$必成立。
+\item 加入已知offset、仍保留自由截距时，命题I仍成立。
+\end{enumerate}
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I和II。
+\item II和III。
+\item I和III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG1-07}{先验权重与工作权重为何不同}
+对二项比例$Y_i=S_i/n_i$拟合logit模型。一位同学发现软件保存了两组权重：试验次数$n_i$，以及迭代中的$n_i\pi_i(1-\pi_i)$。
+他认为‘比例方差在$\pi_i$接近0或1时较小，所以第二组权重反而变小一定是程序错误’。
+请说明两组权重的对象和作用，并解释上述推断为什么不成立。可以使用Delta近似，不必证明算法收敛。
+
+\Question{SUPG1-08}{Dobson案例：由glm输出还原模型}
+R官方\rinline{glm}示例给出Dobson（1990，第93页）的以下9格频数。此题按官方示例将格数作为Poisson响应；讨论的是该拟合的参数化，不另行改变抽样方案。
+\begin{center}\begin{tabular}{lrrr}\toprule
+处理组&结局类别1&结局类别2&结局类别3\\\midrule
+1&18&17&15\\2&20&10&20\\3&25&13&12\\\bottomrule\end{tabular}\end{center}
+以两个因子的第1水平为参照，按下列调用的定义独立复算，系数整理如下（非本机R运行截图）：
+
+\begin{rcode}
+fit <- glm(counts ~ outcome + treatment,
+           family = poisson("log"), data = d)
+\end{rcode}
+\begin{center}\begin{tabular}{lrr}\toprule
+参数&估计&标准误\\\midrule
+截距&3.044522&0.170899\\outcome2&-0.454255&0.202171\\outcome3&-0.292987&0.192742\\
+treatment2&0.000000&0.200000\\treatment3&0.000000&0.200000\\\bottomrule\end{tabular}\end{center}
+\begin{enumerate}
+\item 写出随机部分、系统部分和连接函数，说明此处一条响应记录是什么。
+\item 求‘处理组2、结局类别2’的线性预测值、条件均值及模型条件方差。
+\item 计算设计矩阵秩和残差自由度，解释为什么不能以150减参数数目来填该调用的残差自由度。
+\item 所有处理系数为0能否推出每个观察格数等于拟合格数？求该格的响应残差，并说明\rinline{predict(fit)}与\rinline{predict(fit,type="response")}的区别。
+\end{enumerate}
+
+\Question{SUPG1-09}{完成一次二项IRLS更新}
+教学数据如下，各组内个体独立、组间独立。设$S_i\sim\operatorname{Bin}(n_i,\pi_i)$，
+$\operatorname{logit}(\pi_i)=\beta_0+\beta_1x_i$。
+\begin{center}\begin{tabular}{rrrr}\toprule
+组别&$x_i$&$n_i$&$S_i$\\\midrule1&0&10&1\\2&1&10&4\\3&2&10&8\\\bottomrule\end{tabular}\end{center}
+从$\beta^{(0)}=(0,0)^T$开始，记$Y_i=S_i/n_i$，使用
+\[z_i=\eta_i+\frac{Y_i-\pi_i}{\pi_i(1-\pi_i)},\quad
+w_i=n_i\pi_i(1-\pi_i),\quad
+\beta^{\rm new}=(X^TWX)^{-1}X^TWz.\]
+\begin{enumerate}
+\item 求初始$\pi_i$、$z_i$及$W$。
+\item 写出$X^TWX$与$X^TWz$，求第一次更新的$\beta^{(1)}$。
+\item 求更新后的三个概率，并计算得分$U=X^T(S-n\pi^{(1)})$。此次更新是否已经达到MLE？下一轮应更新什么？
+\end{enumerate}
+
+\Question{SUPG1-10}{对数响应回归与log连接GLM}
+某研究者用教学设定说明正值连续生物标志物的回归，模型为
+\[\log Y=1+0.4x+\varepsilon,\qquad\varepsilon\mid x\sim N(0,0.36),\quad x\in\{0,1\}.\]
+他写道：‘连接函数是log，因此$E(Y\mid x)=\exp(1+0.4x)$；这与任意log连接GLM完全相同。
+由于$Y$均为正数，也可以直接指定Poisson分布。’已知正态变量满足$E(e^\varepsilon)=e^{0.36/2}$。
+\begin{enumerate}
+\item 指出响应变换与均值连接的区别，分别求$x=0,1$时$Y$的条件均值和中位数。
+\item 在本题方差设定下，$e^{0.4}$是否等于两个条件均值之比？若对数尺度方差随$x$变化，结论是否仍必然成立？
+\item 评价‘正数即可用Poisson’及‘任意log连接GLM完全相同’两句，并说明应补报哪些模型信息。
+\end{enumerate}

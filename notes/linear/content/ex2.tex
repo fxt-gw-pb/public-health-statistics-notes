@@ -1339,6 +1339,9 @@ Y & 3.4 & 7.9 & 14.6 & 13.6 & 15.5 \\
 
 \worklines{3}
 
+\clearpage\section{本次补充习题}
+\input{content/supplement/questions_ch3.tex}
+
 \clearpage\section{习题解析}
 
 \begin{keyidea}[核对方式]题号与前文一一对应。补写范围、原题歧义及数据还原方法列在相应答案中。\end{keyidea}
@@ -1790,4 +1793,6 @@ Cook距离 & 0.3386 \\
 \textbf{（3）区别与处理。} 外学生化残差以删点后估计的误差方差衡量Y方向偏离；杠杆反映X位置是否特殊；Cook距离综合残差与杠杆。本例第6号虽在X方向较远，却贴近回归线。经验阈值用于筛查，应先核查数据，再比较含该点与不含该点的拟合，不按是否有利于结论选择性删点。
 
 可用R的 \texttt{rstandard()}、\texttt{rstudent()}、\texttt{hatvalues()}、\texttt{cooks.distance()} 复算，完整代码随笔记提供。
+\subsection*{本次补充习题解析}
+\input{content/supplement/answers_ch3.tex}
 \EndExercises

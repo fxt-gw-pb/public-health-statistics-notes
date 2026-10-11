@@ -1,0 +1,113 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPL4-01}{非等样本量下的和为零约束}
+\textbf{答案：C。} 模型为每组拟合一个均数，故
+\[
+\widehat\mu=\frac{6+9+12}{3}=9,\qquad
+(\widehat\alpha_A,\widehat\alpha_B,\widehat\alpha_C)=(-3,0,3).
+\]
+观测值的合并均数为\((5\times6+10\times9+15\times12)/30=10\)。本题约束是\(\sum_i\alpha_i=0\)，而非\(\sum_i n_i\alpha_i=0\)；非等样本量时两种平均不能混同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}。\par}
+
+\Answer{SUPL4-02}{Tukey比较中的未检出差异}
+\textbf{答案：E。} C--A的同时置信区间不含0，校正\(P=0.0180\)；另外两对区间均含0。未拒绝均数相等的原假设，不等于证明均数相等，也不具有“传递性”。总体\(F\)检验只说明三组总体均数不全相同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:NIST_TUKEY]{[17]}。\par}
+
+\Answer{SUPL4-03}{完整区组内如何随机化}
+\textbf{答案：B。} 每个实验日均包含全部4种处理，在日内随机分配处理，才能在相同区组条件下比较浓度效应。A未保证完整区组；C使用结局决定处理；D没有日内随机化；E改变了实验单位并产生同一单位的重复观察。可加模型可写为\(Y_{ij}=\mu+\alpha_i+\beta_j+\varepsilon_{ij}\)，其中\(i\)为浓度，\(j\)为实验日。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:L4]{[14]}、\hyperref[src:NIST_BLOCK]{[16]}。\par}
+
+\Answer{SUPL4-04}{区组模型的含义与正交性}
+\textbf{答案：D（I、III）。} 可加模型没有处理\(\times\)区组项，因而施加区组间处理差相同的假定。5个区组按分类因素需要4个独立对比；直接放入编号只有一个斜率，额外假定区组效应随编号等距线性变化，不能表示任意区组差异。完整平衡区组设计中，去除截距后的处理与区组设计空间正交，因此两者的平方和不随进入顺序改变。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:NIST_BLOCK]{[16]}。\par}
+
+\Answer{SUPL4-05}{一个简单效应显著而另一个不显著}
+\textbf{答案：A。} 两个简单效应的估计分别为2和1，按“\(B=1\)减\(B=0\)”定义的交互对比为\(1-2=-1\)。四组独立，故
+\[
+SE(\widehat\Delta_{AB})=\sqrt{4\times4/10}=1.2649,\quad
+t=-1/1.2649=-0.7906,\quad F=t^2=0.625.
+\]
+交互检验\(P=0.434\)，本资料未检出两个简单效应的差异；这也不证明其总体差异严格为0。“一显著、一不显著”与“二者显著不同”是不同问题。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:UCLA_INTER]{[20]}。\par}
+
+\Answer{SUPL4-06}{修正均数差的标准误}
+\textbf{答案：C。} 共同斜率模型下，两组修正均数差的标准误为
+\[
+SE=\sqrt{MSE\left\{\frac1{n_1}+\frac1{n_2}
++\frac{(\bar X_2-\bar X_1)^2}{\sum_i l_{xx,i}}\right\}}
+=\sqrt{4\left(\frac18+\frac18+\frac{16}{80}\right)}
+=\sqrt{1.8}=1.3416.
+\]
+组间协变量均数不同，使共同斜率估计的不确定性进入组差的方差；只算\(\sqrt{4(1/8+1/8)}=1\)漏掉了这一项。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}。\par}
+
+\Answer{SUPL4-07}{方差分析究竟要求什么正态}
+\textbf{参考作答。} 对模型\(Y_{ij}=\mu_i+\varepsilon_{ij}\)，经典小样本\(F\)推断要求误差独立、均值为0、方差相同且服从正态分布。正态性针对给定组别后的误差，不能由合并三组\(Y\)的多峰形状直接否定；各组均数不同可以使合并分布呈多峰。组别是分类解释变量，无须服从正态分布。
+
+应查看残差QQ图、各组残差散布及残差对拟合值图，检查明显偏态、异常点和异方差；结合实验单位、随机化安排与测定顺序检查独立性。残差图用于诊断误差假设，不能仅凭一张图证明所有假设成立。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:NIST_RESID]{[18]}。\par}
+
+\Answer{SUPL4-08}{实验日区组与预设处理比较}
+\textbf{（1）模型与变异分解。} 令\(i\)为处理、\(j\)为实验日，
+\[
+Y_{ij}=\mu+\alpha_i+\beta_j+\varepsilon_{ij},\quad
+\sum_i\alpha_i=\sum_j\beta_j=0,\quad
+H_0:\alpha_A=\alpha_B=\alpha_C=0.
+\]
+处理均数为14、16、18；区组均数为10、14、18、22；总均数为16。
+\begin{center}\begin{tabular}{lrrrr}
+\toprule 来源&\(SS\)&自由度&\(MS\)&\(F\)\\\midrule
+处理&32&2&16&16\\
+区组&240&3&80&---\\
+误差&6&6&1&---\\
+总变异&278&11&---&---\\\bottomrule
+\end{tabular}\end{center}
+例如\(SS_{\text{处理}}=4[(14-16)^2+(16-16)^2+(18-16)^2]=32\)，\(SS_{\text{区组}}=3[(10-16)^2+(14-16)^2+(18-16)^2+(22-16)^2]=240\)，误差按\(Y_{ij}-\bar Y_{i\cdot}-\bar Y_{\cdot j}+\bar Y\)求得。
+
+\textbf{（2）整体检验。} \(F=16>5.143\)，拒绝\(H_0\)（\(P=0.00394\)），认为三种处理的总体均数不全相同。
+
+\textbf{（3）预设对比。} \(\widehat\mu_C-\widehat\mu_A=18-14=4\) mg/L；\(SE=\sqrt{2MSE/4}=\sqrt{0.5}=0.7071\)。95\%置信区间为
+\[
+4\pm2.447\times0.7071=(2.270,5.730)\ \text{mg/L}.
+\]
+这是唯一预设对比的区间，没有将三对事后比较都按未校正区间报告。
+
+\textbf{（4）忽略区组。} 原区组平方和并入误差，\(SSE=240+6=246\)，误差自由度\(12-3=9\)，\(MSE=246/9=27.333\)。本例实验日差异较大；分离其变异后误差均方从27.333降为1。分析方法应与日内随机化设计相符。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:NIST_BLOCK]{[16]}。\par}
+
+\Answer{SUPL4-09}{小样本协方差分析的完整核算}
+\textbf{（1）斜率检验。} \(H_0:\beta_{XG}=0\)。完整模型的\(MSE_3=8/8=1\)，故
+\[
+F=\frac{(8.35-8.00)/1}{8.00/8}=0.350,
+\qquad P=0.570>0.05.
+\]
+本题未发现两组斜率不同的证据，可在专业假定支持下采用共同斜率近似；小样本不显著不等于证明斜率相等。
+
+\textbf{（2）共同斜率方程。} 两组\(\bar X\)为8.5、10.5，\(\bar Y\)为19.5、22.5。组内汇总量为\(\sum_i l_{xx,i}=35\)、\(\sum_i l_{xy,i}=17.5\)，因而
+\[
+\widehat\beta_X=17.5/35=0.5,\quad
+\widehat\beta_G=(22.5-19.5)-0.5(10.5-8.5)=2,
+\]
+\[
+\widehat Y=15.25+0.5X+2G
+=20+0.5(X-9.5)+2G.
+\]
+
+\textbf{（3）修正均数与区间。} 在\(X_0=9.5\)处，两组修正均数分别为20和22，差值为2分。此时报告的是\(M_2\)下的组差，应使用\(MSE_2=8.35/9=0.92778\)，而非完整模型的\(MSE_3\)。
+\[
+SE=\sqrt{\frac{8.35}{9}\left(\frac16+\frac16+\frac{(10.5-8.5)^2}{35}\right)}
+=0.64443.
+\]
+95\%置信区间为\(2\pm2.262\times0.64443=(0.542,3.458)\)分。共同评分9.5位于两组观察范围内；在所采用模型下，强化组调整后的均数较高（\(t=3.104,\nu=9,P=0.01265\)）。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:PSU_ANCOVA]{[19]}。\par}
+
+\Answer{SUPL4-10}{平均主效应为零能否判定方案无效}
+\textbf{（1）简单效应。} \(B=0\)时，强化对常规的差为\(16-10=6\)分；\(B=1\)时为\(12-18=-6\)分。交互对比为\(-6-6=-12\)分。两个简单效应平均为0，正是A的平均主效应为0的原因。
+
+\textbf{（2）评价与修正。}
+\begin{enumerate}
+\item A的平均主效应为0不能推出各B水平下均无效；本例两个条件效应方向相反，平均后相互抵消。
+\item 保留\(AB\)交互时应按层级原则保留A、B及截距，不能只保留乘积项。以0/1参照编码，拟合方程为\(\widehat Y=10+6A+8B-12AB\)。其中A系数6是\(B=0\)时的简单效应，不等于跨B平均的主效应0。
+\item 不能因方案名称“强化”便统一推荐。按本题评分方向，\(B=0\)时强化组均数更高，\(B=1\)时却更低，应按B水平分别报告估计及不确定性，不能用一个平均A效应概括。
+\end{enumerate}
+可报告：“训练方案与辅助方案在改善评分上存在交互；不用辅助方案时，强化对常规的均数差估计为6分；使用辅助方案时为\(-6\)分。该差异随辅助方案而改变，需分别解释。”
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:L4]{[14]}、\hyperref[src:NI_REPO]{[15]}、\hyperref[src:UCLA_INTER]{[20]}。\par}

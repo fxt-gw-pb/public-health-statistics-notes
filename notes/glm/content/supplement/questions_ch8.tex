@@ -1,0 +1,147 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-01}{OR改变一定说明混杂吗}
+在一个不存在混杂的教学随机分组总体中，$X$与基线$Z$独立，且两暴露组内$P(Z=0)=P(Z=1)=1/2$。
+结局概率如下：
+\begin{center}\begin{tabular}{lrr}\toprule&$X=0$&$X=1$\\\midrule
+$Z=0$&$1/5$&$1/3$\\$Z=1$&$3/5$&$3/4$\\\bottomrule\end{tabular}\end{center}
+关于分层OR与边际OR，下列哪项正确？
+\begin{choices}
+\item 分层OR与边际OR均为2。
+\item 只要两个OR不同，就推翻了题设的随机分组。
+\item 分层OR均为2，边际OR为$39/22$；这种差别本身不证明混杂。
+\item 分层OR均为$39/22$，边际OR为2。
+\item 由于$X\perp Z$，$Z$不可能与结局有关。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-02}{过离散与重复观察是两个问题}
+教学研究对400名相互独立的受试者各观察4期，每期记录发作次数、实际观察人时和基线暴露。
+同一人的各期计数明显相关；目标是总体平均发作率与暴露的关系。即使采用NB2方差后过离散已有改善，下一步哪项最合适？
+\begin{choices}
+\item 只要NB2的离散参数显著，就可以忽略个体编号。
+\item 将1600行随机打乱，相关性即可消除。
+\item 删除每人所有零计数时期，使Poisson假定成立。
+\item 按人指定相关簇，考虑总体均值的GEE及簇稳健推断，并保留人时信息。
+\item 把人时作为频数权重即可同时处理相关性和暴露时间。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-03}{相同AUC不等于相同概率预测}
+同一验证集中，模型给出的事件概率满足$0<p_i<1$。有人把全部预测改成$q_i=p_i^2$，
+其中至少有一个$p_i=0.60$；仍以较大分数预测更可能发生事件。对普通经验ROC/AUC及0.5阈值分类，下列哪项必然正确？
+\begin{choices}
+\item AUC也必然变为原值的平方。
+\item ROC/AUC保持不变，但0.5阈值的分类至少有一人改变。
+\item AUC不变，因此概率校准必定不变。
+\item 所有预测仍在0与1之间，因此平方后的模型一定校准正确。
+\item Brier分数必定不变，因为排序没有变化。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-04}{合并二项数据后的似然常数}
+把独立Bernoulli记录按完全相同的设计行（含所有交互项和offset）合并成‘事件数/总人数’。
+合并前后使用同一logit模型，且二项次数权重正确；模型有有限的内部MLE。以下哪项正确？
+\begin{choices}
+\item 系数及通常模型协方差相同，但对数似然常数和饱和模型可能不同。
+\item 只要系数相同，两份输出中的偏差数值就必定相同。
+\item 合并后必须把每个总人数都改成1，才能保留信息。
+\item 合并后样本行数少了，所有标准误必定增大。
+\item 任何协变量不同的受试者也可按结局相同而任意合并。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-05}{相同LR值与不同参照分布}
+教学比较中，检验甲是在普通Logistic模型中检验一个正则、可识别的斜率为0；检验乙是在相同计数数据上比较Poisson与仅多一个常数离散参数$\alpha\ge0$的NB2，$H_0:\alpha=0$。
+两项LR统计量均为3.0。已知甲用$\chi^2_1$，乙用$\tfrac12\chi^2_0+\tfrac12\chi^2_1$，且$P(\chi^2_1\ge3)=0.0833$。
+在$\alpha_{\rm test}=0.05$下，应作何判断？
+\begin{choices}
+\item 两项均不拒绝，因为LR值相同。
+\item 两项均拒绝，因为都增加一个参数。
+\item 甲拒绝，乙不拒绝。
+\item 乙必须用两个自由度，所以两项均不拒绝。
+\item 甲不拒绝，乙拒绝。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG8-06}{课程中的模型与GLM边界}
+判断以下命题：
+\begin{enumerate}[label=\Roman*.]
+\item 独立Poisson响应、log连接及已知offset仍可构成普通GLM。
+\item Cox式中出现$\exp(X^T\beta)$，就足以把通常的Cox偏似然当作独立Poisson响应的完整似然。
+\item 负二项形状参数固定已知时，可作为单参数指数族的GLM；若另行估计该形状参数，应说明额外估计步骤。
+\end{enumerate}
+哪些命题正确？
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I和II。
+\item I和III。
+\item I、II和III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG8-07}{分析前先写清观察单位与目标参数}
+请分别为以下三份资料选择一个与研究目标相符的主要分析框架，并说明响应/数据结构、使用的似然或估计思想、指数化系数的含义及一项关键前提：
+\begin{enumerate}
+\item 每名病例匹配2名对照，关心组内变化的暴露与结局的关联。
+\item 每个独立地区记录年度总事件数和总人时，关心调整协变量后的事件发生率。
+\item 前瞻性队列记录首次事件时间或右删失时间，关心瞬时风险的相对大小。
+\end{enumerate}
+不得只列出三个软件命令。
+
+\Question{SUPG8-08}{四个模型中哪些比较有效}
+以下是明确给定的教学模型摘要，不代表未提供个体数据的真实拟合。A、B、C使用完全相同的240名受试者和二分类结局，
+均按个体Bernoulli完整似然计入同一常数；$X,Z$连续。D因新增标志物$M$缺失而只用其中210人。
+$k$均为实际自由估计的参数数目。
+\begin{center}\small\begin{tabular}{llrrr}\toprule
+模型&连接及线性预测子&$n$&$k$&$\ell_{\max}$\\\midrule
+A&logit：截距、$X,Z$&240&3&-142.0\\
+B&logit：A加$XZ$&240&4&-138.8\\
+C&probit：截距、$X,Z,XZ$&240&4&-139.1\\
+D&logit：B加$M$&210&5&-116.0\\\bottomrule\end{tabular}\end{center}
+\begin{enumerate}
+\item 计算四个AIC；可以直接把哪几个放在一起比较？
+\item 在通常正则条件下，用LR检验A与B，给出原假设、统计量、自由度及结论。可用$P(\chi^2_1\ge6.4)=0.0114$。
+\item B与C能否直接作同样的卡方LR检验？两者AIC差为多少，能否据此宣称一个模型被‘证明正确’？
+\item 若要判断加入$M$是否改善模型，至少需要如何重新组织拟合？统一分析样本是否已解决所有缺失数据问题？
+\end{enumerate}
+
+\Question{SUPG8-09}{同一队列表中的OR、RR、IRR与HR}
+教学队列中，两组各100人，基线均未发生目标事件。每人均随访至首次事件或5年行政随访结束，无提前失访，也无竞争事件。
+汇总表中人时累计至首次事件或5年：
+\begin{center}\begin{tabular}{lrrrr}\toprule
+暴露&人数&5年内事件&5年内无事件&总人年\\\midrule
+$X=0$&100&20&80&420\\$X=1$&100&36&64&392\\\bottomrule\end{tabular}\end{center}
+\begin{enumerate}
+\item 计算5年累积风险、RR和OR。
+\item 计算每100人年的发病密度及其比值IRR，说明它为何不必等于RR。
+\item 仅凭这两行汇总表能否恢复通常Cox偏似然并求出HR？还缺什么信息？
+\item 另作一个明确的PH模型设定：$\mathrm{HR}=2$且$S_0(5)=0.80$。
+这两个参数是本小问额外给定的假设，不声称由前表拟合而得。求$S_1(5)$、暴露组5年风险及对应RR；‘HR为2就表示5年风险加倍’是否正确？
+\end{enumerate}
+
+\Question{SUPG8-10}{三种显著结果是否构成相同结论}
+以下为教学研究报告评议。观察性队列研究基线暴露$X$与住院的关联，各人实际观察0.5至3年；均有住院日期及随访结束原因。
+研究者调整了相同的基线协变量，给出三种分析。表中系数与标准误为教学设定：
+\begin{center}\small\begin{tabular}{p{.09\linewidth}p{.54\linewidth}rr}\toprule
+分析&响应及模型&$\hat\beta_X$&SE\\\midrule
+A&实际观察期内是否住院；普通二项logit&$\log2$&0.10\\
+B&实际观察期内累计住院次数；Poisson log连接，log人时offset&$\log2$&0.12\\
+C&首次住院时间及右删失；Cox PH&$\log2$&0.15\\\bottomrule\end{tabular}\end{center}
+作者写道：‘三种方法均显示风险加倍且显著，证明暴露导致3年住院风险增加100\%；只须选择三者中AIC最小者。’
+\begin{enumerate}
+\item 分别解释三种$e^{\hat\beta_X}$，计算相应95\% Wald区间，并说明A能否直接给出统一的3年OR。
+\item 对B、C各指出两项需要检查的模型或观察机制前提。
+\item 评价作者关于因果关系、固定3年风险和跨模型AIC的结论，提出与你认为合适的研究目标相对应的修改。
+\end{enumerate}

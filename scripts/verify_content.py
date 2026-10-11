@@ -18,13 +18,17 @@ class Inspector(HTMLParser):
         if tag=='input' and a.get('type')=='radio': self.radios.append((a.get('data-quiz'),a.get('value')))
         if tag in ('script','iframe','object','embed') or any(k.startswith('on') for k in a): self.unsafe.append(tag)
 
+def expand(text,course):
+    # Exercise chapters include the supplementary question and answer files.
+    return re.sub(r'\\input\{([^}]+)\}',lambda m:expand((ROOT/'notes'/course/m[1]).read_text(),course),text)
+
 def main():
     manifest=json.loads((ROOT/'public/data/index.json').read_text())
-    assert len(manifest['chapters'])==31, 'Expected all 31 documents'
+    assert len(manifest['chapters'])==36, 'Expected all 36 documents'
     figures=set(); questions=0; codes=0; choices=0; issues=[]
     for c in manifest['chapters']:
         d=json.loads((ROOT/'public/data'/(c['id']+'.json')).read_text())
-        source=(ROOT/d['source']).read_text()
+        source=expand((ROOT/d['source']).read_text(),d['course'])
         parser=Inspector(); parser.feed(d['html'])
         source_q=re.findall(r'\\Question\{([^}]+)\}',source)
         source_a=re.findall(r'\\Answer\{([^}]+)\}',source)
@@ -52,7 +56,7 @@ def main():
             figures.add(src)
         if len(parser.ids)!=len(set(parser.ids)): issues.append(c['id']+': duplicate anchors')
         if parser.unsafe: issues.append(c['id']+': unsafe HTML '+str(parser.unsafe))
-        if 'WEBTOKEN' in d['html']: issues.append(c['id']+': unresolved conversion token')
+        if 'WEBTOKEN' in d['html'] or re.search(r'\d{5}END',d['html']): issues.append(c['id']+': unresolved conversion token')
         if len(d['text'])<400: issues.append(c['id']+': unexpectedly short content')
         for h in c['toc']:
             if h['id'] not in parser.ids: issues.append(c['id']+': missing table-of-contents anchor')

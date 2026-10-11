@@ -1,0 +1,45 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG7-01}{事件率与至少一次事件的概率}
+\textbf{答案：D。} 事件率的量纲为“次/人月”，可大于1；概率则位于0与1之间。观察2个月的均数为$\mu=1.5\times2=3$，所以$\Pr(Y\ge1)=1-\Pr(Y=0)=1-e^{-3}=0.9502$。率与时间相乘得到的是期望计数，不能把它直接解释为至少一次事件的概率。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-POISSON]{[39]}。\par}
+
+\Answer{SUPG7-02}{同协变量分组的合并率估计}
+\textbf{答案：A。} 共同率模型的对数似然中与$\lambda$有关的部分为$7\log\lambda-400\lambda$，求导得$7/\lambda-400=0$，所以$\widehat\lambda=7/400=0.0175$。两组粗率$0.04,0.01$不能直接作等权平均；在共同率假定下，合并率相当于按人时加权平均。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-OFFSET]{[40]}。\par}
+
+\Answer{SUPG7-03}{准Poisson的尺度调整}
+\textbf{答案：B。} $\widehat\phi=147.2/46=3.2$。准Poisson在本题相同拟合设定下保留系数估计，但将协方差矩阵乘以$\widehat\phi$，所以标准误乘以$\sqrt{\widehat\phi}$：\[SE_Q=0.1\sqrt{3.2}=0.1789,\qquad t=-0.4/0.1789=-2.236.\]按题定约定参照$t_{46}$，双侧$P\approx0.03024$。不能把方差的放大倍数直接用作标准误倍数，也不能把尺度乘进回归系数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G1-FAMILY]{[3]}、\hyperref[src:G7-R-SUMMARY]{[41]}。\par}
+
+\Answer{SUPG7-04}{总样本的方差均数比能说明什么}
+\textbf{答案：E。} 由全期望与全方差公式，\[E(Y)=\tfrac12(1+9)=5,\qquad \operatorname{Var}(Y)=E\{\operatorname{Var}(Y\mid X)\}+\operatorname{Var}\{E(Y\mid X)\}=5+16=21.\]边际方差均数比为4.2，但给定$X$后的均数与方差均相等。回归的Poisson方差假定针对条件分布；合并不同均数组后的原始样本方差大于均数，不能直接作为条件过离散的充分证据。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-POISSON]{[39]}。\par}
+
+\Answer{SUPG7-05}{NB2与准Poisson的方差形状}
+\textbf{答案：C。} 均数2处方差为$2+0.5\times2^2=4$，方差均数比为2；均数8处方差为$8+0.5\times8^2=40$，方差均数比为5。NB2的方差均数比$1+\alpha\mu$随均数改变；准Poisson的该比值为共同常数$\phi$。因此两者可在某个均数附近相近，不能仅靠一个常数尺度在不同均数处完全等同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-NEGBIN]{[42]}、\hyperref[src:G1-FAMILY]{[3]}。\par}
+
+\Answer{SUPG7-06}{均值、相关性与零概率}
+\textbf{答案：D。} I正确，准Poisson的共同尺度在均值估计方程中抵消，主要改变方差估计及推断。II错误，NB2改变单个观察的条件分布与方差关系；把各次记录仍视为独立，并不会消除或建模受试者内相关。III正确，因为$\log(1+x)<x$对$x>0$成立，故$-\log(1+\alpha\mu)/\alpha>-\mu$，两边取指数即可。零数较多可以来自普通NB2的异质性，不能只凭“零很多”判定必须另设零膨胀成分。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G1-FAMILY]{[3]}、\hyperref[src:G7-R-NEGBIN]{[42]}。\par}
+
+\Answer{SUPG7-07}{基线计数能否当作offset}
+按给定均值模型，基线事件数加倍对应随访期均数乘以$2^{0.8}=1.7411$；观察时间加倍则乘以2，后者由$\log T_i$的系数固定为1决定。基线事件数是患者既往状态的随机指标，且所有人基线观察长度相同；它不是随访暴露时间。只有研究目标和均值关系确实支持“随访均数与基线计数严格成正比”时，才可施加$\gamma=1$这一额外限制，不能因为变量都是计数就把它们等同。\par $B_i=0$是有意义的观察结果，$\log B_i$不可定义提示的是当前函数形式不适用，不能自动删除这些患者。应根据研究问题预先选择能处理零的基线调整方式，例如直接使用$B_i$或明确说明含零指示的模型；加常数也会改变模型含义。若所有$T_i=2$，$\log2$是常数，可吸收到截距中；拟合系数的其他部分不变，但解释截距和报告率时仍须说明两周的观察单位。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-OFFSET]{[40]}。\par}
+
+\Answer{SUPG7-08}{年龄交互与率比对比}
+低年龄层的率比为$e^{\widehat\beta_E}=2$；高年龄层的率比为$e^{\widehat\beta_E+\widehat\beta_{EA}}=e^{-0.287682}=0.75$。两层率比之比为$e^{\widehat\beta_{EA}}=0.375$，反映年龄层之间的暴露效应差异。高年龄层对数率比的方差必须包括协方差：\[V=0.075000+0.113889+2(-0.075000)=0.038889,\quad SE=0.197203.\]因此95\%区间为$\exp\{-0.287682\pm1.96(0.197203)\}=(0.5096,1.1039)$。忽略协方差会夸大此处对比的标准误。\par 高年龄暴露组的拟合率为$45/1000=0.045$次/人年，500人年的期望计数为22.5；期望计数可以是非整数。此模型有4个组均数参数，恰好拟合4个计数组，剩余自由度为0，不能用这四个汇总计数对其整体拟合优度或过离散作有剩余自由度的检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-R-OFFSET]{[40]}。\par}
+
+\Answer{SUPG7-09}{完整就诊资料的计数模型输出}
+控制列出的其他变量后，疾病数每增加1，NB2的条件平均就诊次数乘以$e^{0.214341}=1.2390$，即约增加23.9\%；这是观察性回归关联。减少活动天数增加1的均数比为$e^{0.143754}=1.1546$，95\%区间为\[\exp\{0.143754\pm1.96(0.007311)\}=(1.1382,1.1713).\]固定$\mu=0.5$时，NB2方差为$0.5+1.077038\times0.5^2=0.7693$，零概率约$0.6703$；同均数Poisson零概率为$e^{-0.5}=0.6065$。这里是同均数的分布比较，不表示两个拟合模型对某人的预测均数必相同。\par Poisson的Pearson尺度为$6873.982/5177=1.3278$，提示条件方差可能大于Poisson所规定的水平。NB2预测零人数4172.7较接近观察到的4141，说明普通过离散模型本身就能增加零概率；“零多”并不自动要求零膨胀模型。一个总零数或一个尺度也不能证明模型拟合充分，还应检查各协变量范围内的残差、计数尾部及均值形式。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-AER]{[44]}、\hyperref[src:G7-DOCTOR-DATA]{[45]}、\hyperref[src:G7-R-NEGBIN]{[42]}、\hyperref[src:G7-R-GLMNB]{[43]}。\par}
+
+\Answer{SUPG7-10}{校园犯罪案例的代码与版本审阅}
+原始文件为81校，按结局率阈值剔除5590人、30事件的学校后剩80行；随后$\mathtt{pmax}$把540人学校的暴露量由0.54改为1，相当于把540人改成1000人，已改变资料而非换单位。根据给定签名和实参匹配规则，$\mathtt{data=c.data2}$先匹配$\mathtt{data}$；两个未命名实参依次匹配$\mathtt{formula}$与$\mathtt{weights}$，故外置的$\mathtt{offset(log(enroll1000))}$在此被作为权重。540人学校变为$\log1=0$权重，不能把该调用直接解释为已按在校人数调整的计数率模型。\par 负的对数暴露量可以合法作为offset，只需原暴露量为正。保留80行时应对未钳制的$\mathtt{c.data}$写
+\begin{rcode}
+MASS::glm.nb(nv ~ type * region +
+  offset(log(enroll1000)), data = c.data)
+\end{rcode}
+报告须区分原始81校、明确排除后的80校和原笔记改动的10行表。按观察结局率删除异常值可能改变估计，应说明理由，并比较保留全部81校与排除该校的敏感性。这里的调用判断为依据公开签名及R规则的静态分析；本次Python只复核原数据、筛选与数值，未运行R或声称作者确认了代码问题。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G7-NOTE]{[38]}、\hyperref[src:G7-CAMPUS-BOOK]{[46]}、\hyperref[src:G7-CAMPUS-PRETEXT]{[47]}、\hyperref[src:G7-CAMPUS-DATA]{[48]}、\hyperref[src:G7-CAMPUS-SOURCE]{[49]}、\hyperref[src:G7-R-GLMNB]{[43]}、\hyperref[src:G7-R-LANGUAGE]{[50]}、\hyperref[src:G7-R-OFFSET]{[40]}。\par}

@@ -1,0 +1,89 @@
+% 独立题号标签SUPM；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-01}{样本量限制下的非零主成分数}
+某研究用8名受试者的12项非恒定数值指标作相关阵主成分分析，无缺失值。经中心化、标准化后，方差严格大于0的样本主成分最多有多少个？
+\begin{choices}
+\item 6个。
+\item 8个。
+\item 7个。
+\item 11个。
+\item 12个。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-02}{两种保留主成分准则的分歧}
+对5个标准化变量分析，特征值依次为$2.30,\ 1.10,\ 0.85,\ 0.55,\ 0.20$。分别使用‘特征值严格大于1’和‘累计贡献率至少达到80\%’两条准则，最少应保留的主成分数依次为：
+\begin{choices}
+\item 1和2。
+\item 2和2。
+\item 3和2。
+\item 2和3。
+\item 3和3。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-03}{主成分能否直接作为加权平均分}
+两个指标均已规定为‘数值越大越好’，其相关矩阵为$R=\begin{pmatrix}1&-0.8\\-0.8&1\end{pmatrix}$，第一单位特征向量取$a_1=(1,-1)^{\mathsf T}/\sqrt2$。研究者想把$a_1$各分量除以分量之和，得到权重之和为1的综合评价。下列说法最恰当的是：
+\begin{choices}
+\item 第一主成分贡献率达到90\%，所以该加权平均必定有效。
+\item 分量之和为0，不能这样归一化；该成分首先反映指标之间的对比。
+\item 把第一特征向量整体乘以$-1$，就能使两个权重均为正。
+\item 把负系数取绝对值不改变主成分所对应的方向。
+\item 相关系数为负说明主成分分析在数学上无法计算。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-04}{新样品应使用哪一套标准化参数}
+已用某参照人群建立相关阵PCA，并保存均值$\bar x$、标准差$s$和特征向量矩阵$A$。现在要把一名新受试者放到同一坐标系中评价，测量项目与单位均相同。正确做法是：
+\begin{choices}
+\item 仅用新受试者自己的各项目数值计算一个总均值和总标准差。
+\item 把新受试者每个指标减去其自身数值，因此全部得分均为0。
+\item 把新受试者加入参照样本，重新估计PCA后仍直接沿用旧人群的得分解释。
+\item 使用参照人群的均值，但用新一批受试者的标准差。
+\item 使用已保存的参照人群均值、标准差及特征向量。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-05}{不相关主成分的具体反例}
+设$U\sim\mathrm{Unif}(-1,1)$，$X_1=U$、$X_2=U^2$。已知$\operatorname{Cov}(X_1,X_2)=0$、$\operatorname{Var}(X_1)=1/3$、$\operatorname{Var}(X_2)=4/45$。对协方差阵作PCA，取$C_1=U$、$C_2=U^2-1/3$。下列说法正确的是：
+\begin{choices}
+\item 两个主成分不相关，但并不独立。
+\item 两个主成分不相关，因此必定独立。
+\item 因$X_2$由$X_1$确定，协方差阵必为秩1。
+\item 两个主成分的方差均为1。
+\item 因原变量非正态，不能计算PCA。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM1-06}{主成分解的符号与重根}
+对同一协方差阵作PCA，判断以下命题。\par I．把某主成分的系数向量和对应得分同时乘以$-1$，不改变由该成分重构的数据。\par II．若$\lambda_1=\lambda_2>\lambda_3$，前两个主成分的单独坐标轴可以不唯一，但其共同张成的二维子空间可唯一确定。\par III．在命题II的条件下，任意选择第一主成分的合法方向，所有个体的第一主成分得分都完全相同。\par 正确的是：
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I、II。
+\item II、III。
+\item I、II、III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPM1-07}{累计贡献率究竟保留了什么}
+某研究对6个指标作相关阵PCA，前两个主成分累计贡献率为85\%。研究者把它解释为：‘每个指标均保留了85\%的方差，每名受试者的重构误差均为15\%，并且这两个成分可以解释结局$Y$的85\%变异。’请逐项评价，并用一个公式说明该85\%在正文中的确切含义。共10分。
+
+\Question{SUPM1-08}{USArrests：读懂主成分软件输出}
+使用R内置的\rinline{USArrests}数据：50个州的1973年三类逮捕率（每10万人）及城镇人口比例（\%）。按与\rinline{prcomp(USArrests, scale.=TRUE)}相同的中心化、标准化及$n-1$分母约定独立复算，整理结果如下；各轴取绝对值最大系数为正的方向。完整数据已附。\par\begin{center}\small\begin{tabular}{lrrrr}\toprule 变量&均值&标准差&$a_{j1}$&$a_{j2}$\\\midrule Murder&7.788&4.3555&0.5359&-0.4182\\Assault&170.760&83.3377&0.5832&-0.1880\\UrbanPop&65.540&14.4748&0.2782&0.8728\\Rape&21.232&9.3664&0.5434&0.1673\\\bottomrule\end{tabular}\end{center}\begin{center}\small\begin{tabular}{lrrrr}\toprule&PC1&PC2&PC3&PC4\\\midrule 标准差&1.574878&0.994869&0.597129&0.416449\\\bottomrule\end{tabular}\end{center}\noindent Alabama对应的原始观测为$(13.2,236,58,21.2)$。按表中精度计算。共20分。\begin{enumerate}\item 为什么这里采用相关阵？求第一特征值及前两个成分的累计贡献率。（5分）\item 写出$C_1,C_2$的表达式，求Alabama的两个成分得分。（5分）\item 求UrbanPop与两个成分的相关系数，说明哪个成分更反映城镇人口比例。（4分）\item 比较‘特征值大于1’和‘累计贡献率达到80\%’的保留结果；能否据此直接把第一成分当作州的宜居程度排名？（6分）\end{enumerate}
+
+\Question{SUPM1-09}{由主成分得分重构原测量}
+以下为教学构造的11例三项同量纲数值指标摘要，样本均值为$\bar x=(50,60,70)^{\mathsf T}$，样本协方差阵为\[S=\begin{pmatrix}5&3&0\\3&5&0\\0&0&3\end{pmatrix}.\]取单位特征向量\[a_1=\frac1{\sqrt2}(1,1,0)^{\mathsf T},\quad a_2=(0,0,1)^{\mathsf T},\quad a_3=\frac1{\sqrt2}(1,-1,0)^{\mathsf T}.\]其中一名样品的观测为$x_0=(54,60,73)^{\mathsf T}$。本题直接对协方差阵PCA，不作Z标准化。共20分。\begin{enumerate}\item 求三个特征值及前两个主成分累计贡献率。（4分）\item 计算该样品的三个主成分得分。（4分）\item 只保留前两个成分，重构$x_0$，并计算该样品的平方重构误差。（6分）\item 求11例资料的总平方重构误差及相对误差；若保留全部三个成分，重构结果如何？（6分）\end{enumerate}
+
+\Question{SUPM1-10}{高贡献率能否保证主成分回归预测良好}
+研究者用3项体格指标预测一个连续功能评分。为讨论分析流程，以下80例资料及评分均为教学模拟，不代表实际人群。自变量相关阵的特征值为$2.721745,\ 0.228980,\ 0.049275$。研究者说：‘第一主成分已解释90\%以上的信息，因此只保留它就足够预测。PCA不使用结局，所以可以先用全部80例计算标准化参数和PCA，再固定这些结果做留一验证。’\par 为复核，现按每折重新标准化、重新PCA并拟合回归的流程得到下表。RMSE均用实际个体预测误差计算，单位与结局相同。\begin{center}\small\begin{tabular}{lrrr}\toprule 保留数$k$&1&2&3\\\midrule 训练集RMSE&2.0623&0.5742&0.5735\\留一法RMSE&2.1150&0.5979&0.6095\\\bottomrule\end{tabular}\end{center}\noindent 共15分。\begin{enumerate}\item 评价研究者的两个判断，并解释第二个主成分方差较小却可能有重要预测作用的原因。（6分）\item 按表中留一RMSE最小的规则，应选哪个候选模型？为什么训练RMSE最小的模型不同？（5分）\item 若要报告所选模型在未来人群中的误差，还应怎样评价？（4分）\end{enumerate}

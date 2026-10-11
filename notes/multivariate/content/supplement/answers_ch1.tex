@@ -1,0 +1,40 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPM1-01}{样本量限制下的非零主成分数}
+\textbf{答案：C。} 中心化数据阵$Z$的8行满足行向量之和为0，故$\operatorname{rank}(Z)\leqslant7$。相关阵$R=Z^{\mathsf T}Z/7$与$Z$的秩相同，正特征值数至多为$\min(12,8-1)=7$。标准化只对非恒定列作可逆缩放，不能突破这一上限；若还存在其他线性关系，实际数目会更少。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PRCOMP]{[2]}。\par}
+
+\Answer{SUPM1-02}{两种保留主成分准则的分歧}
+\textbf{答案：D。} 特征值之和为5。大于1的特征值有2个；前两个主成分的累计贡献率为$(2.30+1.10)/5=68\%$，加入第三个后为$85\%$，故第二条准则需3个。两种经验准则回答的侧重点不同，出现分歧并非计算错误，应结合碎石图、用途和解释性决定。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PSU-PCA]{[3]}。\par}
+
+\Answer{SUPM1-03}{主成分能否直接作为加权平均分}
+\textbf{答案：B。} 本题$\lambda_1=1.8$，第一成分保留90\%的标准化总方差，但$a_{11}+a_{12}=0$，所述归一化根本无法实施。$C_1=(Z_1-Z_2)/\sqrt2$反映两个指标的相对差异。把$a_1$整体变号仍是零和，也仍有一正一负；把负系数取绝对值则改换了方向，得到的已非原第一主成分。高贡献率不保证适合作‘越高越好’的总体评价。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PSU-PCA]{[3]}。\par}
+
+\Answer{SUPM1-04}{新样品应使用哪一套标准化参数}
+\textbf{答案：E。} 应按参照人群参数计算$z_{0j}=(x_{0j}-\bar x_j)/s_j$，再用原来的$A$得到$c_0=A^{\mathsf T}z_0$。这样新旧样品使用同一原点、尺度和轴方向。新样品不需要、也不能用其单人数据估计每个指标的标准差；把新样品加入后重新拟合PCA会改变参照体系，回答的是另一个问题。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PRCOMP]{[2]}。\par}
+
+\Answer{SUPM1-05}{不相关主成分的具体反例}
+\textbf{答案：A。} $C_1$与$C_2$不相关，但$C_2=C_1^2-1/3$，存在确定的非线性关系，不独立。这里两个特征值互异且均为正，协方差阵并不奇异。PCA可以给出不相关的线性组合；只有另有适当条件，例如联合正态，才能进一步把不相关提升为独立。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}。\par}
+
+\Answer{SUPM1-06}{主成分解的符号与重根}
+\textbf{答案：C。} I正确，因为重构项$ca^{\mathsf T}$同时变号后仍是$(-c)(-a)^{\mathsf T}$。II正确：与其余特征值有间隔的前二维特征子空间是确定的，而该空间内的正交基可旋转。III错误，换基会改变单个坐标得分，保持的是共同子空间、二维投影和两成分的方差之和。本题区分‘轴不唯一’与‘保留空间不唯一’，也说明不能脱离符号、重根条件笼统讨论PCA解的唯一性。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PRCOMP]{[2]}。\par}
+
+\Answer{SUPM1-07}{累计贡献率究竟保留了什么}
+设$Z$为标准化数据阵，$A_2$含前两个单位特征向量，$\widehat Z=ZA_2A_2^{\mathsf T}$。确切含义为\[\frac{\|\widehat Z\|_F^2}{\|Z\|_F^2}=0.85,\qquad\frac{\|Z-\widehat Z\|_F^2}{\|Z\|_F^2}=0.15.\]这是全部样品、全部标准化指标合计的平方和比例。\par 各变量保留的方差比例为$\sum_{k=1}^2\lambda_k a_{jk}^2$，一般不相等，只有它们对6个变量的平均值为0.85。各人的残差向量也不同，不能把总体的15\%分配给每一个人。\par 最后，PCA确定方向时没有利用$Y$，对$X$保留85\%方差并非回归的$R^2=0.85$；与结局的联系和预测效果需另行拟合、验证。这里‘信息’特指所选尺度上的方差。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PSU-PCA]{[3]}、\hyperref[src:M1-SAS-PCR]{[5]}。\par}
+
+\Answer{SUPM1-08}{USArrests：读懂主成分软件输出}
+\textbf{（1）尺度与贡献率。} 城镇人口比例与逮捕率的单位不同，且各变量方差差异明显；相关阵分析使进入分析的各指标初始方差都为1。$\lambda_1=1.574878^2\approx2.48024$，$\lambda_2\approx0.98976$，前两成分累计贡献率为$(2.48024+0.98976)/4\approx86.750\%$。\par\textbf{（2）个体得分。} 令$Z_j=(X_j-\bar x_j)/s_j$，按表中变量次序：\[\begin{aligned}C_1&=0.5359Z_1+0.5832Z_2+0.2782Z_3+0.5434Z_4,\\C_2&=-0.4182Z_1-0.1880Z_2+0.8728Z_3+0.1673Z_4.\end{aligned}\]Alabama的标准分约为$(1.2426,0.7828,-0.5209,-0.0034)$，代入得$C_1\approx0.9757$、$C_2\approx-1.1220$。若软件整列变号，应同步改变得分方向。\par\textbf{（3）相关系数。} 对标准化变量，$\operatorname{Corr}(Z_j,C_k)=a_{jk}\sqrt{\lambda_k}$，故UrbanPop对应$r_1\approx0.2782(1.574878)=0.4381$、$r_2\approx0.8728(0.994869)=0.8683$。第二成分与城镇人口比例关联更强；不能直接把特征向量系数当作相关系数。\par\textbf{（4）保留与解释。} 严格大于1只有第一个特征值；达到80\%则需2个成分。不能先把$0.98976$舍入成1后再改变阈值判断。第一成分主要概括这些历史指标的共同变化，变量并非都代表同方向的生活质量，也不涵盖宜居的全部含义，不能直接作宜居排名。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:M1-USARRESTS]{[4]}、\hyperref[src:M1-PRCOMP]{[2]}、\hyperref[src:M1-NOTES]{[1]}。\par}
+
+\Answer{SUPM1-09}{由主成分得分重构原测量}
+\textbf{（1）特征值。} 由$Sa_k=\lambda_k a_k$得$(\lambda_1,\lambda_2,\lambda_3)=(8,3,2)$，累计贡献率为$11/13\approx84.615\%$。\par\textbf{（2）得分。} 中心化后$x_0-\bar x=(4,0,3)^{\mathsf T}$，故$(C_1,C_2,C_3)=(2\sqrt2,3,2\sqrt2)$。\par\textbf{（3）重构单个样品。}\[\widehat x_0=\bar x+C_1a_1+C_2a_2=\begin{pmatrix}52\\62\\73\end{pmatrix}.\]残差为$(2,-2,0)^{\mathsf T}$，平方误差为$2^2+(-2)^2=8$，也等于被舍弃得分的平方$C_3^2$。重构时必须加回原均值。\par\textbf{（4）全部样品。} 舍弃第三个成分的总平方误差为$(n-1)\lambda_3=10\times2=20$；原中心化资料总平方和为$(n-1)\operatorname{tr}(S)=130$，相对误差为$20/130=2/13\approx15.385\%$。这与$1-84.615\%$一致。保留全部三个成分时，因$AA^{\mathsf T}=I$，可精确还原全部样品，平方误差为0。本题数据摘要与指定样品可由所附11行构造数据同时实现。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-PSU-PCA]{[3]}。\par}
+
+\Answer{SUPM1-10}{高贡献率能否保证主成分回归预测良好}
+\textbf{（1）两个判断均不成立。} 第一主成分保留的是$X$的约90.725\%方差，不是$Y$的解释率。PCA寻找$X$变异大的方向，没有保证这些方向与$Y$联系最强；本例第二成分只占$X$总方差的约7.633\%，但从给定的RMSE表可见，加入它后预测误差明显下降。\par 若先用全部80例估计均值、标准差和主成分轴，留出的样品已参与了表示方式的确定。即便没有使用其结局，也不再是严格的训练折外评价；这一做法可能改变验证结果，不能宣称不存在信息泄漏。题中复核表使用了完整的折内重估。\par\textbf{（2）按指定规则选$k=2$。} 其留一RMSE为0.5979，在三个候选值中最小。训练集上增加回归变量不会增加最小二乘残差平方和，所以$k=3$训练RMSE略小；新增方向也可能增加估计不稳定性，因而样本外误差不一定更小。0.5979与0.6095的差距很小，不能据此声称有显著优越性。\par\textbf{（3）评价选择后的完整流程。} 同一份留一结果既用于选$k$又直接用其最小值宣称最终性能，会受到选择影响。可在新的独立验证集上评估固定模型，或用外层验证评估包含内层选$k$、标准化、PCA和回归的全流程；同时报告误差的不确定性与验证人群范围。教学模拟中的结果不能直接外推为临床效果。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:M1-NOTES]{[1]}、\hyperref[src:M1-SAS-PCR]{[5]}、\hyperref[src:M1-PSU-PCR]{[6]}。\par}

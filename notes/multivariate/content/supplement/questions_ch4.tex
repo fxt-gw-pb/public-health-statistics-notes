@@ -1,0 +1,163 @@
+% 独立题号标签SUPM；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-01}{距离度量与归类}
+两个类别的重心及共同组内协方差阵为
+\[
+\bar x_1=(0,0)^\top,\qquad \bar x_2=(3,10)^\top,\qquad
+S=\begin{pmatrix}1&0\\0&100\end{pmatrix}.
+\]
+对待判样品$x=(1,9)^\top$，分别按原变量的欧氏距离和以$S$计算的马氏距离作最近重心判别。结果是（\quad）。
+\begin{choices}
+\item 两种距离均判入$G_1$
+\item 两种距离均判入$G_2$
+\item 欧氏距离判入$G_2$，马氏距离判入$G_1$
+\item 欧氏距离判入$G_1$，马氏距离判入$G_2$
+\item 未先手工标准化，所以马氏距离无法计算
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-02}{组均值相同的变量也可能有用}
+两个类别的总体均数和共同协方差阵为
+\[
+\mu_1=(0,0)^\top,\quad \mu_2=(2,0)^\top,\quad
+\Sigma=\begin{pmatrix}1&0.8\\0.8&1\end{pmatrix}.
+\]
+两类Fisher方向与$\Sigma^{-1}(\mu_2-\mu_1)$成正比。下列哪一向量可作为最优判别方向？
+\begin{choices}
+\item $(1,0)^\top$
+\item $(0,1)^\top$
+\item $(1,0.8)^\top$
+\item $(1,-0.8)^\top$
+\item $(-0.8,1)^\top$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-03}{三类条件风险}
+某待判样品属于$G_1,G_2,G_3$的后验概率依次为$0.5,0.3,0.2$。误判损失矩阵如下，\textbf{行表示判入的类别，列表示真实类别}：
+\[
+L=\begin{pmatrix}0&8&2\\1&0&1\\4&2&0\end{pmatrix}.
+\]
+按最小条件风险原则，应作何判定？
+\begin{choices}
+\item 判入$G_1$，因为它的后验概率最大
+\item 判入$G_2$，因为其条件风险最小
+\item 判入$G_3$，因为它的后验概率最小
+\item 尚不知道先验概率，无法利用上述后验作判定
+\item 三个条件风险都不为0，故必须拒绝分类
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-04}{留一法中的协方差可逆性}
+有两类训练样品，每类8例、每例7个判别变量。已知各类在全部8例上计算的样本协方差阵均为正定。现删去第1类中的1例，用余下样品重新估计协方差。下列关于常规QDA与LDA的说法正确的是（\quad）。
+\begin{choices}
+\item QDA的两个组内协方差仍可逆，但LDA的合并协方差必奇异
+\item QDA和LDA都必因7个变量而无法求逆
+\item 原来的协方差可逆，所以删去1例后QDA和LDA必都可逆
+\item 把样本协方差的分母由$n-1$改为$n$，即可消除奇异问题
+\item 第1类的QDA协方差必奇异；LDA的合并协方差仍为正定
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-05}{更换先验后的后验赔率}
+某两类模型在等先验$q_1=q_2=0.5$下，对同一个$x$给出$P(G_1\mid x)=0.8$。现仅将目标人群先验改为$q_1=0.1,q_2=0.9$，两类的条件密度$f_1(x),f_2(x)$保持不变。新的$P(G_1\mid x)$为（\quad）。
+\begin{choices}
+\item $4/13\approx0.3077$
+\item $0.08$
+\item $4/9\approx0.4444$
+\item $0.8$
+\item $0.9$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM4-06}{典型得分的符号、尺度与距离}
+使用全部非零Fisher典型轴作最近重心判别，原系数矩阵$A$满足$A^\top SA=I$，其中$S$为正定的共同组内协方差阵。假定至少有两个典型轴，类别先验与误判损失均相同。判断以下命题：
+\begin{enumerate}[label=\Roman*.]
+\item 将某一轴的全部得分及各类重心坐标同时乘以$-1$，判别结果不变。
+\item 仅把第一轴的全部得分及各类重心坐标同时乘以10，仍使用未经调整的欧氏距离，判别结果必不变。
+\item 在原有单位组内协方差的典型坐标中，使用全部非零轴的最近重心判别，与原变量空间中基于合并$S$的马氏距离判别等价。
+\end{enumerate}
+正确命题的组合为（\quad）。
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item I、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPM4-07}{验证流程与独立对象}
+教学情境：每名受试者提供两张标本图像，类别已知，最终规则拟用于新的受试者。研究者先使用全部图像的类别信息筛选判别变量，再进行“每次留出一张图像”的留一法，报告图像层面的正确率。指出这一流程的两处主要问题，并给出一个适合研究目标的验证流程。
+
+\Question{SUPM4-08}{鸢尾花的典型得分与留一输出}
+150朵鸢尾花分为setosa、versicolor、virginica三类，每类50朵。用萼片长、萼片宽、花瓣长、花瓣宽4项测量作LDA，顺序记为$x_1,\ldots,x_4$；采用合并组内协方差及固定等先验。按$z=A^\top(x-c)$输出中心化典型得分，其中
+\[
+c=(5.843333,\ 3.057333,\ 3.758000,\ 1.199333)^\top.
+\]
+系数满足$A^\top SA=I$，如下表。
+\begin{center}\small\begin{tabular}{lrr}\toprule
+变量 & LD1 & LD2\\\midrule
+$x_1$ & 0.829378 & 0.024102\\
+$x_2$ & 1.534473 & 2.164521\\
+$x_3$ & $-2.201212$ & $-0.931921$\\
+$x_4$ & $-2.810460$ & 2.839188\\\bottomrule
+\end{tabular}\end{center}
+\Needspace{9\baselineskip}
+两轴上的类别重心及实际重算的考核输出为：
+\begin{center}\small\begin{tabular}{lrr}\toprule
+类别 & LD1重心 & LD2重心\\\midrule
+setosa & 7.6076 & 0.2151\\
+versicolor & $-1.8250$ & $-0.7279$\\
+virginica & $-5.7826$ & 0.5128\\\bottomrule
+\end{tabular}\qquad
+\begin{tabular}{lrrr}\toprule
+真实类别 & 判setosa & 判versicolor & 判virginica\\\midrule
+setosa & 50 & 0 & 0\\
+versicolor & 0 & 48 & 2\\
+virginica & 0 & 1 & 49\\\bottomrule
+\end{tabular}\end{center}
+回代和固定等先验逐例重新拟合的留一法均得到右表。原数据第84条$x=(6.0,2.7,5.1,1.6)^\top$，真实类别为versicolor；本题仅求该条的回代归类。
+\begin{enumerate}[label=（\arabic*）]
+\item 计算该条的LD1、LD2得分，说明为何不能直接用$A^\top x$替代所给得分定义。
+\item 计算该点到三个典型重心的平方欧氏距离，判定其类别，并说明这是否为一次正确分类。
+\item 求总体及各类正确率。两种考核的一致率相同，能否说明留一法没有重新估计参数，或者此后无需在新资料上验证？
+\end{enumerate}
+
+
+\Question{SUPM4-09}{非对角离差阵与第二判别轴}
+给定教学构造资料：3类、每类2例、2个指标。各组均数为
+\[
+\bar x_1=(1,1)^\top,\quad \bar x_2=(1,0)^\top,\quad
+\bar x_3=(-2,-1)^\top,
+\]
+总均数为0，组内和组间离差阵分别为
+\[
+W=\begin{pmatrix}4&2\\2&2\end{pmatrix},\qquad
+B=\begin{pmatrix}12&6\\6&4\end{pmatrix}.
+\]
+合并组内协方差为$S=W/(6-3)$。判别方向按特征值从大到小排列，要求$a_j^\top Sa_j=1$，且每列首个非零系数为正。
+\begin{enumerate}[label=（\arabic*）]
+\item 求$W^{-1}B$的特征值及两条归一化判别方向，写出$F_1,F_2$；核查$a_1^\top Sa_2=0$。
+\item 求两个典型相关系数和第一轴的特征根贡献比例。仅凭第一轴，能否区分$G_1$与$G_2$的重心？
+\item 取等先验、等误判损失，按全部两轴上的最近重心规则判定$x=(0,0.5)^\top$。列出典型重心及三个平方距离。
+\end{enumerate}
+
+\Question{SUPM4-10}{乳腺活检评分资料的建模记录评议}
+某公开乳腺活检资料有699条记录，含良性/恶性类别和9项取值为1至10的细胞学评分。数据说明指出：样品编码\texttt{ID}不唯一，\texttt{V6}有16个缺失值。
+
+以下\textbf{建模记录为教学设定，不是原作者结论}：“把ID转为数值，连同9项评分一起输入LDA；删去有缺失的记录，不必另作说明。评分都是数值，所以多元正态条件自然成立。采用软件默认的样本类别比例作先验。只要留一正确率较高，某条记录的恶性后验为0.90，就表示规则换到任何门诊，对同样指标也都有90\%的恶性概率。”
+\begin{enumerate}[label=（\arabic*）]
+\item ID是否应仅因能转为数值而作为预测变量？ID不唯一是否足以断定所有重复编码均为同一人的重复测量？
+\item 评价删除缺失记录及有关多元正态条件的说法。
+\item 评价先验与后验概率跨门诊直接沿用的说法，并说明留一正确率能否代替这一核查。
+\end{enumerate}

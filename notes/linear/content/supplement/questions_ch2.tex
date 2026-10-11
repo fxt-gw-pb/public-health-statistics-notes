@@ -1,0 +1,108 @@
+% 独立题号标签SUPL；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-01}{参数线性}
+以下模型均以式中出现的$\beta$为待估参数，$x>0$，并只考虑表达式有定义的取值。哪一个属于对参数线性的回归模型？
+\begin{choices}
+\item $E(Y\mid x)=\beta_0+\beta_1e^{\beta_2x}$
+\item $E(Y\mid x)=\beta_0/(1+\beta_1x)$
+\item $E(Y\mid x)=\beta_0+\beta_1\log x+\beta_2x^2$
+\item $E(Y\mid x)=\beta_0+\log(\beta_1+\beta_2x)$
+\item $E(Y\mid x)=\beta_0+\beta_1x^{\beta_2}$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-02}{误差方差的两种估计}
+27例糖尿病资料用4个自变量及截距拟合回归。假定条件误差相互独立且服从$N(0,\sigma^2)$，设计矩阵列满秩；拟合后的残差平方和为$Q=88.841167$。$\sigma^2$的最大似然估计与常用无偏估计依次约为：
+\begin{choices}
+\item $3.2904,\ 4.0382$
+\item $4.0382,\ 3.2904$
+\item $3.4170,\ 4.0382$
+\item $3.2904,\ 3.4170$
+\item $88.8412,\ 4.0382$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-03}{联合变化的标准误}
+在以空腹血糖$y$为响应的27例糖尿病四自变量模型中，$x_1$为总胆固醇，$x_2$为甘油三酯，两者均以$\mathrm{mmol/L}$计。控制其他变量后，估计$b_1=0.142446$、$b_2=0.351465$，并得到估计协方差阵\[\widehat{\operatorname{Cov}}\!\begin{pmatrix}b_1\\b_2\end{pmatrix}=\begin{pmatrix}0.133702&-0.047757\\-0.047757&0.041699\end{pmatrix}.\]两项指标同时各增加$1\,\mathrm{mmol/L}$时，估计条件均数变化$b_1+b_2$的标准误约为：
+\begin{choices}
+\item $0.4188$
+\item $0.4939$
+\item $0.5205$
+\item $0.2826$
+\item $0.0799$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-04}{响应单位与模型比较}
+对同一批观测、相同的响应$y$，分别拟合两个含截距的正态线性回归模型，均以最大似然估计参数。采用准则$A=n\log(Q/n)+2p$，其中$p$含截距。若把每个响应统一改记为$y^*=1000y$，重新拟合原来两个模型，则：
+\begin{choices}
+\item 两个模型各自的$A$值均保持不变
+\item 两个模型的$A$值之差保持不变
+\item 参数较少的模型，其$A$值增加得较少
+\item 两个模型的$R^2$均乘以$10^6$
+\item 斜率的$t$统计量均乘以$1000$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-05}{四个新个体的平均响应}
+某正态线性回归模型得到$s^2=4$。给定同一自变量组合$x_0$，有$h_0=x_0^\top(X^\top X)^{-1}x_0=0.10$。另随机观察4个具有该$x_0$的新个体；其误差相互独立，且均与建模样本独立。以$\widehat\mu_0=x_0^\top b$预测这4个新个体响应的平均值，则预测误差方差的估计值为：
+\begin{choices}
+\item $0.4$
+\item $4.4$
+\item $5.6$
+\item $1.0$
+\item $1.4$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL2-06}{最小二乘结论的条件}
+设$Y=X\beta+\varepsilon$，$X$固定且列满秩，$E(\varepsilon\mid X)=0$、$\operatorname{Cov}(\varepsilon\mid X)=\sigma^2I$，但不假定误差正态。考察：\par I. 最小二乘估计$b$无偏。\par II. 在关于$Y$线性且对所有$\beta$无偏的估计量中，$b$具有最小的协方差阵。\par III. 每个系数的常规$t$统计量在有限样本下必定服从精确$t$分布。\par 正确的是：
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item I、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\subsection{简答、计算与案例分析}
+
+\Question{SUPL2-07}{两个约束的联合检验}
+完整模型为$Y=\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3+\varepsilon$，两个$x_1,x_2$使用相同单位；设计矩阵列满秩，$n>4$，正态线性模型假设成立。若要联合检验$H_0:\beta_1=\beta_2,\ \beta_3=0$，请写出：\par (1) $L\beta=c$形式中的$L$和$c$；\par (2) 简化模型及其参数个数；\par (3) 用完整与简化模型残差平方和表示的$F$统计量和自由度。
+
+\Question{SUPL2-08}{糖尿病资料的增量检验}
+27例糖尿病资料中，$x_1$为总胆固醇、$x_2$为甘油三酯、$x_3$为空腹胰岛素、$x_4$为糖化血红蛋白，$y$为空腹血糖。同一批完整观测的拟合结果为\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{ccr}
+\toprule
+$\text{模型}$ & $\text{均值结构}$ & $Q$ \\
+\midrule
+$R$ & $\beta_0+\beta_1x_1+\beta_4x_4$ & $114.761543$ \\
+$F$ & $\beta_0+\beta_1x_1+\beta_2x_2+\beta_3x_3+\beta_4x_4$ & $88.841167$ \\
+\bottomrule
+\end{tabular}
+\end{center}假定正态线性模型条件成立。\par (1) 写出比较$R$与$F$时的零假设，计算增量$F$值及自由度；给定$F_{0.95}(2,22)=3.4434$，在$\alpha=0.05$下作结论。\par (2) 分别计算$A=n\log(Q/n)+2p$，其中$p$含截距，并按$A$较小选择模型。\par (3) 若两种选择不一致，是否表示计算有误？
+
+\Question{SUPL2-09}{肺活量的两个差值区间}
+29名13岁男童的肺活量$Y$(L)对身高$h$(cm)、体重$w$(kg)拟合含截距的正态线性模型。以下为本题练习数据版本的输出：\[\begin{pmatrix}b_h\\b_w\end{pmatrix}=\begin{pmatrix}0.005016538\\0.054061098\end{pmatrix},\quad\widehat{\operatorname{Cov}}\!\begin{pmatrix}b_h\\b_w\end{pmatrix}=\begin{pmatrix}0.00011183994&-0.00012544305\\-0.00012544305&0.00025548101\end{pmatrix}.\]剩余方差$s^2=0.098380259$，剩余自由度26，$t_{0.975}(26)=2.05553$。取条件A为$(h,w)=(150,35)$，条件B为$(160,40)$。\par (1) 估计两条件总体平均肺活量之差$\mu_B-\mu_A$及其95\%置信区间。\par (2) 若从两条件下各新观察1名男童，二者误差相互独立并与建模样本独立，求$Y_B-Y_A$的95\%预测区间。\par (3) 两个区间的解释有何不同？
+
+\Question{SUPL2-10}{缺失值后的模型比较}
+某分析者用27例糖尿病练习资料比较两个模型：$A:y\sim x_1+x_4$与$B:y\sim x_1+x_2+x_3+x_4$。现作教学设定：将3人的$x_3$记为缺失，其余所需变量均完整。按模型分别删除缺失记录后，得到\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{crrrr}
+\toprule
+$\text{模型及样本}$ & $n$ & $p$ & $Q$ & $A=n\log(Q/n)+2p$ \\
+\midrule
+$A\text{，27人}$ & $27$ & $3$ & $114.761543$ & $45.0695$ \\
+$B\text{，24人}$ & $24$ & $5$ & $42.415472$ & $23.6670$ \\
+$A\text{，与B相同的24人}$ & $24$ & $3$ & $66.096164$ & $30.3134$ \\
+\bottomrule
+\end{tabular}
+\end{center}分析者称：“23.6670小于45.0695，所以第一、二行已经证明B在同一数据上的拟合优于A，而且B预测新患者一定更好。”\par 请评价这段话；指出本表中适当的比较，并写出用R保证两个模型使用同一批观测的基本做法。

@@ -1,0 +1,130 @@
+% 独立题号标签SUPM；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-01}{Ward法的合并代价}
+以下为教学设定的某一步聚类状态。三个类在一个数值指标上的样品数与类中心为\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+类 & $n$ & 类中心 \\
+\midrule
+$G_A$ & 20 & 0 \\
+$G_B$ & 20 & 1 \\
+$G_C$ & 2 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}采用Ward法，下一步应合并哪两类，其类内离差平方和增量$\Delta W$为多少？
+\begin{choices}
+\item $G_A$与$G_B$，$\Delta W=10$。
+\item $G_A$与$G_C$，$\Delta W=180/11$。
+\item $G_B$与$G_C$，$\Delta W=80/11$。
+\item $G_B$与$G_C$，$\Delta W=4$。
+\item $G_A$与$G_B$，$\Delta W=1$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-02}{不等大小类的类平均距离}
+采用类平均法，类间距离定义为全部跨类样品对距离的算术平均。某一步有$G_A,G_B,G_C$，样品数分别为2、6、3，且$D(G_A,G_C)=4$、$D(G_B,G_C)=6$。合并$G_A,G_B$后，新类与$G_C$的距离为：
+\begin{choices}
+\item $4$。
+\item $5$。
+\item $6$。
+\item $7$。
+\item $5.5$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-03}{新样品沿用原标准化}
+某K均值分析按原样本均数$\mu=(10,100)$、样本标准差$s=(2,20)$作Z标准化，所得两类中心为$c_1=(-1,0)$、$c_2=(1,1)$，均在标准化尺度上。现将新样品$x_0=(13,110)$归入最近中心，不重新估计原聚类。下列处理正确的是：
+\begin{choices}
+\item $z_0=(1.5,0.5)$，归第1类。
+\item $z_0=(1.5,0.5)$，归第2类。
+\item $z_0=(6.5,5.5)$，归第2类。
+\item $z_0=(0.5,1.5)$，归第1类。
+\item 先将新样品与原样本合并重算均数和标准差，再直接与旧的$c_1,c_2$比较。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-04}{轮廓系数的近邻类}
+某样品$i$目前归第1类，到同类其他样品的平均距离为4.0，到第2、3类样品的平均距离分别为3.0、7.0。该样品的轮廓系数及其含义为：
+\begin{choices}
+\item $s(i)=-0.25$；它到第2类的平均距离更小，应核查该样品的归类。
+\item $s(i)=0.25$；它与第1类分离得很清楚。
+\item $s(i)=-1/3$；它到第2类的平均距离更小。
+\item $s(i)=3/7$；第3类应作为其近邻类。
+\item $s(i)=0.20$；两类外距离应先平均为5.0。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-05}{Ward准则的R实现}
+设$z$为已按分析目的处理好的数值矩阵，行为样品、列为指标。已令\texttt{d <- dist(z)}。拟按正文的欧氏类内离差平方和增量准则作Ward样品聚类，应选择：
+\begin{choices}
+\item \texttt{hclust(d\textasciicircum{}2, "ward.D2")}。
+\item \texttt{hclust(d, "complete")}。
+\item \texttt{hclust(d, "ward.D")}。
+\item \texttt{hclust(d, "ward.D2")}。
+\item \texttt{hclust(d, "centroid")}。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPM3-06}{类数、初值与类别编号}
+固定同一批完整数值资料及其预处理。令$W_k^\ast$表示在所有恰有$k$个非空类的划分中能够达到的最小类内平方和。考察：\par I. 对$1\le k<n$，有$W_{k+1}^\ast\le W_k^\ast$。\par II. 只要在R中设定\texttt{nstart=50}，所得K均值解就一定达到$W_k^\ast$。\par III. 同一成员划分仅改变类别编号，不会改变$W$和$B/T$。\par 正确的是：
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I、III。
+\item I、II。
+\item I、II、III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPM3-07}{选取实际代表样品}
+对若干数值指标作Z标准化后完成K均值聚类。现拟为每个类挑选一名实际受试者作为代表，已有各类在标准化尺度上的中心。请说明还需保存哪些信息、怎样还原类中心并选择代表受试者；为何不能直接把类中心视为实际受试者？
+
+\Question{SUPM3-08}{Ward逐步合并与两类划分}
+以下为教学设定数据。五个样品在同一数值指标上的取值为$A=0$、$B=1$、$C=4$、$D=6$、$E=10$，本题不作标准化。采用Ward法作凝聚型系统聚类。\par (1) 从五个单元素类开始，列出每一步合并的类及$\Delta W$。\par (2) 写出保留两类时的成员，计算其类内平方和$W$。\par (3) 另考虑划分$\{A,B,C\}$与$\{D,E\}$，计算其$W$。据此评价“Ward每一步都使$W$增加最少，所以保留两类时一定在所有两类划分中最优”。
+
+\Question{SUPM3-09}{USArrests公开数据的聚类输出}
+R内置\texttt{USArrests}包含美国50州的四项历史指标：1973年Murder、Assault、Rape三类逮捕率（每10万人）和UrbanPop（城镇人口百分比）。现沿用R内置数据版本，四列均按全体50州的样本均数、样本标准差作Z标准化。每个$k$使用预先保存的50套不同初始中心运行Lloyd迭代，在这50个收敛结果中取$W$最小者；轮廓系数使用标准化后的欧氏距离。结果为\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+$k$ & $W$ & 平均轮廓系数 \\
+\midrule
+2 & 102.8624 & 0.4085 \\
+3 & 78.4644 & 0.3148 \\
+4 & 56.4032 & 0.3397 \\
+5 & 48.9442 & 0.3031 \\
+\bottomrule
+\end{tabular}
+\end{center}$k=4$时的标准化类中心和样品数为\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+类 & 样品数 & Murder & Assault & UrbanPop & Rape \\
+\midrule
+1 & 13 & -0.9615 & -1.1066 & -0.9301 & -0.9668 \\
+2 & 16 & -0.4894 & -0.3826 & 0.5758 & -0.2617 \\
+3 & 13 & 0.6951 & 1.0394 & 0.7226 & 1.2769 \\
+4 & 8 & 1.4119 & 0.8743 & -0.8145 & 0.0193 \\
+\bottomrule
+\end{tabular}
+\end{center}\par (1) 计算总平方和$T$，并分别计算$k=2$与$k=5$时的$B/T$。\par (2) 若仅按表中平均轮廓系数，在这四个候选$k$中应选哪个？这与按$B/T$最大选择得到的结果是否一致，应如何解释？\par (3) 描述$k=4$时第3类相对于全体州均数的特征。能否仅凭本表证明现实中存在四个天然类别？
+
+\Question{SUPM3-10}{耳形模板的变量与解释}
+某康复团队拟以耳长EC、耳宽EK、耳外展距EZ及两个指数$\mathrm{EI}=100\mathrm{EK}/\mathrm{EC}$、$\mathrm{AI}=100\mathrm{EZ}/\mathrm{EK}$选择若干代表耳型。分析者将五项指标分别作Z标准化，取$k=5$、50套随机初始中心作K均值聚类，并称：\par “五项标准化后各提供一次独立信息，三个原始形态特征已等权；多起点择优已证明存在五个天然耳型；还原后的五维类中心一定对应一个实际耳形，两个指数也一定满足其定义。”\par 另给以下两例教学设定数据，假设它们单独组成一个类；前三列单位为cm，后两列为百分数值：\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+样品 & EC & EK & EZ & EI & AI \\
+\midrule
+A & 5 & 3.0 & 1.5 & 60 & 50 \\
+B & 7 & 3.5 & 1.4 & 50 & 40 \\
+\bottomrule
+\end{tabular}
+\end{center}请评价上述三项结论，用小表核查类中心的指数关系，并提出保留临床模板用途的改进建议。

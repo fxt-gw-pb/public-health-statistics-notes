@@ -1,0 +1,291 @@
+\chapter*{来源与选编依据}
+\addcontentsline{toc}{chapter}{来源与选编依据}
+\markboth{来源与选编依据}{}
+以下“来源”指数据、研究材料或知识点依据。除特别说明外，本册的问题、选项和解析均为配套编写；不将其标作教材原题或往年真题。各题后的编号链接到本节。公开网页核对日期为2026年10月11日。
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-NOTES}
+\noindent{\sffamily\bfseries\color{black}[1] 用户原笔记：应用多元分析，第1章主成分分析}\par
+定位：主成分的计算方法、性质、重构误差、综合评价及主成分回归；对照同目录ex1.tex的21道题。\par
+作为题型、符号与范围的首要依据。新题采用教学构造时均明确标出；正文中的未提供原始数据案例不冒充已复现。\par
+{\small\url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/multivariate/content/lec1.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-PRCOMP}
+\noindent{\sffamily\bfseries\color{black}[2] R stats官方文档：prcomp}\par
+定位：Arguments、Details、Value、Note与USArrests示例。\par
+核对center、scale.、样本方差分母n-1、sdev、rotation、得分和符号不确定性。题8是按同一定义独立复算并整理的表格，不是文档原题，也不冒称本机已运行R。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/prcomp.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-PSU-PCA}
+\noindent{\sffamily\bfseries\color{black}[3] Penn State STAT 505：Lesson 11 Principal Components Analysis}\par
+定位：11.2系数与特征值、11.3成分解释，以及标准化和保留主成分部分。\par
+课程原站可检索到方法及案例说明，用于知识点交叉核对。没有照搬其Places Rated数据或设问；本章题2、3、7、9均为独立配套编写。\par
+{\small\url{https://online.stat.psu.edu/stat505/Lesson11}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-USARRESTS}
+\noindent{\sffamily\bfseries\color{black}[4] R datasets官方文档：USArrests}\par
+定位：Description、Format、Source及关于UrbanPop转录误差的Note。\par
+使用50×4的原始R内置版本；Maryland的UrbanPop仍为67，以便与内置数据直接复现。官方另给校正版本，二者不可混算。题8的设问、符号统一和解析为本次编写；与聚类章共享同一数据版本。原始数据来自R源码src/library/datasets/data/USArrests.tab。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/USArrests.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-SAS-PCR}
+\noindent{\sffamily\bfseries\color{black}[5] SAS/STAT官方文档：Principal Components Regression}\par
+定位：HPPLS过程的Details／Principal Components Regression。\par
+核对PCR的成分方向以解释X变异为目标，确定方向时不使用响应Y。未复制其软件输出；题10的数据和数值来自所附教学模拟。\par
+{\small\url{https://support.sas.com/documentation/cdl/en/statug/68162/HTML/default/statug_hppls_details04.htm}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:M1-PSU-PCR}
+\noindent{\sffamily\bfseries\color{black}[6] Penn State STAT 508：Dimension Reduction Methods}\par
+定位：8.1 Principal Components Regression：降维、交叉验证及与岭回归的联系。\par
+用于核对以预测误差选择保留数的原则；题10的具体流程批评与模型比较为基于原笔记的配套案例。\par
+{\small\url{https://online.stat.psu.edu/stat508/Lesson08.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:NOTE-M2}
+\noindent{\sffamily\bfseries\color{black}[7] 原笔记：应用多元分析第2章《因子分析》}\par
+定位：单因子相关约束；因子模型；负荷与共同度；最大似然及自由度；旋转；因子得分各节。\par
+已全文通读lec2.tex和ex2.tex的27道既有练习及解析。本章内容依课程范围选编，不声称为新找回的往年题。原笔记六科成绩所标“课本例5.8”书目仍不完整，本章没有为其补造书名或版次。\par
+{\small\url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/multivariate/content/lec2.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-HARMAN23}
+\noindent{\sffamily\bfseries\color{black}[8] R datasets官方文档：Harman Example 2.3}\par
+定位：Description、Source、Examples；Harman H. H. (1976), Modern Factor Analysis, Third Edition Revised, Table 2.3。\par
+已核官方说明：305名7--17岁女孩的8项体格测量相关矩阵，文档明确归于Harman 1976第三版修订版表2.3。第08和10题仅改编这一公开案例；设问及数值复算为本次制作，不称Harman原教材习题。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-patched/library/datasets/html/Harman23.cor.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-HARMAN23-DATA}
+\noindent{\sffamily\bfseries\color{black}[9] R官方源文件：Harman23.cor.R}\par
+定位：8×8相关矩阵、变量名及n.obs=305。\par
+已直接核对官方源码全部64格相关系数及样本量，保存为harman23\_correlation.csv。文件是相关阵，不是305行原始测量数据；本题只要求题面输出所支持的计算，不虚构个体记录。\par
+{\small\url{https://svn.r-project.org/R/trunk/src/library/datasets/data/Harman23.cor.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-FACTANAL}
+\noindent{\sffamily\bfseries\color{black}[10] R stats官方文档：factanal}\par
+定位：Arguments和Details：协方差输入、n.obs、独特方差下界、正态ML、Thomson/Bartlett得分及Heywood提示。\par
+已核对软件输入条件、默认0.005下界及得分方法定义。用作方法依据；本环境没有R，题中数值实际由Python独立优化并复核，不宣称已执行R。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-patched/library/stats/html/factanal.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-FA-SOURCE}
+\noindent{\sffamily\bfseries\color{black}[11] R官方实现：factanal.R}\par
+定位：factanal的自由度及n.obs检验系数；factanal.fit.mle剖面似然；varimax的Kaiser标准化。\par
+已读官方实现，用来核对模型目标、标准化旋转和检验约定。Python脚本以矩阵数学独立复算，四组固定起始值检查最优解并与完整高斯协方差似然核对；另附未执行的R复现脚本。\par
+{\small\url{https://svn.r-project.org/R/trunk/src/library/stats/R/factanal.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-LOADINGS}
+\noindent{\sffamily\bfseries\color{black}[12] R stats官方文档：loadings打印与因子符号}\par
+定位：Arguments cutoff；Details关于小负荷隐藏及负荷向量符号任意。\par
+已核对按绝对值隐藏小负荷的规则及符号任意性；相关选择题和数字例子为新编。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loadings.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-ROTATION}
+\noindent{\sffamily\bfseries\color{black}[13] R stats官方文档：varimax与promax}\par
+定位：Arguments normalize；Details关于旋转及因子方差。\par
+已核对Kaiser标准化在旋转前将负荷行归一、旋转后恢复的约定，第08题的脚本使用该约定。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/varimax.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:NOTE-M3}
+\noindent{\sffamily\bfseries\color{black}[14] 原笔记：应用多元分析——聚类分析}\par
+定位：类间距离的计算方法；大样本快速聚类；类数的选择；还原到原量纲：代表性耳朵。\par
+已通读lec3及ex3全部17题，区别现有题的任务与数值。全部设问为本次配套新编或案例改编，非往年原题或原书习题。\par
+{\small\url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/multivariate/content/lec3.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:PSU-CLUSTER}
+\noindent{\sffamily\bfseries\color{black}[15] Penn State STAT 505：Lesson 14 Cluster Analysis}\par
+定位：14.5 Agglomerative Methods：Average Linkage；14.6 Ward’s Method。\par
+官方课程搜索结果已读全部跨类样品对平均与Ward平方和准则。完整页面本次打开超时；不把未读例题数值作为来源。\par
+{\small\url{https://online.stat.psu.edu/stat505/Lesson14}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-HCLUST}
+\noindent{\sffamily\bfseries\color{black}[16] R stats官方文档：Hierarchical Clustering}\par
+定位：Arguments及Details：average/UPGMA、ward.D与ward.D2、平方输入约定。\par
+已读官方文档；用于算法与软件行为核对。教学五点数据和选项为新编，不冒称文档原题。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-KMEANS}
+\noindent{\sffamily\bfseries\color{black}[17] R stats官方文档：K-Means Clustering}\par
+定位：Arguments、Details、Value、Note：nstart、iter.max、Lloyd算法、平方和与无序标签。\par
+已读官方文档。第09题明确采用Lloyd及给定50套起点，不把Python重算写成R默认Hartigan–Wong实测结果。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-SCALE}
+\noindent{\sffamily\bfseries\color{black}[18] R base官方文档：Scaling and Centering of Matrix-like Objects}\par
+定位：Details与Value：数值center/scale、样本标准差及scaled:center/scaled:scale。\par
+已读官方标准化定义及参数保存方式，支持同一尺度与中心还原。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/base/html/scale.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-SILHOUETTE}
+\noindent{\sffamily\bfseries\color{black}[19] R cluster官方文档：Compute or Extract Silhouette Information from Clustering}\par
+定位：Details：a(i)、最近其他类b(i)、s(i)及负值解释。\par
+已读定义；第09题用未平方欧氏距离计算，直接公式与独立软件实现一致。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/silhouette.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:R-USARRESTS-DATA}
+\noindent{\sffamily\bfseries\color{black}[20] R源码数据：src/library/datasets/data/USArrests.tab}\par
+定位：全部50行；blob SHA a1470eef30efe3fd88b590712bcd84ad1269dbca。\par
+从R公开源码原样保存USArrests.tab与USArrests.csv；固定到该数据文件最后修改的commit。逐行保留内置版本，未据记忆录入。\par
+{\small\url{https://github.com/wch/r-source/blob/3e4023711ff4748e0198c06424a14929ba31906f/src/library/datasets/data/USArrests.tab}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:HU-EAR-EXCERPT}
+\noindent{\sffamily\bfseries\color{black}[21] 胡良平主编《面向问题的统计学—（3）试验设计与多元统计分析》第1版（2012）}\par
+定位：第9章9.1“问题与数据”，表9-3；转载标217–219页。\par
+公开转载段落确认康复专科正常侧耳、300例、EC/EK/EZ及两个指数、修复耳缺损用途；只用于场景出处。未核对原书完整300行数据，本题两例明确为教学构造，评议文字为新编。\par
+{\small\url{https://www.tsu.tw/xiyi/276140.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:NOTE-M4}
+\noindent{\sffamily\bfseries\color{black}[22] 本仓库《应用多元分析》第4章：判别分析}\par
+定位：距离判别；Fisher判别及归一化；先验与后验；误判代价与最小风险；回代与留一；线性与二次判别。\par
+直接范围依据。已完整读取lec4与ex4的30道现有题及解析；SUPM4编号是本次新编标识，未冒称教材原题号。\par
+{\small\url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/multivariate/content/lec4.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:IRIS-RDOC}
+\noindent{\sffamily\bfseries\color{black}[23] R datasets官方手册：Edgar Anderson's Iris Data}\par
+定位：Description、Format、Source与References；150条、4项厘米测量、3类各50朵。\par
+第8题的数据出处。手册注明采集者Anderson（1935）及Fisher（1936）。题内LDA系数、重心、预测及验证结果均为本次重算，不是手册原题或原论文所列输出。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/iris.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:IRIS-SOURCE}
+\noindent{\sffamily\bfseries\color{black}[24] R源代码镜像：datasets/data/iris.R（原始数据定义）}\par
+定位：四个长度为150的数值向量及Species=gl(3,50,...)定义；2026-10-11读取。\par
+完整保留源文件及导出的150行CSV。读取到的Git blob SHA为9fdda063082a151d9a6d0d2327697459d8ab1a5d；链接为R源代码镜像，数据说明以R官方手册为准。\par
+{\small\url{https://github.com/wch/r-source/blob/trunk/src/library/datasets/data/iris.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:MASS-LDA}
+\noindent{\sffamily\bfseries\color{black}[25] R MASS官方手册：lda — Linear Discriminant Analysis}\par
+定位：Arguments中的prior、method、CV；Details的奇异性和先验权重；Value的scaling、svd。\par
+方法及输出约定的依据。第8题按无偏合并组内协方差、固定等先验和plug-in分类计算。MASS的svd平方不是讲义$W^{-1}B$特征根本身，不能未经核对混用；题内未作此混用。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/lda.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:MASS-PREDICT}
+\noindent{\sffamily\bfseries\color{black}[26] R MASS官方手册：predict.lda — Classify Multivariate Observations by Linear Discrimination}\par
+定位：Arguments的dimen与method；Details的先验加权中心化；Value的class、posterior、x。\par
+支持第6、8题对典型空间、中心化得分与分类输出的区分。实际执行环境没有R；计算由Python完成，附等价R复核代码并明确未在本环境运行。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/predict.lda.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:MASS-QDA}
+\noindent{\sffamily\bfseries\color{black}[27] R MASS官方手册：qda — Quadratic Discriminant Analysis}\par
+定位：Arguments的CV；Details中任一组内协方差奇异时产生错误的说明。\par
+第4题的方法依据。8例、7变量的题设为教学构造，秩结论由中心化矩阵的秩界证明，不是声称手册含有这一原题。\par
+{\small\url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/qda.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\phantomsection\label{src:MASS-BIOPSY}
+\noindent{\sffamily\bfseries\color{black}[28] R MASS官方手册：Biopsy Data on Breast Cancer Patients}\par
+定位：Description与Format：699行11列，9项1—10评分，ID不唯一，V6缺失16项；类别benign/malignant。\par
+仅使用已核验的数据说明作为第10题背景。争议建模记录和0.90后验示例是新拟教学材料，未冒称Wolberg等原论文结果；没有用数据说明反推具体LDA正确率或患者重复关系。\par
+{\small\url{https://www.stat.ethz.ch/R-manual/R-patched/library/MASS/html/biopsy.html}}\par
+\end{minipage}\par\medskip
+
+\section*{按题号查看选编理由}\begingroup\small\setlength{\parskip}{2pt}
+\subsection*{第1章 主成分分析}
+
+\noindent\textbf{题\ref*{q:SUPM1-01} 样本量限制下的非零主成分数}：对应正文‘主成分的计算方法’中的中心化秩上界；原题已有总方差和主成分方差题，本题补样本量小于变量数时的维数判断。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-02} 两种保留主成分准则的分歧}：对应‘保留主成分数与重构误差’；把原题常直接指定的保留数改为需要比较两条经验准则的决策。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-03} 主成分能否直接作为加权平均分}：沿用往年成绩加权平均题的提问方式，补充权重归一化的可行条件与对比型主成分的专业解释。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-04} 新样品应使用哪一套标准化参数}：原题多要求代入新学生分数，本题单独检查参照人群参数和变换坐标系的一致性，帮助避免实际软件操作时重新标准化的错误。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-05} 不相关主成分的具体反例}：正文与原题已提醒‘不相关不等于独立’，本题给一个可直接核对的非线性反例，训练在具体分布下作判断。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-06} 主成分解的符号与重根}：针对原M17-3、M21-3关于唯一性的考试口径，补足符号、重根及保留子空间之间的区别，采用原有命题组合题形式。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-07} 累计贡献率究竟保留了什么}：对应正文重构误差推导及PCR续算，把易被混用的总体方差比例、变量层面、个体层面和结局解释率放在同一简答题中辨析。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-08} USArrests：读懂主成分软件输出}：沿用原PU、P13的‘摘要表＋成分输出＋个体评价’结构，换为可公开复算的完整数据，同时补近阈值保留决策与指标专业含义。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-09} 由主成分得分重构原测量}：原题主要计算加权分和回归式，本题补‘由低维得分回到原空间’的完整手算，直接训练正文新增的重构误差推导。\par
+
+\noindent\textbf{题\ref*{q:SUPM1-10} 高贡献率能否保证主成分回归预测良好}：承接胎儿PCR的专业场景，但不再重复还原系数；重点补‘用X贡献率代替Y预测评价’、折内预处理和选择后性能报告这三层判断。\par
+
+\subsection*{第2章 因子分析}
+
+\noindent\textbf{题\ref*{q:SUPM2-01} 单因子模型对相关的约束}：由正文三变量单因子推导推进到四变量的额外相关约束；不重复原题直接计算共同度或背自由度公式。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-02} 斜交模式负荷能否超过1}：原N19-8与F21已有PΦ定义和斜交共同度；本题新增合法范围的辨析，用相消交叉项说明为何模式负荷超过1不必非法。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-03} 样本量在相关矩阵分析中的作用}：原SUP-F1只作模型自由度计数，本题区分样本量在参数优化、自由度、拟合检验及个体得分中的不同作用。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-04} 空白负荷的阅读}：正文提到R默认隐藏小负荷，原选择题没有专门检验这一输出阅读误区。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-05} 不同软件的因子方向}：原F17解析提醒符号任意，但没有要求根据两软件的等价解判断个人排序；本题补跨软件结果对齐。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-06} 因子与估计得分的区别}：原F13得分均值/方差结论针对特定主成分评分约定；本题明确指定模型型Thomson法，避免把该结论推广到一般共同因子估计得分。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-07} 相关矩阵能支持怎样的复现}：原题曾因缺失个体文件无法复算，正文也强调只凭R不能求个人得分；本题把复现所需条件与跨批评分尺度整理为可独立作答的短答题。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-08} 八项体格指标的因子模型}：公开真实体格资料贴近正文血压/围度实例。核心新增任务是处理“较小局部残差与显著总体失拟并存”，并非把原SUP-F3/F4的数值替换一遍。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-09} Bartlett与Thomson得分的收缩}：原N21-13只识别Bartlett公式，医院题只代入已有系数；本题完整展示条件无偏、收缩和预测均方误差的差别。\par
+
+\noindent\textbf{题\ref*{q:SUPM2-10} 边界估计与研究解释}：原SUP-F4针对不显著P值和旋转解释率；本题改练真实数据边界估计、年龄组成及得分不确定性，且把拟写结论明确设为教学情境。\par
+
+\subsection*{第3章 聚类分析}
+
+\noindent\textbf{题\ref*{q:SUPM3-01} Ward法的合并代价}：原17题没有不等大小类的Ward合并代价选择；以现有三个类的充分统计量突出样品数权重，与第08题的全程合并及反例任务不同。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-02} 不等大小类的类平均距离}：原SUP-C4从单个样品开始，首轮合并的两类大小相同；本题专门补不等大小类的average更新，避免把UPGMA误作两个旧距离的简单平均。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-03} 新样品沿用原标准化}：原耳形题使用类内马氏距离作另加分配规则；本题按K均值自身的固定标准化欧氏尺度分配，补足新旧数据尺度一致性。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-04} 轮廓系数的近邻类}：原17题未计算轮廓系数；本题补a/b的定义、近邻类的最小值以及负值解释，支撑第09题类数选择。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-05} Ward准则的R实现}：将原题解析中容易忽略的ward.D/ward.D2输入差异转化为独立可判断的程序阅读，避免把重复平方当作无害处理。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-06} 类数、初值与类别编号}：原题分别考目标函数、复现记录及稳定迭代；本组合题进一步区分全局最优值、有限多起点结果和纯标签置换。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-07} 选取实际代表样品}：原题重在代表变量选择或读取耳形中心；本题转为选择实际代表样品，并保持标准化度量与中心还原的一致性。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-08} Ward逐步合并与两类划分}：原SUP-C4练single/complete/average更新；本题专练Ward全程、平方和增量累加，以及与可行的更优两类划分比较，不是原题换数字。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-09} USArrests公开数据的聚类输出}：使用R公开完整真实数据，围绕多起点输出、不同k的评价及标准化中心解释命题；不重复原耳形题读取中心和新样品马氏距离。作答所需统计量全在题内。\par
+
+\noindent\textbf{题\ref*{q:SUPM3-10} 耳形模板的变量与解释}：沿用先前已定位的耳缺损修复场景与指数定义，改为评议派生指标计权、预设模板数和中心可实现性；未使用或声称核对教材300行数据。\par
+
+\subsection*{第4章 判别分析}
+
+\noindent\textbf{题\ref*{q:SUPM4-01} 距离度量与归类}：把讲义的距离判别落实到可手算的反向分类例，补充原练习主要以文字考查距离规则的不足。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-02} 组均值相同的变量也可能有用}：补充协方差在Fisher判别中的作用，区别于原有按典型系数计算重要性的练习。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-03} 三类条件风险}：把原有两类代价题扩展为具有明确行列含义的三类决策，重点防止转置损失矩阵或机械取最大后验。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-04} 留一法中的协方差可逆性}：补充“全样本能拟合”不代表每个验证折都能拟合的具体情形，并比较QDA和合并协方差LDA。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-05} 更换先验后的后验赔率}：补充不必指定正态分布也能实施的先验变换；区别于原练习的一元正态界值重算。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-06} 典型得分的符号、尺度与距离}：补充典型输出的归一化与分类规则，避免把任意可逆坐标变换误认为都保留未经调整的欧氏距离。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-07} 验证流程与独立对象}：把原题对回代和留一的概括推进到具体流程，新增同一对象多张图像跨折泄漏与评价单位不一致的问题。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-08} 鸢尾花的典型得分与留一输出}：以可核实的公开真实资料练习中心化输出、典型重心分类及内部验证；真实数据还提供回代与留一正确率相同的反例，避免记硬性经验排序。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-09} 非对角离差阵与第二判别轴}：区别于原对角W/B与PCA比较题，新增非对称$W^{-1}B$、S归一化、组内正交，以及贡献较小的轴对两类区分不可替代的情形。\par
+
+\noindent\textbf{题\ref*{q:SUPM4-10} 乳腺活检评分资料的建模记录评议}：依据公开真实数据的具体字段和缺失说明另拟评议，补充编码、数据类型、概率解释和场景迁移；未复制原90人回代表或缺失的95.3\%论文题。\par
+
+\endgroup

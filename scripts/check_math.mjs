@@ -5,7 +5,7 @@ import { mathMacros, normalizeMath } from '../src/content.js';
 const errors = [];
 let count = 0;
 const decode = text => text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-for (const file of readdirSync('public/data').filter(f => /^.+-(lec\d+|ex\d+|appendix)\.json$/.test(f))) {
+for (const file of readdirSync('public/data').filter(f => /^.+-(lec\d+|ex\d+|sup\d+|appendix|sources)\.json$/.test(f))) {
   const record = JSON.parse(readFileSync(`public/data/${file}`, 'utf8'));
   for (const match of record.html.matchAll(/<span class="math (inline|display)">([\s\S]*?)<\/span>/g)) {
     count++;

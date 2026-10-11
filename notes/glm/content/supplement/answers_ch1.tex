@@ -1,0 +1,94 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG1-01}{比例响应中的试验次数权重}
+\textbf{答案：B。} 比例的条件方差为$p(1-p)/n_i$，故甲、乙分别为$0.009375$和$0.00234375$，前者是后者的4倍。
+采用比例响应时，试验次数$n_i$应作为二项模型的先验权重；也可使用两列事件数和非事件数响应。
+事件数的方差则为$n_ip(1-p)$，方向恰与比例方差的比较相反。不能把每组都当作一次Bernoulli观察。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G1-FAMILY]{[3]}。\par}
+
+\Answer{SUPG1-02}{线性预测子中的二次项}
+\textbf{答案：E。} 系统部分对未知参数$(\beta_0,\beta_1,\beta_2)$仍为线性，设计矩阵的三列是$1,x,x^2$，故属于Poisson GLM。
+GLM的‘线性’不要求均值是$x$的直线，也不要求$x$或$x^2$服从正态分布。
+包含二次项时，$x$增加1的均值比为$\exp\{\beta_1+\beta_2(2x+1)\}$，一般随起始$x$变化。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-GLM]{[2]}。\par}
+
+\Answer{SUPG1-03}{由累积量函数恢复均值和方差}
+\textbf{答案：D。} 求导得$b'(\theta)=-1/\theta$、$b''(\theta)=1/\theta^2$，故
+$\mu=-1/\theta>0$，$\operatorname{Var}(Y)=\phi\mu^2$。
+按题干的自然参数约定，典型连接为$g(\mu)=\theta=-1/\mu$；负号可吸收入回归系数，教材常写作倒数连接。
+例如$\theta=-0.5,\phi=0.25$时，均值为2、方差为1。log连接也可用于Gamma均值建模，但不因此成为本参数化的典型连接。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-FAMILY]{[3]}。\par}
+
+\Answer{SUPG1-04}{统一缩放相对精度权重}
+\textbf{答案：A。} 新估计为$(X^T7WX)^{-1}X^T7Wy=\hat\beta$；新的残差尺度估计变为$7\hat\sigma^2$，
+而逆信息矩阵变为$(X^TWX)^{-1}/7$，两者相抵，所以协方差估计不变。
+这是相对精度的归一化变化，并未增加独立受试者。若已知绝对方差并固定尺度，或把权重解释为真正复制观测，结论需要另行讨论。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-LM]{[4]}。\par}
+
+\Answer{SUPG1-05}{相同线性预测值与不同逆连接}
+\textbf{答案：C。} 甲的概率为$e/(1+e)=0.7311$，乙的概率为$\Phi(1)=0.8413$。
+相同线性预测值只有在相同连接函数下才对应相同概率。$\exp(\beta)$的OR解释来自logit连接；
+probit系数的指数一般不是固定的优势比，也不能把$\eta$本身当概率。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-FAMILY]{[3]}、\hyperref[src:G1-PREDICT]{[5]}。\par}
+
+\Answer{SUPG1-06}{含截距Poisson模型的得分性质}
+\textbf{答案：E。} 截距的得分为$\partial\ell/\partial\beta_0=\sum_i(y_i-\mu_i)$，内部极大点令其为0。
+已知offset只改变$\mu_i$的数值，不改变线性预测子对截距的导数1，故III也正确。
+Pearson残差额外除以不等的$\sqrt{\hat\mu_i}$，其和没有一般的零约束。
+加惩罚、去掉截距或使用不同先验权重时，应重新写得分方程，不能机械套用。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-GLM]{[2]}。\par}
+
+\Answer{SUPG1-07}{先验权重与工作权重为何不同}
+$n_i$是二项比例表示中的先验权重，保存试验次数，使$\operatorname{Var}(Y_i)=\pi_i(1-\pi_i)/n_i$。
+IRLS拟合的是当前工作响应
+\[z_i=\eta_i+\frac{Y_i-\pi_i}{\pi_i(1-\pi_i)},\]
+不是直接对原比例作固定权重回归。按局部线性化，
+\[\operatorname{Var}(z_i)\approx\frac{1}{n_i\pi_i(1-\pi_i)},\qquad
+w_i^{\rm work}=n_i\pi_i(1-\pi_i).\]
+在概率边界附近，logit变换的导数绝对值很大，放大了概率尺度上的波动；工作权重下降与原比例方差下降并不矛盾。
+先验权重由已知组大小决定，工作权重随当前拟合概率更新。R中可分别查看\rinline{weights(fit,type="prior")}和\rinline{weights(fit,type="working")}。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G1-FAMILY]{[3]}。\par}
+
+\Answer{SUPG1-08}{Dobson案例：由glm输出还原模型}
+\textbf{（1）模型。} 按题设的Poisson拟合，$N_{ot}\sim\operatorname{Poisson}(\mu_{ot})$，
+\[\log\mu_{ot}=\beta_0+\beta_{O2}I(o=2)+\beta_{O3}I(o=3)
++\beta_{T2}I(t=2)+\beta_{T3}I(t=3).\]
+随机部分为Poisson分布、系统部分为上述五列设计、连接为log。每条响应是一个处理×结局组合的格数；150是总频数。
+\par\textbf{（2）预测。} 该格$\hat\eta=3.044522-0.454255+0=2.590267$，
+$\hat\mu=e^{2.590267}\approx13.3333$。Poisson模型条件方差也为13.3333，模型条件标准差为$\sqrt{13.3333}\approx3.6515$；它们不等于回归系数的标准误。
+\par\textbf{（3）自由度。} 9个格数响应、设计矩阵秩$1+2+2=5$，故残差自由度$9-5=4$。
+150不能替代该Poisson调用的响应记录数；改变个体/汇总数据的表示及似然后，必须重新说明统计对象。
+\par\textbf{（4）残差与尺度。} 该格观察值为10，响应残差$10-13.3333=-3.3333$。
+处理系数为0表示模型中处理组间的拟合格数比为1，并不保证每格残差为0；拟合后的三个结局格数分别为21、$40/3$和$47/3$，各处理组相同。
+默认\rinline{predict(fit)}返回$\hat\eta$，\rinline{type="response"}返回$\hat\mu$。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G1-PREDICT]{[5]}、\hyperref[src:G1-NOTES]{[1]}。\par}
+
+\par\noindent\begin{minipage}{\linewidth}
+\Answer{SUPG1-09}{完成一次二项IRLS更新}
+\textbf{（1）工作量。} 初始$\eta_i=0$，所以$\pi_i=0.5$；
+$z=(-1.6,-0.4,1.2)^T$，$W=2.5I_3$。
+\par\textbf{（2）更新。} $X$的三行为$(1,0),(1,1),(1,2)$，从而
+\[X^TWX=\begin{pmatrix}7.5&7.5\\7.5&12.5\end{pmatrix},\quad
+X^TWz=\begin{pmatrix}-2\\5\end{pmatrix},\quad
+\beta^{(1)}=\begin{pmatrix}-1.6667\\1.4000\end{pmatrix}.\]
+\par\textbf{（3）尚未收敛。} 更新后的线性预测值与概率约为
+\[\eta^{(1)}=(-1.6667,-0.2667,1.1333)^T,\]
+\[\pi^{(1)}=(0.158869,0.433726,0.756454)^T.\]
+代入得$U\approx(-0.49048,0.53367)^T\ne0$，故不能把第一次WLS更新当成最终MLE。
+下一轮使用新的$\eta,\pi$重新计算$z,W$并继续求解，直到数值收敛。
+所附脚本的最终$\hat\beta=(-2.197225,1.791759)^T$，并核对最终得分为0。
+本数据的三个经验概率恰可落在同一条logit直线上，这只是本组数值的巧合，不意味着两参数模型总能拟合任意三个比例。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G1-FAMILY]{[3]}。\par}
+\end{minipage}\par\medskip
+
+\Answer{SUPG1-10}{对数响应回归与log连接GLM}
+\textbf{（1）反变换。} 给出的式子建模的是$\log Y$的条件均值；不能交换期望与非线性指数函数。
+条件中位数为$e^{1+0.4x}$，条件均值为$e^{1+0.4x+0.18}$。
+$x=0$时二者分别为2.7183和3.2544；$x=1$时分别为4.0552和4.8550。
+log连接GLM直接指定的是$\log E(Y\mid x)=\eta(x)$，还必须另给条件分布/方差结构。
+\par\textbf{（2）均值比。} 本题共同对数方差为0.36，反变换因子相消，所以均值比仍为$e^{0.4}=1.4918$。
+若$\operatorname{Var}(\varepsilon\mid x)=\sigma_x^2$，均值比应为
+$\exp\{0.4+(\sigma_1^2-\sigma_0^2)/2\}$，未必仍等于$e^{0.4}$。
+\par\textbf{（3）模型信息。} Poisson响应是非负整数计数；正值连续浓度不满足这个取值范围，不能只因‘正数’采用它。
+例如Gamma log连接与对数正态回归可拥有相似的均值形式，但完整条件分布和似然不同。
+应报告原始响应及单位、是否先取对数、条件分布、连接、方差/尺度设定、反变换方法，并用适当残差和预测表现评价拟合。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G1-NOTES]{[1]}、\hyperref[src:G1-FAMILY]{[3]}、\hyperref[src:G1-LOGNORMAL]{[6]}。\par}

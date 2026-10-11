@@ -1,0 +1,52 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPM3-01}{Ward法的合并代价}
+\textbf{答案：C。} Ward法比较$\Delta W_{ab}=\dfrac{n_an_b}{n_a+n_b}(\bar x_a-\bar x_b)^2$。三种合并的增量分别为\[\Delta W_{AB}=10,\qquad \Delta W_{AC}=\frac{180}{11}\approx16.3636,\qquad\Delta W_{BC}=\frac{80}{11}\approx7.2727.\]因此合并$G_B,G_C$。虽然$G_A,G_B$的中心最接近，但它们的样品数较大；Ward准则同时考虑中心差异和类的大小，不能只比较中心距离。选项D遗漏了样品数系数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:PSU-CLUSTER]{[15]}。\par}
+
+\Answer{SUPM3-02}{不等大小类的类平均距离}
+\textbf{答案：E。} $G_A$与$G_C$之间共有$2\times3$对样品，$G_B$与$G_C$之间共有$6\times3$对。因此\[D(G_A\cup G_B,G_C)=\frac{2\times3\times4+6\times3\times6}{(2+6)\times3}=\frac{2\times4+6\times6}{8}=5.5.\]直接取$(4+6)/2=5$会把大小不同的两个旧类各赋一半权重，未对所有跨类样品对等权。$G_C$的样品数在分子、分母中抵消，更新权重由被合并两类的样品数决定。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:PSU-CLUSTER]{[15]}、\hyperref[src:R-HCLUST]{[16]}。\par}
+
+\Answer{SUPM3-03}{新样品沿用原标准化}
+\textbf{答案：B。} 必须使用建立这两个中心时的同一套尺度：\[z_0=\left(\frac{13-10}{2},\frac{110-100}{20}\right)=(1.5,0.5).\]到两个中心的平方欧氏距离分别为$(1.5+1)^2+(0.5-0)^2=6.5$与$(1.5-1)^2+(0.5-1)^2=0.5$，故归第2类。只除以标准差遗漏了中心化；若重新估计标准化参数，旧中心也须相应转换，不能把新旧两种尺度下的坐标直接比较。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:R-SCALE]{[18]}、\hyperref[src:R-KMEANS]{[17]}。\par}
+
+\Answer{SUPM3-04}{轮廓系数的近邻类}
+\textbf{答案：A。} 轮廓系数取$a(i)=4$，并在其他各类的平均距离中取最小值，故$b(i)=\min(3,7)=3$。\[s(i)=\frac{b(i)-a(i)}{\max\{a(i),b(i)\}}=\frac{3-4}{4}=-0.25.\]负值表示按所选距离衡量，它平均而言更接近另一个类，本题近邻类为第2类；这提示检查边界样品和类别解释，不能把负值本身当成已有真实标签下的误判证明。分母应为$\max(a,b)$，不能固定取$b$，也不能先平均所有其他类的距离。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:R-SILHOUETTE]{[19]}。\par}
+
+\Answer{SUPM3-05}{Ward准则的R实现}
+\textbf{答案：D。} \texttt{dist(z)}默认给出未平方的欧氏距离，\texttt{ward.D2}会在更新前平方该距离，实现正文的Ward准则。选项A再次平方输入，改变了所用相异度；选项C把未平方欧氏距离交给\texttt{ward.D}，与所要求的准则不符。若采用\texttt{ward.D}，需按正文说明输入平方欧氏距离，其高度标度也与\texttt{ward.D2}不同。最长距离法和重心法有各自的合并准则，不能因它们也使用欧氏距离就视为Ward法。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:R-HCLUST]{[16]}。\par}
+
+\Answer{SUPM3-06}{类数、初值与类别编号}
+\textbf{答案：C。} I正确：从一个$k$类最优划分中把某个含至少两个样品的类再拆开，并分别取均值，所得$W$不会增大；$(k+1)$类最优值更不可能比这个可行值大。II错误：\texttt{nstart=50}表示尝试50套初始中心再择优，不是全局最优的保证，也不是每套固定迭代50次。III正确：$W$和$B$取决于成员与中心，不取决于标签数字。需要区分最优值$W_k^\ast$的性质与有限次随机算法实际返回的结果；后者可能停在不同的局部最优。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:R-KMEANS]{[17]}。\par}
+
+\Answer{SUPM3-07}{选取实际代表样品}
+应保存原样本各指标的均数$\mu_j$与样本标准差$s_j$、所用变量及顺序、每个受试者的记录和所属类别；仅有中心不能确定代表者。若第$l$类标准化中心为$c_{lj}$，原量纲中心为\[\bar x_{lj}=\mu_j+s_jc_{lj}.\]随后在第$l$类的实际成员中，按原聚类使用的标准化尺度计算到中心的距离，选择\[i_l^\ast=\underset{i\in C_l}{\operatorname{arg\,min}}\;\sum_j\left\{\frac{x_{ij}-\mu_j}{s_j}-c_{lj}\right\}^2.\]并列最近时可报告并列，或预先规定按测量完整性、可靠性等选择。直接在原始数值上求最近者，一般会改变各变量在距离中的权重，可能选出另一人。类中心是各指标的类内平均值，不要求与某条观测重合；若含非线性派生指数，平均后的五维坐标甚至未必满足各指标间的定义关系。因此应把还原中心用于描述类别，把同一距离下选出的实际成员用于展示或制作实物参照，并结合专业可用性核查。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:R-SCALE]{[18]}、\hyperref[src:R-KMEANS]{[17]}。\par}
+
+\Answer{SUPM3-08}{Ward逐步合并与两类划分}
+(1) 单元素类的$W=0$。每步比较所有现有类对的$\Delta W=\dfrac{n_an_b}{n_a+n_b}(\bar x_a-\bar x_b)^2$，得到\begin{center}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcrr@{}}
+\toprule
+步骤 & 合并 & $\Delta W$ & 合并后的$W$ \\
+\midrule
+1 & $A,B$ & $1/2=0.5$ & $0.5$ \\
+2 & $C,D$ & $2$ & $2.5$ \\
+3 & $CD,E$ & $50/3\approx16.6667$ & $115/6\approx19.1667$ \\
+4 & $AB,CDE$ & $1369/30\approx45.6333$ & $64.8$ \\
+\bottomrule
+\end{tabular}
+\end{center}例如前两步后，三个类为$AB$、$CD$、$E$，中心分别为$0.5,5,10$。此时三种合并的增量依次为$\Delta W_{AB,CD}=20.25$、$\Delta W_{AB,E}=361/6\approx60.1667$、$\Delta W_{CD,E}=50/3$，故第三步合并$CD$与$E$。\par (2) 两类为$\{A,B\}$、$\{C,D,E\}$，中心分别为$1/2$和$20/3$，其$W=1/2+56/3=115/6\approx19.1667$，也等于前三步增量之和。\par (3) 另一个划分的中心为$5/3$和$8$，\[\begin{aligned}W_{\rm alt}&=\left(0-\frac53\right)^2+\left(1-\frac53\right)^2+\left(4-\frac53\right)^2\\&\quad +(6-8)^2+(10-8)^2=\frac{50}{3}\approx16.6667.\end{aligned}\]它比Ward两类解小$2.5$，已足以否定该说法。Ward在每一步只从当前已有类中选择合并；$C,D$一旦合并，后续不能拆开去形成这个较优划分。因此局部的合并准则不保证给定类数下的全局最优，这也不表示Ward步骤计算错误。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:PSU-CLUSTER]{[15]}、\hyperref[src:R-HCLUST]{[16]}。\par}
+
+\Answer{SUPM3-09}{USArrests公开数据的聚类输出}
+(1) 每列标准化值的平方和均为$n-1=49$，因此\[T=(n-1)p=49\times4=196.\]由$T=W+B$，$k=2$时$B/T=1-102.8624/196\approx47.52\%$；$k=5$时$B/T=1-48.9442/196\approx75.03\%$。\par (2) 平均轮廓系数最大的是$k=2$（0.4085），故在这四个候选结果中按该指标选2类。按$B/T$最大则会选5类，二者并不一致。增加类数通常可以减少$W$、增大$B/T$，但未必使每类与近邻类分得更清楚；轮廓系数同时比较类内与类外距离。因此不能单独以$B/T$最大来定$k$。0.4085也不能视为发现真实类数的显著性证据，仍需结合稳定性与研究目的。\par (3) 第3类有13个州，四项中心均为正，表明其类均数均高于全体州均数；Murder、Assault、UrbanPop、Rape约分别高0.70、1.04、0.72、1.28个全体样本标准差。这些是州层面的历史指标描述，既不是当前状况，也不能由此给类内每一个体作判断。本表只描述选定变量、标准化方式及算法下的探索性划分，未证明存在四个天然类别；有限50套起点中的最小$W$也不能冒称所有划分的全局最小值。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:M1-USARRESTS]{[4]}、\hyperref[src:R-USARRESTS-DATA]{[20]}、\hyperref[src:R-KMEANS]{[17]}、\hyperref[src:R-SILHOUETTE]{[19]}。\par}
+
+\Needspace{22\baselineskip}
+\Answer{SUPM3-10}{耳形模板的变量与解释}
+三项结论均不成立。Z标准化统一了各列尺度，却不会消除相关性或函数依赖。EI、AI由三个原始测量计算而来，加入它们会改变对宽窄、外展等特征的加权；五列在标准化距离中等权，不等于三个原始形态特征各只计权一次。\par 多起点仅降低陷于某些局部最优的风险。预设$k=5$后算法会给出五类，并不能证明存在五个天然耳型；模板数可以由实际需求确定，同时应检查轮廓系数、重抽样稳定性及解释是否合理。\par 小表两例的原量纲类中心为$(6,\ 3.25,\ 1.45,\ 55,\ 45)$。但从前三项中心再算指数，得到\[\frac{100\times3.25}{6}=54.1667\ne55,\qquad\frac{100\times1.45}{3.25}=44.6154\ne45.\]因为比值的平均一般不等于平均值之比。逐列还原中心得到的是各变量的类内均数，不保证落在定义关系允许的实际耳形上，更不保证某病例恰好具有这些数值。\par 可按目的比较三个原始测量、EC加两个指数等有依据的变量方案，记录标准化和初值规则；将选出的类别解释为便于临床选型的代表范围，并在每类中按同一标准化距离寻找接近中心的实际病例，再核查其形态与可用性。本题小表仅作教学反例，不是原300例数据的节选。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-M3]{[14]}、\hyperref[src:HU-EAR-EXCERPT]{[21]}、\hyperref[src:R-KMEANS]{[17]}、\hyperref[src:R-SILHOUETTE]{[19]}。\par}

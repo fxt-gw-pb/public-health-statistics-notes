@@ -1,0 +1,98 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-01}{同一OR与不同概率差}
+以下为教学设定。某二分类Logistic模型不含交互项，二分类暴露的调整OR为3。在两个不同协变量层中，未暴露者的事件概率分别为0.10和0.50。各层其他协变量保持不变时，暴露对应的概率增加量依次为（\quad）。
+\begin{choices}
+\item $0.30,\ 0.30$
+\item $0.20,\ 0.20$
+\item $0.20,\ 0.50$
+\item $0.15,\ 0.25$
+\item $0.10,\ 0.50$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-02}{病例对照抽样后的概率校正}
+以下为教学设定。人群中病例与非病例分别以概率$s_1$、$s_0$被抽入研究，$s_1/s_0=12$，且抽样只依赖结局。某协变量组合在样本Logistic模型中的预测病例概率为0.60。若模型设定正确，该组合对应的人群事件概率为（\quad）。
+\begin{choices}
+\item $0.0500$
+\item $0.1111$
+\item $0.1250$
+\item $0.6000$
+\item $0.9474$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-03}{分组二项响应的事件方向}
+对同一分组二项资料，用相同设计矩阵分别拟合
+\begin{rcode}
+m1 <- glm(cbind(event, nonevent) ~ x1+x2,
+          family=binomial, data=d)
+m2 <- glm(cbind(nonevent, event) ~ x1+x2,
+          family=binomial, data=d)
+\end{rcode}
+两模型均采用logit连接、含截距、没有惩罚项，并有唯一有限极大似然估计。下列结论正确的是（\quad）。
+\begin{choices}
+\item 只有截距变号，斜率保持不变。
+\item 只有斜率变号，截距保持不变。
+\item 全部系数与拟合概率均保持不变。
+\item 第二个模型的残差偏差是第一个的相反数。
+\item 全部系数变号，拟合概率互为补数，残差偏差相同。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-04}{三种检验分别需要哪些拟合}
+在多变量Logistic模型中检验$H_0:\beta_x=0$，其他协变量的系数为干扰参数。正则条件成立。下列说法正确的是（\quad）。
+\begin{choices}
+\item 比分检验只需拟合$H_0$成立时的约束模型。
+\item Wald检验只需拟合$H_0$成立时的约束模型。
+\item 似然比检验只需拟合含$x$的完整模型。
+\item 比分检验要求把其他协变量的系数也全部置零。
+\item 多变量Wald检验不能调整其他协变量。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-05}{1:2匹配组的条件概率}
+以下为教学设定。一个1:2匹配组内三人的暴露值为$x_A=1$、$x_B=x_C=0$。模型只有该暴露，$\beta=\log2$。给定组内恰有1例病例，$A$为病例的条件概率为（\quad）。
+\begin{choices}
+\item $1/3$
+\item $2/3$
+\item $1/2$
+\item $1/4$
+\item $4/5$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-06}{条件Logistic可估计的内容}
+关于按匹配组条件化的Logistic回归，有下列说法：\begin{enumerate}\renewcommand{\labelenumi}{\Roman{enumi}.}\item 在各组内取值恒定的协变量，其主效应从条件似然中消去。\item 上述变量与一个组内变化暴露的交互项，也必定不能估计。\item 组内谁成为病例的条件概率，一般不等于人群中的绝对发病概率。\end{enumerate}正确的组合是（\quad）。
+\begin{choices}
+\item 仅I。
+\item I、III。
+\item II、III。
+\item I、II、III。
+\item 仅II。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG2-07}{二次项与指定区间的OR}
+某二分类Logistic模型为$\operatorname{logit}p=\beta_0+\beta_1x+\beta_2x^2+\gamma^{\mathsf T}z$。\begin{enumerate}\item 固定$z$，写出$x$从$x_0$增加$\Delta$时的OR。能否用$e^{\beta_1}$统一表示每增加1单位的OR？\item 以下系数为教学设定：$\beta_1=0.40,\ \beta_2=-0.05$。比较$x:0\to1$与$x:4\to5$的OR。\item 若检验$x$与结局是否有关，写出对该模型适用的联合原假设及自由度。\end{enumerate}
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG2-08}{食管癌公开资料中的饮酒评分约束}
+法国食管癌病例对照公开资料有200例病例和775例对照，共88个年龄、饮酒、吸烟组合。年龄分6组，吸烟分4组；饮酒分$0$--$39$、$40$--$79$、$80$--$119$、$120+$ g/天。以病例为成功结局，年龄和吸烟均按分类哑变量调整，比较以下三个模型，均含截距、不含交互项，并使用全部88行和同一分组二项似然。\begin{center}\small\begin{tabular}{lr}\toprule 饮酒项设定&最大对数似然\\\midrule $M_0$：不含饮酒项&$-162.662323$\\$M_s$：四组依次评分$0,1,2,3$，含一个评分系数&$-101.646905$\\$M_f$：以$0$--$39$为参照，含三个饮酒哑变量&$-98.695896$\\\bottomrule \end{tabular}\end{center}$M_f$中三个饮酒系数依次为$\hat b_1=1.434629,\ \hat b_2=1.980717,\ \hat b_3=3.602869$。并有\[\operatorname{Var}(\hat b_1)=0.06253113,\quad\operatorname{Var}(\hat b_2)=0.08108937,\quad\operatorname{Cov}(\hat b_1,\hat b_2)=0.04266069.\]\begin{enumerate}\item 求饮酒整体关联的似然比统计量和自由度。\item 写出$M_s$对$(b_1,b_2,b_3)$施加的约束，检验评分线性设定是否相对$M_f$造成显著拟合损失。\item 计算$80$--$119$相对$40$--$79$组的调整OR及Wald近似95\%置信区间。\item 第（2）问若未拒绝，能否说已证明每日饮酒克数与logit成线性关系？\end{enumerate}可用$\chi^2_{0.05,2}=5.991$、$\chi^2_{0.05,3}=7.815$及$z_{0.975}=1.96$。
+\end{minipage}\par\medskip
+
+\Question{SUPG2-09}{1:2匹配六种模式的完整条件似然}
+以下为教学构造资料。36个独立匹配组各有1例病例和2例对照，仅分析二分类暴露$x$。$c$为病例的暴露值，$k$为两名对照中暴露者人数，表中频数按匹配组计。\begin{center}\begin{tabular}{rrr}\toprule $c$&$k$&组数\\\midrule 0&0&4\\0&1&5\\0&2&5\\1&0&9\\1&1&10\\1&2&3\\\bottomrule \end{tabular}\end{center}设$r=e^\beta$，以每组病例数为1作条件化。按完整条件似然计算有$\ell_c(0)=-39.550042$；在极大似然估计处，$\beta$的观测信息为$I(\hat\beta)=5.9000$。\begin{enumerate}\item 写出六种模式合并后的条件似然，求$\hat r$与$\hat\beta$。\item 哪些组不为$\beta$提供信息？有效信息来自多少组？\item 求OR的Wald近似95\%置信区间，并用似然比检验$H_0:\beta=0$。\item 说明这里的OR能否直接给出暴露者的人群发病概率。\end{enumerate}可用$z_{0.975}=1.96$、$\chi^2_{0.05,1}=3.841$。
+
+\Question{SUPG2-10}{平均预测正确是否足够}
+以下为教学设定。某二分类Logistic预测模型在独立验证资料中的结果如下；同组内所有人的预测概率均等于表中数值。\begin{center}\begin{tabular}{crrr}\toprule 组别&人数&预测概率&观察事件数\\\midrule A&50&0.10&15\\B&50&0.30&5\\C&50&0.50&25\\D&50&0.70&35\\\bottomrule \end{tabular}\end{center}研究者写道：“平均预测概率等于实际事件比例，且$\sum_i(y_i-\hat p_i)=0$，所以模型已得到充分校准；无需再比较各组预测与观察情况。”请评议这段结论，并说明应补充的分析。

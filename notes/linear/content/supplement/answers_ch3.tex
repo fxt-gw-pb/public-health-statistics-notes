@@ -1,0 +1,40 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPL3-01}{响应换算与诊断量}
+选E。拟合值满足$\widehat y_i^*=5+2\widehat y_i$，所以$e_i^*=2e_i$，一般改变。设计矩阵不变，杠杆值不变；$s^*=2s$、$s_{(i)}^*=2s_{(i)}$，标准化时尺度相消，所以内、外学生化残差和Cook距离不变。DW的分子和分母同时乘以4，也不变。题设排除了删除后不可估计或$h_{ii}=1$的边界情形。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}。\par}
+
+\Answer{SUPL3-02}{两两相关与完整共线性}
+选B。标准化后$z_3=(z_1+z_2)/\sqrt2$，相关阵行列式为0，特征值为$0,1,2$，是可实现的半正定相关阵。自变量列线性依赖，含截距的设计矩阵列不满秩，不能唯一确定全部三个斜率。两两相关不接近1仍可存在完整共线性；改变响应分布或保持此精确关系单纯增加样本量，都不能解除不可识别。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}。\par}
+
+\Answer{SUPL3-03}{任意排序下的DW值}
+选D。重排完整数据行不改变最小二乘目标函数、系数或残差平方和，但改变相邻残差的配对，因而可能改变DW的分子。DW针对有意义顺序下的一阶相关，不能通过任意排序来建立或排除误差独立性。本资料的独立性主要应由抽样、同一家系或机构等设计信息判断。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:SUN15-1]{[5]}。\par}
+
+\Answer{SUPL3-04}{逆方差权重}
+选A。WLS的权重与误差方差的倒数成比例；相对第一观测，权重为$1,1/4,1/9$。采用标准差的倒数$1,1/2,1/3$不能得到所需的逆方差权重。将所有权重同时乘以同一个正常数不改变系数，但题目已把第一项固定为1。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:NIST-WLS]{[10]}。\par}
+
+\Answer{SUPL3-05}{偏相关检验的自由度}
+选C。控制变量数为$q=2$，自由度为$n-2-q=23$，\[t=r\sqrt{\frac{n-2-q}{1-r^2}}=-0.472350\sqrt{\frac{23}{1-0.472350^2}}=-2.5701.\]双侧$P\approx0.0171$。该检验与完整模型$y\sim x_2+x_3+x_4$中$x_3$系数的$t$检验一致。不能把已经估计两个控制变量后的残差当作27对未经调整的原始观测，机械使用普通相关的25个自由度。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:SUN15-1]{[5]}、\hyperref[src:PSU-PCOR]{[11]}。\par}
+
+\Answer{SUPL3-06}{岭回归的特征方向}
+选D。I中条件指数从$\sqrt{\lambda_{\max}/\lambda_{\min}}$变为$\sqrt{(\lambda_{\max}+k)/(\lambda_{\min}+k)}$，不会增大；当最大、最小特征值不同且$k>0$时严格下降。II错误：岭回归改变估计规则，没有改写原始数据，样本相关系数不变。III由谱分解得到，保留比例$\lambda/(\lambda+k)$随$\lambda$增大而增大，因此小特征值方向收缩更强。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}。\par}
+
+\Answer{SUPL3-07}{三种异方差处理的目标}
+甲不改变OLS系数，只改变系数协方差阵、标准误及相应推断；目标仍为原尺度的$E(Y\mid X)$。乙通常改变系数点估计，通过不同观测的相对精度加权；若原均值模型正确，拟合对象仍是原尺度的$E(Y\mid X)$。丙通常改变系数及其解释，拟合对象变为$E(\log Y\mid X)$；将其拟合值直接指数化通常不能直接当作$E(Y\mid X)$。\par 三种方法都不能自动保证均值结构正确。稳健标准误处理方差估计，WLS处理不同精度，响应变换是否改善均值/方差结构须重新检查；若遗漏非线性项，应依据关系形式重新建模并诊断，不能以标准误修正替代。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:NIST-WLS]{[10]}。\par}
+
+\Answer{SUPL3-08}{留一预测残差}
+(1) $e_{(25)}=2.499330454/(1-0.475598363)=4.766062$，平方为22.715342；$e_{(26)}=4.656976531/(1-0.131272662)=5.360688$，平方为28.736980。25号的普通残差较小，但高杠杆使它留在建模集内时的拟合误差明显低于留一预测误差。\par (2) $\mathrm{PRESS}=89.963074+22.715342+28.736980=141.415396$，训练$R^2=0.5981$，预测$R^2=0.3646$。\par (3) 训练$R^2$衡量对参与估计的数据的拟合；固定模型的PRESS使用每次不含被预测对象的拟合，反映不同的预测误差。若模型是先用全部27人筛选得到的，仍有筛选信息泄漏到固定结构中；评价整个流程，应在每次训练样本内重新筛选并拟合，再预测留出对象。不能把0.3646宣称为整套选择流程已得到充分验证。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L2]{[4]}、\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:SUN15-1]{[5]}。\par}
+
+\Answer{SUPL3-09}{校准资料的加权拟合}
+(1) OLS方程为$\widehat y=1.233333+0.985714x$，$x=4$时为5.176190。WLS采用$w=(1,1,1/4,1/4,1/9,1/9)$，\[X^\top WX=\begin{pmatrix}2.722222&5.972222\\5.972222&18.027778\end{pmatrix},\quad X^\top Wy=\begin{pmatrix}8.975000\\24.594444\end{pmatrix},\]得到$\widehat y_W=1.112442+0.995724x$，$x=4$时为5.095339。\par (2) OLS最小化普通平方和，故左列OLS较小；WLS最小化题设加权平方和，故右列WLS较小。输出与两个优化目标一致。\par\Needspace{7\baselineskip}(3) 不能据左列否定WLS。题设误差方差不同且相对方差预先已知，逆方差权重反映观测精度。WLS在不同准则下求最优，并不承诺普通平方和比OLS更小；仍须检查均值结构和精度信息是否合理。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:NIST-WLS]{[10]}。\par}
+
+\Answer{SUPL3-10}{相近摘要下的两组资料}
+不能仅凭相近的系数及$R^2$判断两组直线模型同样合适。甲组随$x$增大先升高再回落，散点及残差会显示弯曲趋势，优先检查均值函数是否需要二次项；其一元直线摘要掩盖了非线性。\par 乙组10个$x$都等于8，仅第8点的$x=19$提供第二个自变量水平。该点的杠杆值恰为1，所以直线必通过它，残差为0不能解释成“不重要”。删去第8点后，只剩$x=8$这一水平，设计矩阵秩为1，截距与斜率不能同时唯一估计，因而普通的删除后斜率比较也无法进行。\par 此处$h_{88}=1$是通常诊断公式的边界；不能将$e_8\approx0$和$1-h_{88}\approx0$直接代入Cook距离公式并把浮点输出当作可靠的有限诊断量。应先检查设计支持与可识别性。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L3]{[9]}、\hyperref[src:R-ANSCOMBE]{[12]}、\hyperref[src:R-ANSCOMBE-DATA]{[13]}。\par}

@@ -3,9 +3,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { gradeChoice } from '../src/quiz.js';
 import { example, students, standardized, residualSum, sigmoid } from '../src/statistics.js';
 
-const chapters = readdirSync('public/data').filter(f => /-ex\d+\.json$/.test(f)).map(f => JSON.parse(readFileSync(`public/data/${f}`,'utf8')));
+const chapters = readdirSync('public/data').filter(f => /-(ex|sup)\d+\.json$/.test(f)).map(f => JSON.parse(readFileSync(`public/data/${f}`,'utf8')));
 const questions = chapters.flatMap(c => c.questions.filter(q=>q.quiz).map(q=>({...q,chapter:c.id})));
-assert.equal(questions.length,200);
+assert.equal(questions.length,302);
 let verified=0,conditional=0,unverified=0;
 for(const q of questions){
   const quiz=q.quiz;
@@ -17,7 +17,7 @@ for(const q of questions){
   }
   if(quiz.grading.status==='verified')verified++;else if(quiz.grading.status==='conditional')conditional++;else unverified++;
 }
-assert.deepEqual({verified,conditional,unverified},{verified:183,conditional:5,unverified:12});
+assert.deepEqual({verified,conditional,unverified},{verified:285,conditional:5,unverified:12});
 function question(chapter,id){return questions.find(q=>q.chapter===chapter&&q.id===id).quiz;}
 // Known source cases, including supplemental option F and ambiguous definitions.
 assert.equal(gradeChoice(question('multivariate-ex1','M15-1'),'A').status,'correct');
@@ -27,6 +27,11 @@ assert.equal(gradeChoice(question('linear-ex2','E14-19'),'A').status,'unverified
 assert.equal(gradeChoice(question('linear-ex2','E21-2'),'B').status,'conditional');
 assert.equal(gradeChoice(question('linear-ex2','E21-2'),'E').status,'conditional');
 assert.equal(gradeChoice(question('multivariate-ex4','M15-4'),'D').status,'conditional');
+// Supplementary sets added 2026-10-11, including the “选X” answer form.
+assert.equal(gradeChoice(question('linear-sup1','SUPL1-01'),'D').status,'correct');
+assert.equal(gradeChoice(question('linear-ex1','SUPL2-01'),'C').status,'correct');
+assert.equal(gradeChoice(question('glm-sup8','SUPG8-01'),'C').status,'correct');
+assert.equal(gradeChoice(question('glm-sup8','SUPG8-01'),'A').status,'incorrect');
 assert.equal(students.length,12);
 assert.ok(Math.abs(example.meanHeight-161.8666666667)<1e-8);
 assert.ok(Math.abs(example.meanWeight-48.0833333333)<1e-8);

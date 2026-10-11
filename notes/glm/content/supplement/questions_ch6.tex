@@ -1,0 +1,89 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-01}{按层次原则删项}
+设$A,B,C,D$均为二分类变量，当前层次对数线性模型以最大生成项记为$[ABC][AD][BD]$。现拟删除所有同时含$A$与$B$的交互项，并尽量保留其余原有项。应选哪一个模型？方括号内的生成项包括其全部低阶项。
+\begin{choices}
+\item $[ABC][AD]$。
+\item $[AC][BD]$。
+\item $[AB][AC][BC][AD][BD]$。
+\item $[AC][BC][AD][BD]$。
+\item $[A][B][C][D]$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-02}{部分独立模型的拟合频数}
+教学设定的三维列联表拟合模型$[AB][C]$，即$C$与$(A,B)$联合独立。已知$n=200$，某一$(A=i,B=j)$组合的边际频数$n_{ij+}=20$，某层$C=k$的边际频数$n_{++k}=60$。各有关边际均为正，极大似然拟合频数$\widehat m_{ijk}$为多少？
+\begin{choices}
+\item $1.5$。
+\item $6$。
+\item $12$。
+\item $20$。
+\item $60$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-03}{参数约束改变与优势比不变}
+在一个教学$2\times2$表中，$A,B\in\{0,1\}$。采用零和约束时，拟合的交互参数为$u_{AB}(0,0)=0.25$。改用参照水平编码，将同一组拟合频数写成$\log m_{ab}=\gamma_0+\gamma_Aa+\gamma_Bb+\gamma_{AB}ab$。令$\mathrm{OR}=m_{00}m_{11}/(m_{01}m_{10})$。正确的是哪一项？
+\begin{choices}
+\item $\gamma_{AB}=0.25$，$\mathrm{OR}=e^{0.25}$。
+\item $\gamma_{AB}=1$，$\mathrm{OR}=e^{0.25}$。
+\item $\gamma_{AB}=1$，$\mathrm{OR}=e$。
+\item $\gamma_{AB}=0.25$，$\mathrm{OR}=e$。
+\item $\gamma_{AB}=-1$，$\mathrm{OR}=e^{-1}$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-04}{抽样零格的偏差贡献}
+某格为可能发生但本次未观察到的抽样零格，观察频数$n_i=0$，拟合频数$\widehat m_i=2.5$。采用完整的Poisson单格偏差贡献\[d_i=2\{n_i\log(n_i/\widehat m_i)-(n_i-\widehat m_i)\},\qquad 0\log0=0,\]及偏差残差$r_{Di}=\operatorname{sign}(n_i-\widehat m_i)\sqrt{d_i}$。正确结果是哪一项？
+\begin{choices}
+\item $d_i=0$，$r_{Di}=0$。
+\item $d_i=2.5$，$r_{Di}=-\sqrt{2.5}$。
+\item $d_i=5$，$r_{Di}=\sqrt5$。
+\item 因观察频数为零，该格必须从模型中删除。
+\item $d_i=5$，$r_{Di}=-\sqrt5$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-05}{Logistic交互项的对数线性对应}
+二分类结局$Y$与二分类预测变量$A,B,C$构成四维列联表，所有格均允许出现。拟合\[\operatorname{logit}\Pr(Y=1\mid A,B,C)=\beta_0+\beta_AA+\beta_BB+\beta_CC+\beta_{AB}AB.\]若对预测变量$(A,B,C)$的联合边际不加限制，对应的层次对数线性模型最大生成项是哪一项？
+\begin{choices}
+\item $[ABC][ABY][CY]$。
+\item $[AB][AC][BC][AY][BY][CY]$。
+\item $[ABC][AY][BY][CY]$。
+\item $[ABY][ACY][BCY]$。
+\item $[ABCY]$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG6-06}{同质关联与可折叠条件}
+对所有格频数均为正的$2\times2\times K$表，考虑$A,B$的优势比，$C$为分层变量。判断下列命题。\begin{enumerate}[label=\Roman*.]\item 模型$[AB][AC][BC]$不含三阶交互，因而各$C$层的$AB$条件OR相同。\item 只要各层$AB$条件OR相同，折叠$C$后所得边际OR就一定等于该条件OR。\item 若$A\perp C\mid B$，则可折叠$C$而不改变$AB$的OR。\end{enumerate}正确的组合是哪一项？
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I、III。
+\item I、II。
+\item I、II、III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG6-07}{固定边际与Poisson—二项联系}
+在按二分类预测变量$A,B$分成的四个组合内，研究者固定各组总数$n_{ab}$，记录二分类结局$Y$的两格频数。目标模型为$\operatorname{logit}p_{ab}=\beta_0+\beta_Aa+\beta_Bb$。现分别拟合Poisson对数线性模型$M_1=[AB][AY][BY]$与$M_2=[A][B][AY][BY]$。\begin{enumerate}\item 哪个模型通常用于与上述二项Logistic分析对应？说明对固定边际所作的处理。\item 用似然分解解释其依据。\item 若$M_2$仍给出某次与Logistic相近的系数，能否据此认定两者在一般情形下等价？\end{enumerate}
+
+\Question{SUPG6-08}{整体失拟与局部残差}
+以下为教学构造的$2\times2\times2$频数表，各格均可发生。拟合条件独立模型$[AC][BC]$。\begin{center}\small\begin{tabular}{@{}ccrr@{}}\toprule $C$ & $A$ & $B=0$ & $B=1$\\\midrule 0&0&12&8\\0&1&18&12\\1&0&15&5\\1&1&5&15\\\bottomrule\end{tabular}\end{center}\begin{enumerate}\item 求各格拟合频数，计算Pearson统计量$X^2$、似然比统计量$G^2$与自由度。可用$\Pr(\chi^2_2\ge10.465)=0.00534$。\item 计算$C=1,A=0,B=0$格的Pearson残差$r_P$。该格杠杆值为$h=0.75$，再求调整残差$r_P/\sqrt{1-h}$。\item 有人说“所有普通Pearson残差的绝对值都小于2，因此模型拟合良好”，该说法是否成立？\end{enumerate}
+
+\Question{SUPG6-09}{官方内置教学列联表的输出阅读}
+R内置$\mathrm{HairEyeColor}$表为$4\times4\times2$，总频数592。发色$H$与眼色$E$的二维表源于学生调查；性别$S$分层由后续作者为教学补入并调整，因此这里的32格作为教学表使用。用完整表重新拟合Poisson对数线性模型，得到\begin{center}\small\begin{tabular}{@{}lrr@{}}\toprule 模型 & 剩余自由度 & $G^2$\\\midrule $M_0=[HE][S]$ & 15 & 19.8566\\$M_1=[HE][HS][ES]$ & 9 & 6.7613\\\bottomrule\end{tabular}\end{center}$M_0$中“金发、蓝眼、男性”格的观察频数为30，拟合频数为44.3007，杠杆值$h=0.555235$。已知$M_0$整体拟合检验$P=0.1775$；$\Pr(\chi^2_6\ge13.0953)=0.04155$。\begin{enumerate}\item 写出$M_0$的独立性含义，比较两模型并说明差异自由度的来源。\item 为什么$M_0$整体检验未拒绝，而$M_0$对$M_1$的比较可在0.05水平拒绝？\item 计算指定格的调整Pearson残差，并说明从该格能得出什么结论。\end{enumerate}
+
+\Question{SUPG6-10}{录取数据中的折叠与同质性}
+以下为R内置$\mathrm{UCBAdmissions}$记录的1973年加州大学伯克利分校六个大院系录取资料，共4526名申请者。$A$表示录取，$G$表示性别，$D$表示院系。\begin{center}\small\begin{tabular}{@{}lrrrr@{}}\toprule 院系 & 男录取 & 男未录取 & 女录取 & 女未录取\\\midrule A&512&313&89&19\\B&353&207&17&8\\C&120&205&202&391\\D&138&279&131&244\\E&53&138&94&299\\F&22&351&24&317\\\bottomrule\end{tabular}\end{center}完整表重新拟合结果为：条件独立模型$[AD][GD]$的$G^2=21.7355$、剩余自由度6；同质关联模型$[AG][AD][GD]$的$G^2=20.2043$、剩余自由度5。两模型比较$P=0.2159$，而同质关联模型对饱和模型的拟合检验$P=0.00114$。某报告称：“控制院系后性别项不显著，说明各院系均不存在性别关联；粗OR可直接反映性别的因果影响。”\begin{enumerate}\item 计算男性相对女性录取的粗OR，以及A院系与C院系的条件OR。\item 结合两个检验，评议报告关于同质性及无关联的说法。\item 说明这张观察性列联表支持怎样的结论，因果解释还缺少哪些信息。\end{enumerate}

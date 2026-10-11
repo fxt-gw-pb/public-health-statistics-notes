@@ -19,15 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'public' / 'data'
 LOCAL = ROOT / '.local'
 COURSES = [
-    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=195,
+    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=234,
          description='从矩阵与最小二乘出发，理解回归模型的构建、诊断与解释。',
-         topics=['矩阵基础', '多重线性回归', '一般线性模型', '重复测量'], exercises={2: 1, 3: 2, 4: 3, 5: 4}),
-    dict(id='multivariate', title='应用多元分析', english='Applied Multivariate Analysis', pages=147,
+         topics=['矩阵基础', '多重线性回归', '一般线性模型', '重复测量'], exercises={2: 1, 3: 2, 4: 3, 5: 4},
+         supplements={1: 'supplement/ch1.tex'}),
+    dict(id='multivariate', title='应用多元分析', english='Applied Multivariate Analysis', pages=180,
          description='在多个变量中提炼结构，学习降维、聚类与判别的统计思路。',
          topics=['主成分分析', '因子分析', '聚类分析', '判别分析'], exercises={1: 1, 2: 2, 3: 3, 4: 4}),
-    dict(id='glm', title='广义线性模型', english='Generalized Linear Models', pages=226,
+    dict(id='glm', title='广义线性模型', english='Generalized Linear Models', pages=295,
          description='将回归扩展到二分类、计数与生存资料，建立模型选择的全局视野。',
-         topics=['Logistic 回归', '生存分析', '对数线性模型', '计数回归'], exercises={1: 1, 3: 2, 5: 3, 7: 4}),
+         topics=['Logistic 回归', '生存分析', '对数线性模型', '计数回归'], exercises={1: 1, 3: 2, 5: 3, 7: 4},
+         supplements={8: 'supplement/ex8.tex'}),
 ]
 
 
@@ -183,7 +185,15 @@ class Converter:
         # Verbatim comes first: R modulo operators and percent signs are not TeX comments.
         pattern = re.compile(r'\\begin\{(rcode|routput|coursecode|code|verbatim)\}(?:\[([^\]]*)\]|\{([^}]*)\})?(.*?)\\end\{\1\}', re.S)
         text = pattern.sub(lambda m: self.code(m[1], m[3] or m[2] or '', m[4]), text)
+        # URLs may contain percent-encoding, which is not a TeX comment.
+        text = macro(text, 'url', 1, lambda url: ' ' + self.token(f'<a class="uri" href="{escape(url)}" target="_blank" rel="noopener noreferrer">{escape(url)}</a>').strip() + ' ')
         text = strip_comments(text)
+        # Supplement answers end with a muted source line; source entries are line-separated.
+        text = re.sub(r'\{\\footnotesize\\color\{Muted\}\\noindent\s*(.*?)\\par\}',
+                      lambda m: '\n\n\\begin{studysource}\n' + m[1] + '\n\\end{studysource}\n\n', text, flags=re.S)
+        if self.stem == 'sources':
+            text = text.replace(r'{\sffamily\bfseries\color{black}', r'\textbf{')
+            text = re.sub(r'\\par(?![A-Za-z])', '\n\n', text)
         text = re.sub(r'\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}', self.figure, text, flags=re.S)
         def image(opt, name):
             filename = Path(name).name
@@ -235,6 +245,8 @@ class Converter:
         references = json.loads((ROOT / 'notes' / self.course / 'references.json').read_text())
         output = re.sub(r'(<a\b[^>]*data-reference="([^"]+)"[^>]*>).*?</a>',
                         lambda m: m[1] + escape(references.get(unescape(m[2]), '引用')) + '</a>', output, flags=re.S)
+        # Source-list labels sit in one paragraph; give each its own visible anchor target.
+        output = re.sub(r'<span id="(src:[^"]+)" data-label="[^"]*"></span>', r'<span class="source-anchor" id="\1"></span>', output)
         for token, markup in self.tokens.items():
             output = output.replace('<p>' + token + '</p>', markup).replace(token, markup)
         def equation_anchor(m):
@@ -245,30 +257,37 @@ class Converter:
         return output
 
 
-def build_chapter(course, path, number=None):
-    stem = path.stem
+def document_kind(stem):
+    if stem.startswith(('ex', 'sup')):
+        return 'exercises'
+    return {'appendix': 'appendix', 'sources': 'sources'}.get(stem, 'lecture')
+
+
+def build_chapter(course, path, number=None, stem=None):
+    stem = stem or path.stem
+    kind = document_kind(stem)
     identifier = course['id'] + '-' + stem
     original = path.read_text(encoding='utf-8')
     titlematch = re.search(r'\\(?:chapter\*?|ExerciseChapter)\{([^}]+)\}', original)
     title = clean_text(titlematch[1])
     converter = Converter(course['id'], stem)
     text = converter.preprocess(original)
-    if stem.startswith('lec'):
+    if kind == 'lecture':
         text = number_headings(text, number)
     text = macro(text, 'ExerciseChapter', 1, lambda _: '')
     text = macro(text, 'chapter', 1, lambda _: '')
     questions = []
-    if stem.startswith('ex'):
+    if kind == 'exercises':
         answer_markers = list(re.finditer(r'\\Answer\{([^}]+)\}\{([^}]+)\}', text))
         answers = {}
         for index, marker in enumerate(answer_markers):
             end = answer_markers[index + 1].start() if index + 1 < len(answer_markers) else len(text)
             segment = text[marker.end():end]
-            segment = re.sub(r'\\(?:sub)?section\*?\{(?:补充练习解析|习题解析)\}', '', segment)
+            segment = re.sub(r'\\(?:sub)?section\*?\{(?:补充练习解析|本次补充习题解析|习题解析|参考答案与解析)\}', '', segment)
             answers[marker[1]] = segment
         first_answer = answer_markers[0].start() if answer_markers else len(text)
         question_text = text[:first_answer]
-        question_text = re.split(r'\\section\{习题解析\}', question_text)[0]
+        question_text = re.split(r'\\section\{(?:习题解析|参考答案与解析)\}', question_text)[0]
         question_markers = list(re.finditer(r'\\Question\{([^}]+)\}\{([^}]+)\}', question_text))
         # Keep shared tables, subheadings and preambles in their original order.
         replacements = []
@@ -319,16 +338,16 @@ def build_chapter(course, path, number=None):
     outline = Outline(); outline.feed(html)
     searchable = clean_text(' '.join(outline.text))
     record = dict(id=identifier, course=course['id'], slug=stem, title=title, number=number,
-                  kind='exercises' if stem.startswith('ex') else 'appendix' if stem == 'appendix' else 'lecture',
+                  kind=kind, supplement=path.parent.name == 'supplement',
                   html=html, toc=outline.toc, questions=questions, text=searchable,
                   codeCount=converter.code_count, figureCount=len(converter.figures),
-                  source=f'notes/{course["id"]}/content/{path.name}', sha256=hashlib.sha256(original.encode()).hexdigest())
+                  source=str(path.relative_to(ROOT)), sha256=hashlib.sha256(original.encode()).hexdigest())
     return record, converter.figures, converter.warnings
 
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True); LOCAL.mkdir(exist_ok=True)
-    manifest = dict(title='公卫统计 · 学习笔记', updated='2026-10-08', sourceUpdated='2026-10-06', courses=[], chapters=[])
+    manifest = dict(title='公卫统计 · 学习笔记', updated='2026-10-11', sourceUpdated='2026-10-11', courses=[], chapters=[])
     figure_manifest = {}; search = []; all_warnings = []; coverage = {}
     for idx, course in enumerate(COURSES):
         course = dict(course)
@@ -336,19 +355,24 @@ def main():
         entries = []
         lecture_paths = sorted((folder / 'content').glob('lec*.tex'), key=lambda p: int(p.stem[3:]))
         for number, path in enumerate(lecture_paths, 1):
-            entries.append((path, number))
+            entries.append((path, number, None))
             if number in course['exercises']:
-                entries.append((folder / 'content' / f'ex{course["exercises"][number]}.tex', number))
+                entries.append((folder / 'content' / f'ex{course["exercises"][number]}.tex', number, None))
+            if number in course.get('supplements', {}):
+                entries.append((folder / 'content' / course['supplements'][number], number, f'sup{number}'))
         if (folder / 'content' / 'appendix.tex').exists():
-            entries.append((folder / 'content' / 'appendix.tex', None))
+            entries.append((folder / 'content' / 'appendix.tex', None, None))
+        if (folder / 'content' / 'supplement' / 'sources.tex').exists():
+            entries.append((folder / 'content' / 'supplement' / 'sources.tex', None, 'sources'))
         figure_manifest[course['id']] = []
         counts = collections.Counter()
         course['no'] = f'{idx+1:02d}'
         course['chapters'] = len(lecture_paths)
         course['documents'] = []
         course['pdf'] = f'./pdfs/{course["id"]}.pdf'
-        for path, number in entries:
-            record, figures, warnings = build_chapter(course, path, number)
+        course.pop('supplements', None)
+        for path, number, stem in entries:
+            record, figures, warnings = build_chapter(course, path, number, stem)
             (DATA / (record['id'] + '.json')).write_text(json.dumps(record, ensure_ascii=False), encoding='utf-8')
             figure_manifest[course['id']].extend(figures)
             all_warnings.extend([record['id'] + ': ' + w for w in warnings])
@@ -358,14 +382,16 @@ def main():
             manifest['chapters'].append(metadata); course['documents'].append(record['id'])
             search.append(dict(id=record['id'], course=record['course'], title=record['title'], kind=record['kind'], text=record['text'], toc=record['toc']))
             counts['questions'] += len(record['questions']); counts['figures'] += len(figures); counts['codeBlocks'] += record['codeCount']
-            coverage[record['id']] = dict(sourceQuestions=len(re.findall(r'\\Question\{', path.read_text())), webQuestions=len(record['questions']), sourceChars=len(path.read_text()), webChars=len(record['text']))
+            source = expand_inputs(path.read_text(), course['id'])
+            coverage[record['id']] = dict(sourceQuestions=len(re.findall(r'\\Question\{', source)), webQuestions=len(record['questions']), sourceChars=len(source), webChars=len(record['text']))
             print(record['id'], record['title'], len(record['html']), 'chars', len(record['questions']), 'questions', flush=True)
         assetdir = ROOT / 'public' / 'figures' / course['id']; assetdir.mkdir(parents=True, exist_ok=True)
         for asset in (folder / 'assets').glob('*.png'):
             shutil.copy2(asset, assetdir / asset.name)
         course['questionCount'] = counts['questions']; manifest['courses'].append(course)
-    manifest['stats'] = dict(lectures=sum(c['chapters'] for c in manifest['courses']), exercises=12,
-                             questions=sum(c['questionCount'] for c in manifest['courses']), pages=568,
+    manifest['stats'] = dict(lectures=sum(c['chapters'] for c in manifest['courses']),
+                             exercises=sum(c['kind'] == 'exercises' for c in manifest['chapters']),
+                             questions=sum(c['questionCount'] for c in manifest['courses']), pages=sum(c['pages'] for c in manifest['courses']),
                              figures=sum(len(v) for v in figure_manifest.values()))
     (DATA / 'index.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf-8')
     (DATA / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')

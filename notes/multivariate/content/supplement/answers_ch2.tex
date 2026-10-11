@@ -1,0 +1,40 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPM2-01}{单因子模型对相关的约束}
+\textbf{答案：C。} 由$r_{ij}=a_i a_j$，有$a_1^2=r_{12}r_{13}/r_{23}=0.64$。统一取$a_1>0$，可得$(a_1,a_2,a_3,a_4)=(0.8,0.6,0.5,0.4)$，故$r_{34}=0.5\times0.4=0.20$；也可直接用$r_{34}=r_{13}r_{24}/r_{12}$。四个特殊方差分别为0.36、0.64、0.75、0.84，均合法。变量数增加后，各非对角相关不能任意指定；本题使用总体相关，尚未涉及样本相关偏离约束时的显著性检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}。\par}
+
+\Answer{SUPM2-02}{斜交模式负荷能否超过1}
+\textbf{答案：E。} 斜交时须计算$h_1^2=P_1\Phi P_1^T=1.10^2+(-0.40)^2+2(1.10)(-0.40)(0.60)=0.842$，故$\psi_1=1-0.842=0.158>0$。结构负荷为$P_1\Phi=(0.86,0.26)$，才是$Z_1$与两个单位方差因子的相关系数。模式负荷是回归式中的系数，其绝对值可超过1；不能把相关系数的取值限制直接套在模式负荷上。判断异常方差应核对$P\Phi P^T$与特殊方差，而不是只看单个模式系数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}。\par}
+
+\Answer{SUPM2-03}{样本量在相关矩阵分析中的作用}
+\textbf{答案：A。} 给定相关阵、因子数和相同优化设置，样本量不改变最大似然目标的最优位置。模型自由度只由变量数与因子数决定，$df=[(8-2)^2-8-2]/2=13$。样本量进入近似卡方拟合统计量的系数；未给样本量时不能从单独的$R$计算这一检验的数值。相关矩阵与样本量仍不包含个体观测，不能因此生成个人得分。这里$R$指矩阵；若传入本身含\texttt{n.obs}的协方差列表，软件可从列表读取样本量。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-FACTANAL]{[10]}、\hyperref[src:R-FA-SOURCE]{[11]}。\par}
+
+\Answer{SUPM2-04}{空白负荷的阅读}
+\textbf{答案：D。} 显示阈值只控制打印，不改变模型估计。例如真实负荷若为$(0.70,0.08)$，第二项会被隐藏，但正交共同度为$0.70^2+0.08^2=0.4964$，不是0.49。斜交模型还须同时使用因子相关阵。打印中的空白既不是检验结果，也不是将该参数固定为0的约束；精确复算应读取全部负荷。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-LOADINGS]{[12]}。\par}
+
+\Answer{SUPM2-05}{不同软件的因子方向}
+\textbf{答案：B。} 令$D=\operatorname{diag}(-1,1)$，则一致的得分变换为$\widehat f_B=D\widehat f_A$，因此第一列得分也整体变号，得到$-1.2$、$-0.4$。共同度、拟合相关及列平方和均不因此改变。数值排序倒置伴随因子轴的正负含义倒置；比较两份报告时应先统一因子次序、符号及命名，再判断谁在同一实质方向上较高。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-LOADINGS]{[12]}。\par}
+
+\Answer{SUPM2-06}{因子与估计得分的区别}
+\textbf{答案：C。} I正确：不相关是二阶矩条件，独立需更强条件；联合正态时可由零协方差推出独立。II错误，因为\[\operatorname{Cov}(\widehat F)=L^T\Sigma^{-1}\Sigma\Sigma^{-1}L=L^T\Sigma^{-1}L,\]通常不是$I$，其非对角元也未必为0。真因子正交，不保证估计得分具有单位方差或相互不相关。III正确：得分有预测误差，使用时应明确其评分规则和不确定性。第\ref{q:SUPM2-09}题给出单因子收缩的数值例子。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-FACTANAL]{[10]}。\par}
+
+\Answer{SUPM2-07}{相关矩阵能支持怎样的复现}
+(1) 可检查共同度、特殊方差、还原相关$LL^T+\Psi$及残差，并按指定公式复算评分系数。若采用最大似然估计且检验条件适用，还可核对相应拟合检验。相关矩阵只汇总变量间关系，观测行互换后$R$也不变，不能恢复谁对应哪组观测，更不能从中生成每个人的标准化向量$z_i$。\par (2) 需新受试者各指标的原始值，以及评分参考样本的均值、标准差；还需固定变量顺序、因子次序和方向。Bartlett法需$L,\Psi$；Thomson法还应说明使用样本$R$还是模型$\widehat\Sigma=LL^T+\Psi$作为逆矩阵，两种约定在不完全拟合时可能给不同得分。\par (3) 分批标准化会把各批的中心分别设为0，可能消去本来要比较的均值差。应在测量内容与模型可比较的前提下，用共同参考尺度和固定评分规则计算新数据；不能以分别归零后的结果判定两批潜在水平相同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-FACTANAL]{[10]}、\hyperref[src:R-FA-SOURCE]{[11]}。\par}
+
+\Answer{SUPM2-08}{八项体格指标的因子模型}
+(1) $df=[(8-2)^2-8-2]/2=13$。零假设为总体相关结构可由该两因子模型表示。$75.73754>22.3620$，故在0.05水平拒绝该零假设；复算右尾$P\approx6.94\times10^{-11}$。\par (2) 胸宽共同度约$1-0.5367=0.4633$，即该模型解释其约46.33\%的标准化方差。身高与小腿长的还原相关为\[\widehat r_{14}=0.8649\times0.8587+0.2867\times0.2516\approx0.8148,\]故残差$r_{14}-\widehat r_{14}\approx0.859-0.8148=0.0442$。直接使用未舍入负荷得到0.814771和0.044229。\par (3) 累计解释比例为$(3.334811+2.616864)/8\approx74.396\%$。这一比例及最大残差可描述模型的近似程度，但70\%、0.05在这里均不是总体拟合检验的接受域。总体检验综合相关结构并受样本量影响；多项不大的偏差仍可能使精确两因子模型被拒绝。可讨论它是否具有实用的简化价值，同时如实报告检验与局部拟合，不能把经验阈值写成已通过检验。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-HARMAN23]{[8]}、\hyperref[src:R-HARMAN23-DATA]{[9]}、\hyperref[src:R-FA-SOURCE]{[11]}、\hyperref[src:R-ROTATION]{[13]}。\par}
+
+\Answer{SUPM2-09}{Bartlett与Thomson得分的收缩}
+(1) $c=3\times0.6^2/0.64=27/16$。Bartlett的三个得分系数均为$5/9$，Thomson的三个系数均为$15/43$，故\[\widehat F_B=\frac53\approx1.6667,\qquad \widehat F_T=\frac{45}{43}\approx1.0465.\]二者满足$\widehat F_T=\{c/(1+c)\}\widehat F_B=(27/43)\widehat F_B$，后者向均值0收缩。\par (2) 因$E(z\mid F)=LF$，$E(\widehat F_B\mid F)=F$，而$E(\widehat F_T\mid F)=(27/43)F$。当$F=2$时，两者条件期望分别为2、$54/43\approx1.2558$；Bartlett条件无偏，Thomson具有相对于固定$F$的收缩偏差。\par (3) $\operatorname{MSE}_B=16/27\approx0.5926$，$\operatorname{MSE}_T=16/43\approx0.3721$。在本模型按因子分布平均的预测均方误差准则下，Thomson更小，因此不能只凭条件无偏宣布Bartlett在所有准则下更优。二者都是未知因子的估计；条件偏差与总体平均偏差也不能混用，本例两种得分的总体均值均为0。\par 总体MSE更小不表示对每个固定$F$的误差都更小。例如$F=2$时，Thomson的条件MSE为$(c+2^2)/(1+c)^2=1456/1849\approx0.7875$，反而超过Bartlett的0.5926。评价应先明确是按因子总体平均预测，还是关注某个固定因子水平；不能把一个总体平均结论直接写成每位受试者都更准确。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-FACTANAL]{[10]}。\par}
+
+\Answer{SUPM2-10}{边界估计与研究解释}
+(1) 0.005恰等于优化下界，是需要检查的边界估计，不足以证明真实特殊方差几乎为0。应检查数据相关结构、因子数、优化起始值及边界设置下的稳定性。特殊部分还可包含变量特有成分，不能简单等同于测量误差；其估计较小也不直接证明指标无误差。\par (2) 7--17岁的生长差异可能影响合并后的变量相关。应查看指标与年龄的关系，在资料允许时分年龄段或考虑年龄影响后比较负荷结构；因子命名仍须依据完整负荷及专业含义。当前合并相关结构不能直接证明各年龄层结构一致，更不能把统计因子直接宣布为生物学机制。\par (3) 因子得分包含预测误差，评分规则本身也由数据估计。若研究目标是潜在因子与结局的关系，将得分当真值可能改变系数及其不确定性；通常回归标准误不自动覆盖前面的提取和评分过程。应明确回归针对的是估计得分还是潜在因子，报告评分方法，并考察不同合理评分或提取方案下结论是否稳定；因子分析本身不提供结局的因果效应证据。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-M2]{[7]}、\hyperref[src:R-HARMAN23]{[8]}、\hyperref[src:R-HARMAN23-DATA]{[9]}、\hyperref[src:R-FACTANAL]{[10]}、\hyperref[src:R-FA-SOURCE]{[11]}。\par}

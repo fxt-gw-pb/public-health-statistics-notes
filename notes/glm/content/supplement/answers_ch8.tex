@@ -1,0 +1,89 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG8-01}{OR改变一定说明混杂吗}
+\textbf{答案：C。} 两个$Z$层内OR均为2：第一层优势比为$(1/2)/(1/4)=2$，第二层为$3/(3/2)=2$。
+按相同权重求边际概率得到$p_0=2/5,p_1=13/24$，边际OR为$(13/11)/(2/3)=39/22\approx1.7727$。
+因此，混杂不存在时仍可因OR的不可折叠性而出现条件/边际差别。
+不能单以调整前后系数变化识别混杂；还需明确目标效应、设计和变量关系。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G8-NONCOLL]{[52]}。\par}
+
+\Answer{SUPG8-02}{过离散与重复观察是两个问题}
+\textbf{答案：D。} 边际方差增大与同一个体内的协方差是不同结构。可按受试者指定簇，使用具有log均值、log人时offset的GEE及适当的簇稳健推断等方法。
+题设给出400个独立簇，有利于常见大样本簇方差近似；仍需检查均值结构和数据质量。
+把NB分布换进普通独立似然，不会自动把1600行变为1600个独立人。若目标改为个体条件效应，可讨论随机效应模型，但目标解释也需相应改变。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G8-GEE]{[53]}。\par}
+
+\Answer{SUPG8-03}{相同AUC不等于相同概率预测}
+\textbf{答案：B。} 在$(0,1)$上平方严格递增，所有病例与非病例之间的排序及并列关系保持不变，故经验ROC曲线和AUC相同。
+但$0.60^2=0.36$，该人的0.5阈值分类会改变，概率校准和Brier分数也不受排序不变所保证。
+所附8条教学记录中，变换前后AUC均为0.8125，而Brier分数从0.175变为0.20885；这只是反例，不是对任意数据单调变换后Brier方向的断言。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G8-ROC]{[54]}。\par}
+
+\Answer{SUPG8-04}{合并二项数据后的似然常数}
+\textbf{答案：A。} 合并后的二项似然比个体Bernoulli似然多$\prod_g\binom{n_g}{s_g}$，其对数与参数无关。
+因此得分、信息、回归系数与通常模型协方差相同，但最大对数似然的绝对值相差组合数常数。
+两种响应表示的饱和模型也不同，偏差及其自由度不能直接互当同一统计量；AIC比较也要保证相同的响应表示和常数约定。
+若合并了不同设计行或漏掉试验次数权重，就不再有上述等价性。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G8-AIC]{[55]}。\par}
+
+\Answer{SUPG8-05}{相同LR值与不同参照分布}
+\textbf{答案：E。} 甲的$P=0.0833$，不拒绝斜率为0。乙统计量为正，零点质量不贡献尾概率，故
+$P=0.5\times0.0833=0.04165$，拒绝$\alpha=0$。
+差别来自参数空间边界及相应的极限分布，不是模型名称决定P值大小。
+该半卡方结论限定于本题的单个常数NB离散参数检验，不能无条件扩展到所有边界问题。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G8-NB-LR]{[56]}。\par}
+
+\Answer{SUPG8-06}{课程中的模型与GLM边界}
+\textbf{答案：D。} I正确：offset是线性预测子中系数固定为1的已知部分，不破坏GLM结构。
+II错误：Cox通常按风险集构造偏似然，保留未指定的基线风险；出现指数线性预测子并不能指定独立响应分布或完整似然。
+某些条件下可建立分段Poisson表示，但需要额外的数据和模型构造。
+III正确：已知形状参数时负二项为单参数指数族；MASS的\rinline{negative.binomial(theta=...)}给出固定参数的族，
+\rinline{glm.nb}则还估计形状参数，不能把两种设置混为一谈。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G5-COXPH]{[26]}、\hyperref[src:G8-NB-FAMILY]{[57]}。\par}
+
+\Answer{SUPG8-07}{分析前先写清观察单位与目标参数}
+\textbf{（1）匹配资料。} 可用条件Logistic：保留病例/对照状态、匹配组及组内暴露；条件于各组病例数构造条件似然，消去组特异截距。
+$e^\beta$是控制匹配组和其他入模项后的条件OR；须有组内暴露对比及合适的抽样/独立匹配组条件，不能从病例对照抽样比例直接恢复总体绝对风险。
+\par\textbf{（2）计数与人时。} 可用$Y_j\sim\operatorname{Poisson}(\mu_j)$、$\log\mu_j=\log T_j+X_j^T\beta$，其中$T_j$为总人时，log人时作为offset。
+$e^\beta$是给定其他变量后的率比；检查均值结构、地区独立性和条件离散程度。NB或准Poisson需说明方差/估计方式的改变。
+地区层面结果也不能直接当作个体层面因果效应。
+\par\textbf{（3）生存资料。} 可用Cox PH模型，响应为事件/删失时间及状态，按风险集的偏似然估计系数。
+$e^\beta$是给定协变量后的HR；需要适当的条件独立删失和比例风险等前提。
+三者的观察对象与条件化方式不同，不能仅因都能指数化系数就把OR、IRR、HR互换。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G1-GLM]{[2]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG8-08}{四个模型中哪些比较有效}
+\textbf{（1）AIC。} 用$-2\ell+2k$得A为290.0、B为285.6、C为286.2、D为242.0。
+A、B、C具有相同观察和响应似然表示，可以比较；D用了不同的人群子集，不能凭最小的242.0直接获选。
+\par\textbf{（2）A对B。} $H_0:\beta_{XZ}=0$，$\mathrm{LR}=2(-138.8+142)=6.4$，参数差1，$P=0.0114$。
+在0.05水准拒绝$H_0$，支持在这一设定下保留交互项；这不是证明整体拟合完全正确。
+\par\textbf{（3）B对C。} logit与probit模型一般非嵌套，不能套用‘参数个数差’的普通卡方LR。
+二者AIC差仅$286.2-285.6=0.6$，B在所列准则上略小，但差别很小，也不提供模型为真的证明；还需结合诊断、预测和专业解释。
+\par\textbf{（4）新增标志物。} 至少先固定同一批210名完整记录，在其中重新拟合B和D，再做有条件的嵌套比较。
+不能拿旧B的240人似然与D相减。完整记录分析还需考虑缺失机制及代表性；统一样本保证比较对象一致，并不自动消除缺失造成的选择偏倚。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G8-AIC]{[55]}、\hyperref[src:G2-ANOVA]{[10]}。\par}
+
+\Answer{SUPG8-09}{同一队列表中的OR、RR、IRR与HR}
+\textbf{（1）固定时点。} 风险为$p_0=0.20,p_1=0.36$，故$\mathrm{RR}=0.36/0.20=1.8$；
+$\mathrm{OR}=(36\times80)/(64\times20)=2.25$。
+\par\textbf{（2）人时率。} 非暴露组为$100(20/420)=4.7619$次/100人年，暴露组为$100(36/392)=9.1837$次/100人年，
+$\mathrm{IRR}=(36/392)/(20/420)=1.9286$。风险以基线人数为分母，发病密度以在险人时为分母，二者不是同一参数。
+\par\textbf{（3）信息不足。} 通常Cox偏似然需要各事件时间及当时风险集。相同的事件数和总人时可由不同事件次序产生；
+表中没有每人的事件/删失时间、并列结构及必要的协变量记录，不能据此恢复通常的Cox HR。
+\par\textbf{（4）额外PH设定。} $S_1(t)=S_0(t)^{\rm HR}$，所以$S_1(5)=0.8^2=0.64$，
+暴露组风险为0.36，$\mathrm{RR}(5)=0.36/0.20=1.8$。HR为2比较的是瞬时风险，固定5年风险并未加倍；
+一般关系为$[1-S_0(t)^{\rm HR}]/[1-S_0(t)]$，还依赖基线生存率。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G5-COXPH]{[26]}、\hyperref[src:G1-GLM]{[2]}。\par}
+
+\Answer{SUPG8-10}{三种显著结果是否构成相同结论}
+\textbf{（1）不同指标。} 给定入模协变量，A的指数系数为所编码二分类终点的OR，B为按人时标准化的计数率比，C为首次住院HR。
+用$\exp\{\log2\pm1.96\,\mathrm{SE}\}$得到A约$(1.644,2.433)$、B约$(1.581,2.530)$、C约$(1.491,2.684)$。
+各区间均不含1，但不是同一种风险的三个重复估计。A混合了不同长度的观察窗口，不能直接命名为统一的3年OR；
+在3年前结束观察且未住院者也不能据此一概确认为‘3年无住院’。
+\par\textbf{（2）需要检查。} B至少检查均值与人时的比例结构、条件过离散、受试者间独立性，以及观察结束是否与发作过程有关；
+累计多次住院也须考虑重复事件机制，不能只凭offset保证Poisson分布。C至少检查条件独立删失、PH、连续变量形式及记录正确性；
+分析首次住院与分析所有住院次数回答不同问题。
+\par\textbf{（3）重写结论与分析。} 相同指数系数和显著性不能证明因果效应，观察性研究仍需依据设计和先验知识处理混杂、选择及测量问题。
+若目标是固定3年首次住院风险，应采用能处理删失的分析，报告该时点标准化风险、差或比及不确定性，并说明识别前提。
+若目标是反复住院负担，则以计数/重复事件和人时为中心重新确定模型。
+A、B、C的响应及似然对象不同，C又通常用偏似然，不能把三者原始AIC混排后宣称选出了同一终点的最佳模型。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G8-NOTES]{[51]}、\hyperref[src:G5-COXPH]{[26]}、\hyperref[src:G8-AIC]{[55]}、\hyperref[src:G1-GLM]{[2]}。\par}

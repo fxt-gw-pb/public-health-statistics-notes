@@ -5,6 +5,12 @@
     "sourceChars": 12698,
     "webChars": 7622
   },
+  "linear-sup1": {
+    "sourceQuestions": 10,
+    "webQuestions": 10,
+    "sourceChars": 8858,
+    "webChars": 3883
+  },
   "linear-lec2": {
     "sourceQuestions": 0,
     "webQuestions": 0,
@@ -12,10 +18,10 @@
     "webChars": 15161
   },
   "linear-ex1": {
-    "sourceQuestions": 28,
-    "webQuestions": 28,
-    "sourceChars": 16090,
-    "webChars": 7317
+    "sourceQuestions": 38,
+    "webQuestions": 38,
+    "sourceChars": 25417,
+    "webChars": 14735
   },
   "linear-lec3": {
     "sourceQuestions": 0,
@@ -24,10 +30,10 @@
     "webChars": 3533
   },
   "linear-ex2": {
-    "sourceQuestions": 50,
-    "webQuestions": 50,
-    "sourceChars": 33557,
-    "webChars": 8116
+    "sourceQuestions": 60,
+    "webQuestions": 60,
+    "sourceChars": 43201,
+    "webChars": 12555
   },
   "linear-lec4": {
     "sourceQuestions": 0,
@@ -36,10 +42,10 @@
     "webChars": 7728
   },
   "linear-ex3": {
-    "sourceQuestions": 51,
-    "webQuestions": 51,
-    "sourceChars": 29856,
-    "webChars": 4714
+    "sourceQuestions": 61,
+    "webQuestions": 61,
+    "sourceChars": 40883,
+    "webChars": 12506
   },
   "linear-lec5": {
     "sourceQuestions": 0,
@@ -48,16 +54,22 @@
     "webChars": 9807
   },
   "linear-ex4": {
-    "sourceQuestions": 31,
-    "webQuestions": 31,
-    "sourceChars": 20520,
-    "webChars": 9277
+    "sourceQuestions": 41,
+    "webQuestions": 41,
+    "sourceChars": 29959,
+    "webChars": 14123
   },
   "linear-appendix": {
     "sourceQuestions": 0,
     "webQuestions": 0,
     "sourceChars": 3796,
     "webChars": 2231
+  },
+  "linear-sources": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 16927,
+    "webChars": 10165
   },
   "multivariate-lec1": {
     "sourceQuestions": 0,
@@ -66,10 +78,10 @@
     "webChars": 7102
   },
   "multivariate-ex1": {
-    "sourceQuestions": 21,
-    "webQuestions": 21,
-    "sourceChars": 21402,
-    "webChars": 13240
+    "sourceQuestions": 31,
+    "webQuestions": 31,
+    "sourceChars": 31431,
+    "webChars": 15470
   },
   "multivariate-lec2": {
     "sourceQuestions": 0,
@@ -78,10 +90,10 @@
     "webChars": 3246
   },
   "multivariate-ex2": {
-    "sourceQuestions": 27,
-    "webQuestions": 27,
-    "sourceChars": 26608,
-    "webChars": 16304
+    "sourceQuestions": 37,
+    "webQuestions": 37,
+    "sourceChars": 36869,
+    "webChars": 23120
   },
   "multivariate-lec3": {
     "sourceQuestions": 0,
@@ -90,10 +102,10 @@
     "webChars": 11379
   },
   "multivariate-ex3": {
-    "sourceQuestions": 17,
-    "webQuestions": 17,
-    "sourceChars": 13834,
-    "webChars": 8476
+    "sourceQuestions": 27,
+    "webQuestions": 27,
+    "sourceChars": 34477,
+    "webChars": 16566
   },
   "multivariate-lec4": {
     "sourceQuestions": 0,
@@ -102,10 +114,16 @@
     "webChars": 7519
   },
   "multivariate-ex4": {
-    "sourceQuestions": 30,
-    "webQuestions": 30,
-    "sourceChars": 21274,
-    "webChars": 13591
+    "sourceQuestions": 40,
+    "webQuestions": 40,
+    "sourceChars": 31609,
+    "webChars": 21264
+  },
+  "multivariate-sources": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 16678,
+    "webChars": 10105
   },
   "glm-lec1": {
     "sourceQuestions": 0,
@@ -114,10 +132,10 @@
     "webChars": 17346
   },
   "glm-ex1": {
-    "sourceQuestions": 19,
-    "webQuestions": 19,
-    "sourceChars": 12872,
-    "webChars": 5053
+    "sourceQuestions": 29,
+    "webQuestions": 29,
+    "sourceChars": 23899,
+    "webChars": 7613
   },
   "glm-lec2": {
     "sourceQuestions": 0,
@@ -132,10 +150,10 @@
     "webChars": 9038
   },
   "glm-ex2": {
-    "sourceQuestions": 20,
-    "webQuestions": 20,
-    "sourceChars": 18765,
-    "webChars": 7717
+    "sourceQuestions": 40,
+    "webQuestions": 40,
+    "sourceChars": 39480,
+    "webChars": 13654
   },
   "glm-lec4": {
     "sourceQuestions": 0,
@@ -150,10 +168,10 @@
     "webChars": 13726
   },
   "glm-ex3": {
-    "sourceQuestions": 30,
-    "webQuestions": 30,
-    "sourceChars": 20228,
-    "webChars": 9489
+    "sourceQuestions": 50,
+    "webQuestions": 50,
+    "sourceChars": 42429,
+    "webChars": 18406
   },
   "glm-lec6": {
     "sourceQuestions": 0,
@@ -168,10 +186,10 @@
     "webChars": 18859
   },
   "glm-ex4": {
-    "sourceQuestions": 24,
-    "webQuestions": 24,
-    "sourceChars": 20168,
-    "webChars": 8917
+    "sourceQuestions": 44,
+    "webQuestions": 44,
+    "sourceChars": 41505,
+    "webChars": 9643
   },
   "glm-lec8": {
     "sourceQuestions": 0,
@@ -179,10 +197,22 @@
     "sourceChars": 16863,
     "webChars": 14776
   },
+  "glm-sup8": {
+    "sourceQuestions": 10,
+    "webQuestions": 10,
+    "sourceChars": 10584,
+    "webChars": 7565
+  },
   "glm-appendix": {
     "sourceQuestions": 0,
     "webQuestions": 0,
     "sourceChars": 6737,
     "webChars": 3657
+  },
+  "glm-sources": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 34017,
+    "webChars": 19842
   }
 }

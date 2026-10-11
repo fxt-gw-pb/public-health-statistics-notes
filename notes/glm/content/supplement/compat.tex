@@ -1,0 +1,10 @@
+% Supplement-only compatibility with the existing GLM code theme.
+% Keep the original macros and code environments unchanged.
+\providecommand{\rinline}[1]{\texttt{\detokenize{#1}}}
+\ifcsname rcode\endcsname\else
+\lstnewenvironment{rcode}{\lstset{style=course,language=GLMR,
+  backgroundcolor=\color{CodeBackground},frame=single,
+  rulecolor=\color{CodeRule},framerule=.4pt,framesep=6pt,
+  xleftmargin=25pt,xrightmargin=7pt,aboveskip=10pt,belowskip=10pt}}
+{}
+\fi

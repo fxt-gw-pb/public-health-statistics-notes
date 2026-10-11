@@ -1,0 +1,96 @@
+% 独立题号标签SUPG；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-01}{跨方程对比的方差}
+以下为教学设定。三分类多项Logit模型以C为参照；同一自变量在A/C和B/C方程中的系数估计为$\hat b_A,\hat b_B$，标准误分别为0.30、0.40，二者协方差为0.08。改用B作参照后，A/B方程该系数的标准误为（\quad）。
+\begin{choices}
+\item $0.10$
+\item $0.25$
+\item $0.30$
+\item $0.50$
+\item $0.70$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-02}{正系数与类别概率的方向}
+以下为教学设定。三分类结局A、B、C的模型为$\log(P_A/P_C)=x$、$\log(P_B/P_C)=3x$。当$x$从0变为1时，$P_A$的变化最接近（\quad）。
+\begin{choices}
+\item 从$0.3333$降为$0.1142$。
+\item 从$0.3333$升为$0.7311$。
+\item 从$0.3333$升为$0.9061$。
+\item 保持$0.3333$不变。
+\item 不能归一化为三类概率。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-03}{有序等级反向编码}
+以下为教学设定。$Y\in\{1,2,3\}$满足$\operatorname{logit}P(Y\le j\mid x)=\alpha_j-\beta x$，其中$(\alpha_1,\alpha_2)=(-0.5,1.0)$、$\beta=0.8$。改记$Y^\ast=4-Y$，并沿用$\operatorname{logit}P(Y^\ast\le j\mid x)=\alpha_j^\ast-\beta^\ast x$，则新参数为（\quad）。
+\begin{choices}
+\item $(\alpha_1^\ast,\alpha_2^\ast)=(-0.5,1.0),\ \beta^\ast=-0.8$。
+\item $(0.5,-1.0),\ \beta^\ast=-0.8$。
+\item $(-1.0,0.5),\ \beta^\ast=0.8$。
+\item $(1.0,-0.5),\ \beta^\ast=0.8$。
+\item $(-1.0,0.5),\ \beta^\ast=-0.8$。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-04}{累积概率的合法次序}
+以下为教学设定。对一个三等级结局，同一协变量组合的两份独立二分类拟合分别给出$\widehat P(Y\le1)=0.65$、$\widehat P(Y\le2)=0.55$。若把这两数直接用作同一个有序结局模型的累积概率，下列判断正确的是（\quad）。
+\begin{choices}
+\item $P(Y=2)=0.10$，取两数之差的绝对值即可。
+\item $P(Y=3)=0.65$。
+\item 两数各自在0和1之间，故一定对应合法分布。
+\item 会得到$P(Y=2)=-0.10$，不能对应同一合法有序分布。
+\item 因为两份模型都含截距，累积概率无须递增。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-05}{多类别预测因子的联合检验}
+无序结局有4类，某预测因子有3类，以其中一类为参照设置哑变量。完整模型允许该预测因子在每个非参照结局方程中有不同系数；其余模型项不变。用似然比检验该预测因子与结局是否有关，通常的自由度为（\quad）。
+\begin{choices}
+\item $2$
+\item $6$
+\item $3$
+\item $9$
+\item $12$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-06}{比例优势的比较对象}
+某三等级比例优势模型采用$\operatorname{logit}P(Y>j\mid x)=-\alpha_j+\beta x$，并有$e^\beta=2$。其他条件不变，$x$增加1单位。有下列说法：\begin{enumerate}\renewcommand{\labelenumi}{\Roman{enumi}.}\item 对$j=1,2$，高于切点相对不高于切点的优势都乘以2。\item 对$j=1,2$，不高于切点相对高于切点的优势都乘以$1/2$。\item 相邻类别的概率比$P(Y=2)/P(Y=1)$也必定乘以2。\end{enumerate}正确的组合是（\quad）。
+\begin{choices}
+\item 仅I。
+\item 仅II。
+\item I、II。
+\item II、III。
+\item I、II、III。
+\end{choices}
+\end{minipage}\par\medskip
+
+\Needspace{12\baselineskip}\subsection{简答、计算与案例分析}
+
+\Question{SUPG3-07}{分别二分拟合能做什么}
+对三级有序结局，研究者分别拟合$Y>1$和$Y>2$的二分类Logistic模型，比较两个斜率后，又拟把两模型的最大对数似然相加，作为一个有序模型的最大对数似然，用来进行正式的平行线似然比检验。请说明分别二分拟合的合理用途、这一相加做法的问题，以及正式比较应使用怎样的似然。
+
+\Question{SUPG3-08}{住宅满意度多项模型的联合与跨方程检验}
+Copenhagen住宅调查的公开频数资料记录满意度Sat（Low、Medium、High）、管理影响程度Infl（3类）、住宅类型Type（4类）、住户接触程度Cont（Low、High）。以Sat的Low为参照，按人数Freq作权重，联合拟合\[\log(P_k/P_{\rm Low})=a_k+\boldsymbol b_k^{\mathsf T}\boldsymbol x,\qquad k\in\{\mathrm{Medium,High}\}.\]其中$\boldsymbol x$包含Infl、Type的分类哑变量及Cont=High指标，不含交互项。全部资料共1681名被调查者。完整模型的最大对数似然为$-1735.041933$，删除全部Type哑变量后的模型为$-1766.155394$；其余设定和分析集相同。Cont=High相对Low的部分输出为\begin{center}\begin{tabular}{lrr}\toprule 方程&系数&方差\\\midrule Medium/Low&0.36085188&0.01752911\\High/Low&0.48182700&0.01541001\\\bottomrule \end{tabular}\end{center}这两个系数的协方差为0.00810855。\begin{enumerate}\item 写出检验住宅类型整体关联的原假设、LR统计量和自由度。\item 调整Infl和Type，求Cont从Low变为High时，High相对Medium的概率比变化倍数及Wald近似95\%置信区间。\item 仅凭High/Low方程中的Cont系数较大，能否说其效应显著大于Medium/Low方程？\end{enumerate}可用$\chi^2_{0.05,6}=12.592$和$z_{0.975}=1.96$。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPG3-09}{住宅满意度的共同斜率模型}
+使用同一Copenhagen公开资料，按Low$<$Medium$<$High的次序拟合累积Logit：\[\operatorname{logit}P(Y\le j\mid x)=\alpha_j-\eta(x),\qquad j=1,2.\]Infl以Low、Type以Tower、Cont以Low为参照，均用分类哑变量，不含交互项。共同斜率模型部分输出为\begin{center}\begin{tabular}{lr}\toprule 参数&估计值\\\midrule Low$|$Medium阈值$\alpha_1$&$-0.49613514$\\Medium$|$High阈值$\alpha_2$&$0.69070826$\\Cont=High的共同斜率&$0.36028400$\\\bottomrule \end{tabular}\end{center}以同一有序类别联合似然拟合的结果如下。非平行模型让每个切点有其自己的全部6个斜率，且在全部24个设计组合上约束累积概率合法递增。\begin{center}\begin{tabular}{lrr}\toprule 模型&参数个数&最大对数似然\\\midrule 共同斜率&8&$-1739.574650$\\非平行累积Logit&14&$-1735.289350$\\\bottomrule \end{tabular}\end{center}\begin{enumerate}\item 在Infl=Low、Type=Tower条件下，分别计算Cont=Low和High时的三类预测概率。\item 解释Cont共同斜率的指数，并核对“Medium类别概率也必须上升”是否成立。\item 完成平行线似然比检验。能否将未拒绝原假设表述为已证明比例优势假设？\end{enumerate}可用$\chi^2_{0.05,6}=12.592$。
+\end{minipage}\par\medskip
+
+\Question{SUPG3-10}{遗漏频数权重后分析了什么}
+Copenhagen住宅调查的housing数据有72行：每个Infl$\times$Type$\times$Cont组合恰好列出Low、Medium、High三个满意度类别各一行，共24个组合。Freq记录对应的人数，按满意度合计如下。\begin{center}\begin{tabular}{lrr}\toprule 满意度&表中行数&Freq合计\\\midrule Low&24&567\\Medium&24&446\\High&24&668\\\bottomrule \end{tabular}\end{center}研究者执行
+\begin{rcode}
+m <- nnet::multinom(Sat ~ Infl + Type + Cont,
+                    data=housing, trace=FALSE)
+\end{rcode}
+得到接近0的斜率和各类约$1/3$的预测概率，写道：“72名被调查者在三个满意度等级间均匀分布，所有因素均无关联。”请评议资料单位、这一输出为何出现，以及应如何改正分析。

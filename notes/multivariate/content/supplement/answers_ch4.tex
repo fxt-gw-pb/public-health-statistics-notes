@@ -1,0 +1,90 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPM4-01}{距离度量与归类}
+\textbf{答案：C。} 两个平方欧氏距离为$82$与$5$，故欧氏距离判入$G_2$。$S^{-1}=\operatorname{diag}(1,0.01)$，两个平方马氏距离为
+\[
+D_1^2=1+81/100=1.81,\qquad D_2^2=4+1/100=4.01,
+\]
+故马氏距离判入$G_1$。本题第二个变量的组内方差较大，马氏距离把偏离程度放到相应的组内变异尺度上衡量；计算中已体现这个尺度，不需要再以“未手工标准化”为由拒绝计算。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}。\par}
+
+\Answer{SUPM4-02}{组均值相同的变量也可能有用}
+\textbf{答案：D。} \[
+\Sigma^{-1}(\mu_2-\mu_1)
+=\frac1{0.36}\begin{pmatrix}1&-0.8\\-0.8&1\end{pmatrix}
+\begin{pmatrix}2\\0\end{pmatrix}
+=\frac{2}{0.36}\begin{pmatrix}1\\-0.8\end{pmatrix}.
+\]
+虽然$X_2$的两类均数相同，但它与$X_1$的组内相关可被用于减少判别得分中的共同波动。因此，不能仅因某变量单独的组间均数差为0，就认定它在多变量判别中必无用。方向的任意非零整体倍数表示同一直线。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}。\par}
+
+\Answer{SUPM4-03}{三类条件风险}
+\textbf{答案：B。} 按$R(j\mid x)=\sum_k L(j,k)P(k\mid x)$，三个风险为
+\[
+R(1\mid x)=8\times0.3+2\times0.2=2.8,
+\]
+\[
+R(2\mid x)=1\times0.5+1\times0.2=0.7,\qquad
+R(3\mid x)=4\times0.5+2\times0.3=2.6.
+\]
+最小者是$G_2$。后验概率已经把先验和观测信息结合起来；在后验及损失均已给定时，不必再单独知道先验。不同误判损失下，最小风险类别不一定是后验概率最大的类别。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}。\par}
+
+\Answer{SUPM4-04}{留一法中的协方差可逆性}
+\textbf{答案：E。} 删去1例后，第1类只有7例；中心化数据矩阵的秩至多为$7-1=6<7$，其$7\times7$样本协方差必奇异。第2类仍有8例，其协方差按题设保持正定。LDA的合并协方差是两个组内协方差的正权重和，其中第1类半正定、第2类正定，因此合并结果仍正定。改变分母只会整体缩放，不会改变秩。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}、\hyperref[src:MASS-QDA]{[27]}、\hyperref[src:MASS-LDA]{[25]}。\par}
+
+\Answer{SUPM4-05}{更换先验后的后验赔率}
+\textbf{答案：A。} 后验赔率等于先验赔率乘类条件密度比。原先验赔率为1，原后验赔率为$0.8/0.2=4$，故$f_1(x)/f_2(x)=4$。新后验赔率为
+\[
+\frac{P(G_1\mid x)}{P(G_2\mid x)}=\frac{0.1}{0.9}\times4=\frac49.
+\]
+将赔率换成概率，得$(4/9)/(1+4/9)=4/13$。$4/9$本身是赔率，不能直接当作概率。这里的转换依赖题设的条件密度保持不变；一般人群变化未必只有先验变化。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}。\par}
+
+\Answer{SUPM4-06}{典型得分的符号、尺度与距离}
+\textbf{答案：D。} I只是镜像变换，所有平方距离均保持不变。II会把第一轴对平方距离的贡献扩大100倍，而其他轴未变，相当于改变了距离的权重，可能改变最近的重心；若要保持原度量，应相应调整协方差或距离定义。III要求使用全部非零轴并采用题设的归一化；各类均值之差位于该判别空间内，被舍去方向对各类平方马氏距离只贡献共同项。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}、\hyperref[src:MASS-LDA]{[25]}、\hyperref[src:MASS-PREDICT]{[26]}。\par}
+
+\Answer{SUPM4-07}{验证流程与独立对象}
+第一，变量筛选已经使用了随后验证图像的类别信息。只在筛选之后重新拟合判别函数，仍没有把验证对象真正留在建模过程之外，结果可能偏乐观。第二，同一受试者的两张图像可能相关；逐图像留一时，另一张图像仍在训练集中，评价更接近对已见对象的另一张图像分类，未对应“新受试者”的目标。
+
+应按受试者划分训练折和验证折，使同一人的全部图像始终属于同一折。每折只用训练受试者完成预处理参数估计、变量筛选和判别模型拟合，再预测留出的受试者。若最终输出为受试者类别，还应预先规定两张图像如何汇总或合并判定，并以受试者为分母汇总混淆矩阵及各类正确率。选择完整流程后，可在独立取得、代表使用场景的新受试者中验证。图像数多于人数，不能自动视为独立训练信息相应增加。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}、\hyperref[src:MASS-LDA]{[25]}。\par}
+
+\Answer{SUPM4-08}{鸢尾花的典型得分与留一输出}
+（1）先减去中心$c$，得$x-c\approx(0.156667,-0.357333,1.342000,0.400667)^\top$。代入两列系数，得到
+\[
+z\approx(-4.4985,\ -0.8827)^\top.
+\]
+$A^\top x$遗漏了中心化常数，不能和题中已中心化的重心直接混用。若样品和所有重心都统一平移，距离才不会改变。
+
+（2）到setosa、versicolor、virginica重心的平方距离分别约为$147.7622,7.1711,3.5963$，故回代判为virginica。真实类别为versicolor，因此它是一次误分类。单个典型得分不是某一类别的后验概率，也不能把两条典型轴分别当作两个类别。
+
+（3）三类正确率为$100\%,96\%,98\%$，总体为$(50+48+49)/150=98\%$。本资料中回代和留一的混淆矩阵恰好相同，不代表参数或后验概率相同，也不否认两种评价流程的区别。有限样本中正确率无须严格不等；相同的98\%仍不能证明新来源样品也具有相同表现，应按拟应用的场景继续验证。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:IRIS-RDOC]{[23]}、\hyperref[src:IRIS-SOURCE]{[24]}、\hyperref[src:NOTE-M4]{[22]}、\hyperref[src:MASS-LDA]{[25]}、\hyperref[src:MASS-PREDICT]{[26]}。\par}
+
+\Answer{SUPM4-09}{非对角离差阵与第二判别轴}
+（1）
+\[
+W^{-1}B=\begin{pmatrix}3&1\\0&1\end{pmatrix},\qquad
+\lambda_1=3,\quad\lambda_2=1.
+\]
+相应方向可取$(1,0)^\top$和$(1,-2)^\top$。二者的$a^\top Sa$在未归一化时都为$4/3$，故
+\[
+a_1=\frac{\sqrt3}{2}(1,0)^\top,\qquad
+a_2=\frac{\sqrt3}{2}(1,-2)^\top.
+\]
+因此$F_1=\sqrt3X_1/2$、$F_2=\sqrt3(X_1-2X_2)/2$，并有$a_1^\top Sa_2=0$。两系数向量不必在普通欧氏内积下正交；这里要求的是组内协方差意义下的正交。
+
+（2）典型相关分别为$\sqrt{3/4}=0.8660$和$\sqrt{1/2}=0.7071$。第一轴贡献为$3/(3+1)=75\%$，但$G_1,G_2$在该轴上的重心均为$\sqrt3/2$，只留第一轴不能区分它们的重心。贡献较小的第二轴仍可能对具体类别的分离很重要。
+
+（3）令$h=\sqrt3/2$。三类典型重心依次为$(h,-h),(h,h),(-2h,0)$，待判点为$(0,-h)$，故平方距离为$3/4,15/4,15/4$，判入$G_1$。用原空间的$S^{-1}$计算马氏距离也得到这些值。本题是在明确的教学统计量上练习判别规则，并未据每组2例声称具有可靠的实际预测能力。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-M4]{[22]}、\hyperref[src:MASS-LDA]{[25]}。\par}
+
+\Answer{SUPM4-10}{乳腺活检评分资料的建模记录评议}
+（1）不能。ID是编码，数值大小未必有可推广的测量意义；它可能记录录入顺序或其他数据来源差异。应根据研究目标确定预测变量，不能只因其可转为数值就纳入。ID不唯一也不足以证明重复测量，应核对原始记录和编码规则，再确定独立对象及验证划分。
+
+（2）删去缺失记录应报告人数、类别分布和处理理由，并考虑完整记录是否仍代表目标对象；不能悄然把结果称为全部699条的分析。1至10的评分是有界离散数值，数值编码本身不证明连续多元正态模型成立。LDA可以作为工作分类规则尝试，但应审查组内分布、异常值、相关结构和协方差，并用适当验证判断表现。
+
+（3）默认类别比例只是软件的取值，不自动代表任何门诊的类别先验。0.90依赖所用类条件模型、参数及先验；若仅先验改变，可据新的可靠先验重算后验，若类内指标分布也改变，仅改先验还不够。较高的留一正确率不能证明后验概率已准确，也不能证明跨门诊适用。应在代表拟使用门诊的独立资料上考察各类错误及概率表现，并说明误判损失与决策规则。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:MASS-BIOPSY]{[28]}、\hyperref[src:MASS-LDA]{[25]}、\hyperref[src:NOTE-M4]{[22]}。\par}

@@ -1,0 +1,169 @@
+% 独立题号标签SUPL；不重置现有题号。
+\subsection{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-01}{非等样本量下的和为零约束}
+某完全随机设计试验的教学资料如下，三组均比较同一连续结局：
+\begin{center}\begin{tabular}{lrrr}
+\toprule 组别&A&B&C\\\midrule
+样本量&5&10&15\\
+样本均数&6&9&12\\\bottomrule
+\end{tabular}\end{center}
+拟合模型 \(Y_{ij}=\mu+\alpha_i+\varepsilon_{ij}\)，并明确采用\(\alpha_A+\alpha_B+\alpha_C=0\)约束。以下说法正确的是：
+\begin{choices}
+\item \(\widehat\mu=10\)，因为截距总等于30个观测的合并均数。
+\item \(\widehat\mu=6\)，因为A组列在表格最前面。
+\item \(\widehat\mu=9\)，而30个观测的合并均数为10。
+\item \(\widehat\alpha_A=6,\widehat\alpha_B=9,\widehat\alpha_C=12\)。
+\item 三组样本量不相等，因此无法使用和为零约束。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-02}{Tukey比较中的未检出差异}
+一项三组完全随机试验中，A、B、C组各8人。教学资料的组均数依次为10、11.5、13，三组样本方差均为4。方差分析得\(F(2,21)=4.500\)，\(P=0.0236\)。软件给出下列Tukey两两比较结果，区间与\(P\)值均已作多重比较校正：
+\begin{center}\begin{tabular}{lrrr}
+\toprule 比较&均数差&同时95\%置信区间&校正\(P\)\\\midrule
+B--A&1.500&\((-1.021,4.021)\)&0.3111\\
+C--A&3.000&\((0.479,5.521)\)&0.0180\\
+C--B&1.500&\((-1.021,4.021)\)&0.3111\\\bottomrule
+\end{tabular}\end{center}
+按0.05水准，最恰当的解释是：
+\begin{choices}
+\item 三组总体均数已经证实各不相同。
+\item B与A、C比较均不显著，因此A与C也应判为无差异。
+\item 总体F检验显著，因此表中三个两两比较均应改判为显著。
+\item 必须改作三次未经校正的t检验，才能确定差异所在。
+\item 仅C与A检出差异；其他两对未检出差异，并不证明相应总体均数相等。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-03}{完整区组内如何随机化}
+某体外实验拟比较4种处理浓度。实验分3日完成，每日有4皿可分别接受处理的细胞培养物；不同实验日的培养条件可能影响连续测量结局。现拟以实验日为区组，采用完整随机区组设计。以下安排符合该设计的是：
+\begin{choices}
+\item 将12皿在全体范围内随机分为4组，不限制每日出现哪些浓度。
+\item 在每日4皿中随机分配4种浓度，每种浓度在该日出现一次。
+\item 按结局测定值由低到高排列各皿，再依次分配浓度。
+\item 每日均按培养皿编号从小到大固定分配4种浓度，不再随机化。
+\item 每天用同一皿依次接受4种浓度，并将4次结果作为独立观察。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-04}{区组模型的含义与正交性}
+有4种处理、5个区组，每个“处理\(\times\)区组”组合恰有1个独立实验单位。按可加的一般线性模型分析，处理及区组均作为分类因素完整纳入。以下说法正确的有：
+\begin{enumerate}\renewcommand{\labelenumi}{\Roman{enumi}.}
+\item 模型假定任意两种处理的总体均数差在各区组相同。
+\item 将区组编号1至5直接作为一个数值线性项，等价于将区组作为分类因素。
+\item 在本题完整平衡设计中，交换处理和区组的进入顺序，不改变处理的I型平方和。
+\end{enumerate}
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item I、III
+\item I、II、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-05}{一个简单效应显著而另一个不显著}
+某\(2\times2\)独立析因试验中，每个组合10人，结局为连续变量。教学资料的四格均数为：
+\begin{center}\begin{tabular}{lrr}
+\toprule &\(A=0\)&\(A=1\)\\\midrule
+\(B=0\)&5&7\\
+\(B=1\)&8&9\\\bottomrule
+\end{tabular}\end{center}
+完整模型的误差均方为4，误差自由度为36。软件对A的两个简单效应给出未经多重比较校正的双侧\(P\)值：在\(B=0\)时为0.032，在\(B=1\)时为0.271。以下判断正确的是：
+\begin{choices}
+\item 不能仅因一个P小于0.05、另一个大于0.05就认定有交互；须直接检验两个简单效应之差。
+\item 已经证明A在B=1时的总体效应严格等于0。
+\item 交互作用的估计应为两个简单效应相加，即3。
+\item 两个简单效应同为正数，因此总体交互作用必定为0。
+\item 0.032就是该完整模型中A与B交互项的P值。
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL4-06}{修正均数差的标准误}
+两组各8人的连续结局按共同斜率协方差模型分析，数值协变量记为\(X\)。教学资料满足本章误差条件，且给出充分汇总量：
+\[
+\bar X_1=10,\quad\bar X_2=14,\quad
+\sum_i\sum_j(X_{ij}-\bar X_i)^2=80,\quad MSE=4.
+\]
+在相同\(X=x_0\)处比较两组修正均数，其差值的标准误约为：
+\begin{choices}
+\item 1.000
+\item 1.183
+\item 1.342
+\item 2.000
+\item 4.000
+\end{choices}
+\end{minipage}\par\medskip
+
+\subsection{简答、计算与案例分析}
+
+\Question{SUPL4-07}{方差分析究竟要求什么正态}
+在三组独立对象的完全随机试验中，合并三组结局\(Y\)所画的直方图出现多个峰。分析者据此认为方差分析必定不适用，并建议先对分组变量做正态性检验。
+
+请指出上述两处判断的问题，写出本章模型对误差的基本要求，并说明应查看哪些资料或图形。
+
+\Question{SUPL4-08}{实验日区组与预设处理比较}
+某实验比较A、B、C三种培养条件对蛋白浓度\(Y\)（mg/L）的影响。分4个实验日完成，每日3个可分别接受处理的培养单位，在日内随机分配三种条件。下表为独立设置的教学数据：
+\begin{center}\begin{tabular}{lrrr}
+\toprule 实验日&A&B&C\\\midrule
+1&8&11&11\\
+2&13&13&16\\
+3&15&18&21\\
+4&20&22&24\\\bottomrule
+\end{tabular}\end{center}
+采用处理与实验日的可加模型，假定误差满足本章条件。
+\begin{enumerate}
+\item 写出模型和处理效应整体检验的原假设；填写处理、区组、误差、总变异的\(SS\)、自由度、\(MS\)及处理\(F\)值。
+\item 已知\(F_{0.95}(2,6)=5.143\)，作整体检验结论。
+\item 研究方案事先只指定C--A这一项处理对比。估计该差值及其95\%置信区间，已知\(t_{0.975}(6)=2.447\)。
+\item 若忽略实验日，误差均方变为多少？说明其变动来源。
+\end{enumerate}
+
+\Question{SUPL4-09}{小样本协方差分析的完整核算}
+某训练试验将12人随机分为普通训练组\(G=0\)和强化训练组\(G=1\)。\(X\)为训练前评分，\(Y\)为训练后另一项运动测验评分，分数越高表示表现越好。以下为新编教学数据：
+\begin{center}\begin{tabular}{rrrr}
+\toprule \multicolumn{2}{c}{普通训练组}&\multicolumn{2}{c}{强化训练组}\\
+\cmidrule(lr){1-2}\cmidrule(lr){3-4}
+\(X\)&\(Y\)&\(X\)&\(Y\)\\\midrule
+6&19.5&8&22.0\\
+7&17.9&9&20.6\\
+8&19.3&10&22.2\\
+9&19.7&11&22.8\\
+10&19.1&12&22.4\\
+11&21.5&13&25.0\\\bottomrule
+\end{tabular}\end{center}
+软件对同一批12人拟合得到：
+\begin{center}\begin{tabular}{lrr}
+\toprule 模型&残差平方和&残差自由度\\\midrule
+\(M_2:Y\sim X+G\)&8.35&9\\
+\(M_3:Y\sim X+G+XG\)&8.00&8\\\bottomrule
+\end{tabular}\end{center}
+假定可按本章误差条件分析。取\(\alpha=0.05\)，给定\(F_{0.95}(1,8)=5.318\)、\(t_{0.975}(9)=2.262\)。
+\begin{enumerate}
+\item 检验两组斜率是否不同，说明本题是否有证据必须保留交互项。
+\item 按共同斜率模型计算\(\widehat\beta_X\)，并以普通训练组为参照写出回归方程。可使用组内离均差积和公式。
+\item 在共同评分\(X_0=9.5\)处计算两组修正均数、差值及其95\%置信区间。说明这里应使用哪个模型的误差均方。
+\end{enumerate}
+
+\Question{SUPL4-10}{平均主效应为零能否判定方案无效}
+某随机\(2\times2\)析因试验比较训练方案A（0：常规，1：强化）和辅助方案B（0：不用，1：使用）。每组合15人，结局为连续的功能改善评分，越高越好。下表为新编教学汇总资料；各格样本方差均为9。
+\begin{center}\begin{tabular}{lrr}
+\toprule &\(A=0\)&\(A=1\)\\\midrule
+\(B=0\)&10&16\\
+\(B=1\)&18&12\\\bottomrule
+\end{tabular}\end{center}
+完整析因方差分析的误差自由度为56、\(MSE=9\)。按跨另一因素水平平均的主效应定义，A的\(F=0,P=1\)；交互项\(F=60,P<0.001\)。
+
+研究者据此写道：“A的主效应不显著，说明A在任何条件下都没有作用；交互项显著，所以最终模型只保留\(AB\)项；强化方案代表更积极的治疗，因此仍可统一推荐\(A=1\)。”
+\begin{enumerate}
+\item 计算B的两个水平下A的简单效应，以及按“\(B=1\)减\(B=0\)”定义的交互对比。
+\item 逐项评价研究者的三句话，并给出与数据相符的模型和结果表述。
+\end{enumerate}

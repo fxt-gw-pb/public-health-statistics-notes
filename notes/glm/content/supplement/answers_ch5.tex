@@ -1,0 +1,125 @@
+% 与questions_ch文件配套；来源超链接见sources.tex。
+\Answer{SUPG5-01}{改变协变量的参照点}
+\textbf{答案：B。} 因为$A-60=(A-70)+10$，
+\[
+h_0(t)e^{0.04(A-60)}
+=\{h_0(t)e^{0.4}\}e^{0.04(A-70)}.
+\]
+所以新的基线风险是$e^{0.4}h_0(t)\approx1.4918h_0(t)$，现在对应70岁，而原基线对应60岁。改变参照点只是同一拟合风险的重新表示，不改变每个年龄的预测风险，也不改变相同年龄差对应的HR。变量仍按“岁”计量，系数无需乘10；基线含义发生变化，应随结果一并说明。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-CURVES]{[28]}。\par}
+
+\Answer{SUPG5-02}{并列事件的部分似然}
+\textbf{答案：D。} 风险评分总和为$S_R=2+3e^\beta=8$，两名事件者的风险评分之和为$S_D=1+e^\beta=3$，分子为$e^{0\beta+1\beta}=2$。Breslow对两次事件均使用完整风险评分总和：
+\[
+L_B=\frac{2}{8^2}=\frac1{32}.
+\]
+Efron的第二个分母扣除事件者总评分的一半：
+\[
+L_E=\frac{2}{8(8-3/2)}=\frac1{26}.
+\]
+它不是任意指定哪名事件者先退出；这种扣除处理的是并列事件近似。没有并列事件时，两种写法才自动相同。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-03}{变量检验与全局PH检验}
+\textbf{答案：A。} 表中的检验针对效应是否随所选时间尺度改变，而非协变量主效应是否为0。治疗项给出了违反PH的证据，应检查其缩放Schoenfeld残差形态，并考虑合适的时间交互或分段表达。全局检验同时涉及5个参数，其不显著结果不能覆盖单个治疗项的诊断信号。年龄或细胞类型诊断不显著只表示未检出相应偏离，不代表它们与结局无关，更不证明PH成立。四水平分类变量以三个独立对比表示，故表列3个自由度。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-PH]{[27]}。\par}
+
+\Answer{SUPG5-04}{分层Cox模型的解释}
+\textbf{答案：E。} 分层Cox允许$h_{01}(t)$与$h_{02}(t)$分别变化，部分似然在各层内比较风险集。题给模型只有一个$\beta$，所以假定各医院内的治疗HR同为$e^\beta$，仍需检查这个治疗效应的形式是否合适。医院作为分层变量并没有估计一个普通医院回归系数，两个基线风险之比也不被约束为常数，因此不能报告一个由本模型给出的固定“医院HR”。若治疗效果本身在医院间不同，还需另行设置并评价相应交互或不同系数。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-05}{时间交互的代码判读}
+\textbf{答案：C。} 右侧的\rinline{time}仍是数据行中该对象的最终观察时间，生成的是一个依赖未来结局过程的固定值，不能充当所有风险集成员共享的当前时钟。正确思路是在每一事件时刻计算$Z_i\log(t/30)$，例如：
+
+\begin{rcode}
+coxph(Surv(time, status) ~ Z + tt(Z), data=d,
+      tt=function(x, t, ...) x*log(t/30))
+\end{rcode}
+此时$\beta$是第30天治疗对比的对数HR，$\gamma$描述其随$\log(t/30)$的变化。改变时间单位、删除主效应或重编码死亡时间都不能纠正原来的未来信息使用问题。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-TIMEDEP]{[29]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-06}{时依变量与分段记录}
+\textbf{答案：D。} II、III正确。两人的即时风险比为
+\[
+\exp\{\beta[X_i(t)-X_j(t)]\},
+\]
+即使$\beta$固定，协变量差也可能随时间改变，因此I错误。区间是否有自己的事件分子，与它能否出现在此前风险集分母中是两件事；没有事件的区间仍携带有效风险集信息。分段是同一个人的观察轨迹表示，不能把多行自动当成多名独立受试者，且需核对区间衔接与重叠。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-TIMEDEP]{[29]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-07}{重新表达时间尺度}
+该说法不成立。$\log(1+t)$严格单调递增，事件与删失的先后顺序、并列关系以及每个事件时刻的风险集都保持不变。固定协变量的普通Cox部分似然只使用这些集合中的风险评分及事件者，因此作为$\beta$的函数不变；对应的估计系数、标准误及HR也保持不变。
+
+改变的是时间坐标及其解释。原来第$t$天的生存概率对应新尺度上的$\tau=\log(1+t)$，时间分位数按同一函数变换；基线生存函数应写作$S_0^*(\tau)=S_0(e^\tau-1)$。不能把新尺度的一个单位继续叫作“一天”，也不能把基线风险数值直接照搬。
+
+若模型已有$X\log t$，该项本身依赖具体时间函数。保持原模型需将其改写成$X\log(e^\tau-1)$；直接改成$X\log\tau$通常是另一个模型，前述普通固定协变量模型的不变性结论不能机械套用。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-08}{分类变量的整体检验与指定对比}
+\textbf{（1）} 整体原假设为
+$H_0:\beta_{\mathrm S}=\beta_{\mathrm A}=\beta_{\mathrm L}=0$，包含3个独立约束。
+\[
+LR=2\{-474.914509-(-483.965694)\}=18.10237.
+\]
+取$df=3$，$P\approx0.000419$，拒绝$H_0$。这是在给定治疗和karno后，对细胞类型整体贡献的检验。
+
+\textbf{（2）} 指定对比的对数HR是系数之差：
+\[
+b=1.153994-0.824980=0.329014.
+\]
+两项由同一模型估计，不能忽略协方差：
+\[
+\widehat{\mathrm{Var}}(b)
+=0.087047+0.072313-2(0.043484)
+=0.072392,\quad SE(b)=0.269058.
+\]
+因此$HR=e^b=1.3896$，
+\[
+95\%\ \mathrm{CI}=\exp\{b\pm1.96SE(b)\}
+=(0.8201,\ 2.3546).
+\]
+它是模型内、治疗与karno相同时的腺癌对小细胞瞬时风险比。
+
+\textbf{（3）} 不矛盾。整体检验可由某些类型相对参照组的差异驱动，并不要求每个指定的两两对比都显著。上述输出还没有PH诊断、函数形式检查或校准评价，不能据此保证恒定HR解释适用，更不能把显著的整体检验当作预测准确的证据。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G4-VETERAN]{[23]}、\hyperref[src:G4-DATA]{[24]}、\hyperref[src:G5-VIGNETTE]{[30]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\Answer{SUPG5-09}{时间更新用药状态的风险集}
+\textbf{（1）} B应分成$(0,3]$、事件0、$X=0$；$(3,4]$、事件1、$X=1$。第一段没有终末事件，但仍可参与该段内其他事件时刻的风险集。
+
+\textbf{（2）} 逐时刻使用当前状态，而不是未来是否用过药：
+\begin{center}\begin{tabular}{rrrrr}\toprule
+事件时刻 & 风险人数 & 已用药人数 & $p_k$ & 事件者$X$\\\midrule
+2 & 6 & 1 & $1/6$ & 0\\
+4 & 5 & 2 & $2/5$ & 1\\
+6 & 4 & 2 & $1/2$ & 1\\
+8 & 3 & 2 & $2/3$ & 1\\
+10 & 1 & 1 & 1 & 1\\\bottomrule
+\end{tabular}\end{center}
+\[
+U(0)=-\frac16+\frac35+\frac12+\frac13
+=\frac{19}{15}=1.266667,
+\]
+\[
+I(0)=\frac5{36}+\frac6{25}+\frac14+\frac29
+=\frac{383}{450}=0.851111.
+\]
+所以$Q=1.88512<3.841$，按题设近似未拒绝$\beta=0$；$P\approx0.170$。只有6人，不能把这个近似判断称作精确的小样本结论。
+
+\textbf{（3）} 10月风险集中仅剩F，事件发生于他本人是给定风险集下的必然结果，贡献为1，得分与信息贡献均为0。若用“曾经用药”作基线，2月会把B、C、D尚未开始的用药提前计入，比例由$1/6$变为$4/6$，使用了未来信息并错误重分配了风险时间。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-TIMEDEP]{[29]}、\hyperref[src:G5-COXPH]{[26]}。\par}
+
+\par\noindent\begin{minipage}{\linewidth}
+\Answer{SUPG5-10}{检验值更新能否使用未来信息}
+第（1）项使用了未来信息：在45天尚不知道90天会测得1.5，不能把它用于之前风险集中的协变量。按最后已知值，三段记录应为：
+\begin{center}\begin{tabular}{rrrr}\toprule
+start & stop & 事件 & 肌酐（mg/dL）\\\midrule
+0 & 90 & 0 & 0.9\\
+90 & 120 & 0 & 1.5\\
+120 & 185 & 1 & 1.2\\\bottomrule
+\end{tabular}\end{center}
+按$(\mathrm{start},\mathrm{stop}]$约定，新测量值从下一段开始使用。这个对象在45天贡献的已知值为0.9，而不是1.2。
+
+第（2）项把数据行数当成了受试者数；这里仍然只有一个人、一次终末事件，在每个风险集只取其适用的一行。第（3）项混淆了$X(t)$与$\beta(t)$：肌酐测量值更新属于时依协变量，系数仍可为常数；与时间交互才另外描述效应系数的变化。
+
+第（4）项把关联作了因果解释。肌酐可与病情、治疗和其他预后因素共同变化，正系数本身不足以识别降低肌酐这一干预的效果。最后已知值约定只避免使用未来观测，并不证明区间内真实肌酐恒定，也不自动解决测量误差、漏测或随病情变化的混杂。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:G5-NOTE]{[25]}、\hyperref[src:G5-TIMEDEP]{[29]}。\par}
+\end{minipage}\par\medskip

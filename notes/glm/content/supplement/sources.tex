@@ -1,0 +1,582 @@
+\chapter*{来源与选编依据}
+\addcontentsline{toc}{chapter}{来源与选编依据}
+\markboth{来源与选编依据}{}
+以下“来源”指数据、研究材料或知识点依据。除特别说明外，本册的问题、选项和解析均为配套编写；不将其标作教材原题或往年真题。各题后的编号链接到本节。公开网页核对日期为2026年10月11日。
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-NOTES}
+\noindent{\sffamily\bfseries\color{black}[1] 用户原笔记：广义线性模型，第1章基本概念与方法}\par
+定位：指数分布族、三个组成部分、WLS、极大似然、IRLS及R调用；对照ex1.tex的19道编号题。\par
+课程范围和题型的首要依据。原章已有四格表似然、逆方差权重与Poisson指数族推导，本章补充比例权重、工作权重、非典型连接及一次IRLS更新等角度。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec1.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-GLM}
+\noindent{\sffamily\bfseries\color{black}[2] R stats官方文档：glm；Dobson教材第93页案例}\par
+定位：Details、Value；Examples首例明确标注Dobson (1990), p.93, Randomized Controlled Trial。\par
+9格频数及两个因子的生成方式均可直接核对。教材为An Introduction to Generalized Linear Models；页码来自R官方示例注释，本次未把教材原页当作已直接取得。第1章补充题8保留数据，输出由Python独立拟合并核对解析解，设问重新编写。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-FAMILY}
+\noindent{\sffamily\bfseries\color{black}[3] R stats官方文档：family}\par
+定位：Arguments、Details与Value：分布、连接、二项响应表示及mu.eta。\par
+核对概率向量需给试验次数权重、二项可用probit、方差函数与逆连接导数。题目中的Gamma累积量函数及教学参数为配套设定，不是此页原题。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/family.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-LM}
+\noindent{\sffamily\bfseries\color{black}[4] R stats官方文档：lm}\par
+定位：weights参数与Details中方差权重和频数权重的区别。\par
+第1章补充题4限定为未知共同尺度下的相对精度权重，避免与复制观测的频数权重混淆；不从该文档的复制权重解释推出同一标准误结论。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-PREDICT}
+\noindent{\sffamily\bfseries\color{black}[5] R stats官方文档：predict.glm}\par
+定位：Arguments中的type、se.fit与Value。\par
+用于核对link尺度与response尺度；第1章补充题8只要求条件均值及模型条件方差，不把均值标准误当作个体响应标准差。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/predict.glm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G1-LOGNORMAL}
+\noindent{\sffamily\bfseries\color{black}[6] R stats官方文档：Lognormal}\par
+定位：Details中的均值、中位数与方差公式。\par
+第1章补充题10为正值连续生物标志物的教学模型；所有参数均为新设定，重点是对数响应回归的反变换，并未虚构患者研究结果。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Lognormal.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G2-NOTE}
+\noindent{\sffamily\bfseries\color{black}[7] 原笔记：广义线性模型第2章《Logistic回归模型（一）》}\par
+定位：非条件Logistic：概率尺度、病例对照抽样、三种检验、函数形式与预测评价；条件Logistic及1:M匹配。\par
+已全文通读本轮提供的lec2.tex、lec3.tex及ex2.tex全部20题与解析。这里的习题均为本次配套新编，未冒称找回的往年原题。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec2.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G2-ESOPH}
+\noindent{\sffamily\bfseries\color{black}[8] R datasets官方文档：Smoking, Alcohol and (O)esophageal Cancer}\par
+定位：Description、Format、Source；Breslow与Day(1980)，Statistical Methods in Cancer Research, Vol.1。\par
+官方文档明确为法国Ille-et-Vilaine食管癌病例对照资料，共88个年龄/饮酒/吸烟组合。第08题使用完整资料及原始饮酒标签，重新设计约束检验与非参照组对比；不使用原H2-1饮酒表头颠倒的粗合并表，不声称为Breslow与Day原题。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/esoph.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G2-ESOPH-DATA}
+\noindent{\sffamily\bfseries\color{black}[9] R源文件：esoph.R（固定版本）}\par
+定位：完整agegp、alcgp、tobgp、ncases与ncontrols五列。\par
+通过GitHub读取完整R数据源，校验blob SHA-1为547ef0de8ca3645858d078b189cbc430c341b812。脚本从该文件生成esoph.csv，88行合计200病例和775对照；未凭研究场景补造个体数据。\par
+{\small \url{https://github.com/wch/r-source/blob/02e4ee85542c87153eab3bed860fdd6ffd9920be/src/library/datasets/data/esoph.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G2-ANOVA}
+\noindent{\sffamily\bfseries\color{black}[10] R stats官方文档：anova.glm}\par
+定位：Details、Warning：嵌套模型、LRT/Rao及同一分析集要求。\par
+用于核对似然比与有效比分检验的实现范围；第08题三个模型均使用同一88行资料及同一分组二项似然。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/anova.glm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G2-CLOGIT}
+\noindent{\sffamily\bfseries\color{black}[11] R survival官方文档：clogit}\par
+定位：Description、Details：条件似然、strata、每组1病例+k对照与权重限制。\par
+第05、06、09题依条件似然原理新编。第09题36组资料为明确教学构造；R脚本展开108个个体后按strata(set\_id)拟合，不把模式频数塞入exact方法的case weights。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/clogit.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-NOTE}
+\noindent{\sffamily\bfseries\color{black}[12] 原笔记：广义线性模型第3章《Logistic回归模型（二）》}\par
+定位：多项联合似然、参照变换、累积logit阈值与共同斜率、平行线检验、软件附录。\par
+已全文通读lec3、lec2和ex2既有20题及解析；新增内容针对跨方程方差、概率方向、等级反向、频数权重和真实嵌套的平行线检验，不声称教材原题。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec3.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-HOUSING}
+\noindent{\sffamily\bfseries\color{black}[13] MASS官方文档：Frequency Table from a Copenhagen Housing Conditions Survey}\par
+定位：Description、Format、Source和Examples中的multinom、polr。\par
+72行、5变量；Freq为人数频数，Sat是低/中/高有序满意度。官方列出Madsen(1976), Scandinavian Journal of Statistics 3:97–106；Cox与Snell(1984), Applied Statistics, Principles and Examples；Venables与Ripley(2002), Modern Applied Statistics with S第4版。本章改写设问并复算公开数据，不冒称上述著作的原题号。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/housing.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-HOUSING-DATA}
+\noindent{\sffamily\bfseries\color{black}[14] MASS原始housing数据文件（固定版本）}\par
+定位：RDX2序列化的4个因子和Freq列；完整72条记录。\par
+以base64保存原始rda，blob SHA-1为4c05ece13abe037bcd05378fd72b5d251e53aa1d。Python将4列因子全部代码与标签、72个频数逐格对照CSV，360个数据值一致。CSV格式转换来源另列，不把格式转换站当作方法学证据。\par
+{\small \url{https://github.com/cran/MASS/blob/3a2c25676400941722e79b5dd771785a6d678ea4/data/housing.rda}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-HOUSING-CSV}
+\noindent{\sffamily\bfseries\color{black}[15] Rdatasets：housing.csv固定版本}\par
+定位：完整72行CSV，另有rownames行号列。\par
+仅用作公开R数据的CSV格式取得路径。全部实质数据已与MASS原始rda核验一致；方法解释引用MASS/nnet官方文档，不引用该镜像作技术依据。\par
+{\small \url{https://github.com/vincentarelbundock/Rdatasets/blob/cc03c29690889dbe83089f5206e2422db8c3f71f/csv/MASS/housing.csv}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-POLR}
+\noindent{\sffamily\bfseries\color{black}[16] MASS官方文档：polr}\par
+定位：Details：logit P(Y≤k)=zeta\_k-eta；有序阈值、共同斜率；Arguments weights/Hess。\par
+已核对正文方向与MASS参数化相同。第09题共同斜率模型用相邻累积概率之差构成联合似然；非平行模型由本次Python独立实现，不把multinom误作嵌套的平行线备择。R脚本附完整复现方法但本环境未执行。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/polr.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-MULTINOM}
+\noindent{\sffamily\bfseries\color{black}[17] nnet官方文档：multinom}\par
+定位：Arguments：首个类别参照、频数响应与weights；Value：deviance、Hessian、edf。\par
+用于核对联合多项logit、类别参照和频数权重约定。第08、10题采用housing真实计数；跨方程对比和权重遗漏评议为本次新设问。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/nnet/html/multinom.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G3-MASS4}
+\noindent{\sffamily\bfseries\color{black}[18] Venables与Ripley：《Modern Applied Statistics with S》第4版作者网站}\par
+定位：Contents第7章Generalized linear models；Software and Datasets。\par
+作者网站核实2002年第4版及随书MASS/nnet软件、数据的关系。本章只使用已核对的官方数据和方法，未声称取得housing在原书的精确页码或习题号。\par
+{\small \url{https://www.stats.ox.ac.uk/pub/MASS4/}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-NOTE}
+\noindent{\sffamily\bfseries\color{black}[19] 本仓库《广义线性模型》第4章：生存分析（一）}\par
+定位：右删失与独立删失；左截断/延迟入组；寿命表；KM与Greenwood、log–log区间；logrank及Breslow权重；固定时点比较。\par
+范围依据。全文核对lec4、lec5和ex3的30题及解析；SUPG4均为新增题，未冒称往年题或教材原题号。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec4.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-SURV}
+\noindent{\sffamily\bfseries\color{black}[20] R survival官方手册：Surv}\par
+定位：Arguments与Details：事件指示、counting格式和(start,stop]约定。\par
+核对编码与观察区间的规则，不提供本题的教学数据。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/Surv.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-SURVFIT}
+\noindent{\sffamily\bfseries\color{black}[21] R survival官方手册：survfit.formula}\par
+定位：Details及conf.type、conf.lower、start.time参数。\par
+核对KM估计、log–log区间和尾部支持。题内数值为本次计算；不把默认log区间误称log–log区间。\par
+{\small \href{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/survfit.formula.html}{\nolinkurl{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/}}\linebreak \href{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/survfit.formula.html}{\nolinkurl{survfit.formula.html}}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-SURVDIFF}
+\noindent{\sffamily\bfseries\color{black}[22] R survival官方手册：survdiff}\par
+定位：Description：G-rho检验族，rho=0为logrank，rho=1为Peto–Peto修正。\par
+直接核对软件权重名称与检验用途。按课程定义计算的Breslow风险人数加权统计量另行编程，不冒充rho=1的输出。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/survdiff.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-VETERAN}
+\noindent{\sffamily\bfseries\color{black}[23] R survival官方手册：Veterans’ Administration Lung Cancer study}\par
+定位：Description、Format、Source。\par
+官方说明为两种肺癌治疗方案的随机试验，列出细胞类型及变量，并追溯Kalbfleisch与Prentice（1980）The Statistical Analysis of Failure Time Data。未核得或虚构教材习题编号；这里只作为数据案例来源。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/veteran.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G4-DATA}
+\noindent{\sffamily\bfseries\color{black}[24] Terry Therneau维护的survival源码：cancer.rda中的veteran对象}\par
+定位：原始R数据对象veteran，完整137行、8列。\par
+已通过GitHub读取作者文件并解出137行、128死亡、9删失，保留全部变量及顺序。blob SHA1 ae84cad9d8ca02965e42a021c58415adec3eefd7已由原字节复核。第8题表格是本次独立重算，不是缺失40例作业文件的还原。\par
+{\small \url{https://github.com/therneau/survival/blob/645743ffb18180d16cdba7cb83cb71c4d4cfd448/data/cancer.rda}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-NOTE}
+\noindent{\sffamily\bfseries\color{black}[25] 本仓库《广义线性模型》第5章：生存分析（二）}\par
+定位：Cox部分似然及得分/信息；并列处理；基线参照；PH评价；时依变量与时变系数；分段数据；模型诊断。\par
+直接范围依据。已全文读取lec4、lec5及ex3全部30题/解析。新设问避开原无并列部分似然、简单交互HR及PI到生存率题。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec5.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-COXPH}
+\noindent{\sffamily\bfseries\color{black}[26] R survival官方手册：coxph}\par
+定位：ties；Details的(start,stop]；Special terms的strata和tt；Ties。\par
+用于核对Efron/Breslow约定、分层及时间变换接口。题内统计量均自行计算，不冒称官方文档原练习。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/coxph.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-PH}
+\noindent{\sffamily\bfseries\color{black}[27] R survival官方手册：cox.zph}\par
+定位：terms、global参数及Details中的缩放Schoenfeld残差/时间效应检验。\par
+第3题为依据官方输出结构构造的教学表，四个P值经χ²分布复算；不是对veteran实际运行cox.zph所得的结果。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/cox.zph.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-CURVES}
+\noindent{\sffamily\bfseries\color{black}[28] R survival官方手册：survfit.coxph}\par
+定位：Notes中任意参照向量z的生存曲线转换关系；Details中建议提供newdata。\par
+核对基线参照并非唯一、中心化应配合相应基线；第1题年龄参数为教学构造。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/html/survfit.coxph.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-TIMEDEP}
+\noindent{\sffamily\bfseries\color{black}[29] Therneau、Crowson、Atkinson：Using Time Dependent Covariates and Time Dependent Coefficients in the Cox Model}\par
+定位：§2（PDF第1--4页）：当前协变量、不能使用未来、肌酐示范及分段记录；§4.2（PDF第21--22页）：错误的最终time交互与tt()。\par
+作者官方vignette，页面显示2026-01-12。第5题按该接口错误新设问；第10题沿用其0/90/120/185天及0.9/1.5/1.2的教学示范记录并新增评议问题。该记录不称作真实患者研究数据。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/survival/doc/timedep.pdf}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G5-VIGNETTE}
+\noindent{\sffamily\bfseries\color{black}[30] Terry Therneau：A Package for Survival Analysis in R}\par
+定位：PDF第70--71页，使用veteran及trt + celltype + karno的Cox示例。\par
+直接支持第8题所用公开案例及模型结构；本题将karno按每10分并中心化、治疗改为0/1以便解释，新增整体LR与腺癌对小细胞对比。文档未被当作本题新数表的现成输出。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-patched/library/survival/doc/survival.pdf}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-NOTE}
+\noindent{\sffamily\bfseries\color{black}[31] 原笔记：广义线性模型——对数线性模型}\par
+定位：抽样方案与似然分解；参数约束；层次模型；独立性与折叠；拟合优度与残差；与Logistic的联系。\par
+已通读lec6及ex4全部24题。设问均为本次新编或案例改编，不冒称原书习题；题10区分1df共同效应比较与多自由度整体拟合检验。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec6.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-LOGLIN}
+\noindent{\sffamily\bfseries\color{black}[32] R stats官方手册：loglin—Fitting Log-Linear Models}\par
+定位：Arguments margin；Details中的IPF及最大生成边际；Value中的lrt、pearson、df。\par
+算法和边际约束依据。数值由本次Python IPF与GLM复算；没有把官方示例中的文字标签替代实际模型生成项。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loglin.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-LOGLM}
+\noindent{\sffamily\bfseries\color{black}[33] MASS官方手册：loglm—Fit Log-Linear Models by Iterative Proportional Scaling}\par
+定位：Details：structural zeros与自由度限制；Value：deviance。\par
+用于结构零与抽样零的区别及建模限制；本次全部数值例表没有结构零。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/loglm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-HAIR}
+\noindent{\sffamily\bfseries\color{black}[34] R datasets官方手册：HairEyeColor—Hair and Eye Color of Statistics Students}\par
+定位：Description；Details；Source；References：Snee(1974)、Friendly(1992, 2000)。\par
+Hair×Eye二维表源于Snee 1974的592名学生调查；Sex分层由Friendly 1992为教学补入，后有调整。因此题9明确为官方内置教学表，不能用于真实性别差异推断。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/HairEyeColor.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-HAIR-DATA}
+\noindent{\sffamily\bfseries\color{black}[35] R官方源码镜像：HairEyeColor.R}\par
+定位：HairEyeColor数组的dim=c(4,4,2)及dimnames；快照blob 04d6a3ead011911efab7979aa07214db15c0c85b。\par
+已保存读取到的源文件及32格CSV，总数592。原文字面向量重复同一组32数，按数组指定维度提取；该重复经脚本核对，未计为1184人。\par
+{\small \url{https://github.com/wch/r-source/blob/trunk/src/library/datasets/data/HairEyeColor.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-UCB}
+\noindent{\sffamily\bfseries\color{black}[36] R datasets官方手册：UCBAdmissions—Student Admissions at UC Berkeley}\par
+定位：Description；Format；Details；References：Bickel, Hammel \& O’Connell(1975), Science 187:398–404。\par
+官方24格记录用于题10；选题与模型输出为本次改编和复算。未把OR说成录取概率比，也未从观察表作因果断言。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/UCBAdmissions.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G6-UCB-DATA}
+\noindent{\sffamily\bfseries\color{black}[37] R官方源码镜像：UCBAdmissions.R}\par
+定位：Admit×Gender×Dept数组；快照blob 10be1b0b30af8f304ee47dc1b9a2200e22ac9d18。\par
+已保存原始R数组及无删改24格CSV，总数4526；按文档水平排列重新拟合。\par
+{\small \url{https://github.com/wch/r-source/blob/trunk/src/library/datasets/data/UCBAdmissions.R}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-NOTE}
+\noindent{\sffamily\bfseries\color{black}[38] 原笔记：广义线性模型——泊松回归与负二项回归}\par
+定位：Poisson均数与条件方差；发生率和offset；过离散；NB2；准Poisson；案例与应用限制。\par
+已通读lec7和ex4全部24题。本章为配套新编/案例改编；完整DoctorVisits公式与原题的删零子集、校园完整81校与原笔记改动10行表明确分开。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec7.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-POISSON}
+\noindent{\sffamily\bfseries\color{black}[39] R stats官方手册：Poisson—The Poisson Distribution}\par
+定位：Details：Poisson概率质量函数、均数与方差。\par
+用于教学设定的计数均数、零概率及条件/边际分布推导，不提供任何研究原始计数。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Poisson.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-OFFSET}
+\noindent{\sffamily\bfseries\color{black}[40] R stats官方手册：offset—Include an Offset in a Model Formula}\par
+定位：Description；Usage；Details：已知系数固定为1的模型项。\par
+区分真正暴露时间offset与随机基线事件数协变量；公式内offset位置用于校园代码审阅。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/offset.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-SUMMARY}
+\noindent{\sffamily\bfseries\color{black}[41] R stats官方手册：summary.glm—Summarizing Generalized Linear Model Fits}\par
+定位：Details：dispersion的Pearson估计；t或z参照分布；系数标准误。\par
+题3给出教学摘要并按官方尺度和检验规则复算；其原始输出并非某真实研究。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/summary.glm.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-NEGBIN}
+\noindent{\sffamily\bfseries\color{black}[42] R stats官方手册：NegBinomial—The Negative Binomial Distribution}\par
+定位：Details：mu与size参数化；variance=mu+mu\textasciicircum{}2/size；概率质量函数。\par
+使用alpha=1/size的NB2参数化；方差、零概率与同均数比较均由本次脚本计算。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/NegBinomial.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-GLMNB}
+\noindent{\sffamily\bfseries\color{black}[43] MASS官方手册：glm.nb—Fit a Negative Binomial Generalized Linear Model}\par
+定位：Usage：formula,data,weights的形参次序；Arguments：排除offset形参但可在公式中用offset()；Details。\par
+提供NB2拟合方法及校园实参匹配的函数签名。题9为Python复算，不冒称本环境执行了MASS；题10为独立静态代码审阅。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/glm.nb.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-AER}
+\noindent{\sffamily\bfseries\color{black}[44] AER官方参考手册：DoctorVisits；CameronTrivedi1998}\par
+定位：DoctorVisits数据说明与变量定义；CameronTrivedi1998示例Table 3.3的visits\textasciitilde{}.+I(age\textasciicircum{}2)及Table 3.4的NB模型。\par
+真实数据5190人，结局为过去两周就诊次数；官方示例明确完整变量加年龄平方。文献为Cameron \& Trivedi(1986), Journal of Applied Econometrics 1:29–53；(1998) Regression Analysis of Count Data, Cambridge University Press。题9为新设问和Python派生输出，不声称原书题号。\par
+{\small \url{https://cran.r-project.org/web/packages/AER/refman/AER.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-DOCTOR-DATA}
+\noindent{\sffamily\bfseries\color{black}[45] CRAN AER源码镜像：DoctorVisits.rda}\par
+定位：官方数据对象DoctorVisits；快照blob 83b783952aa9b59b8b1c654897f9ef37e547b9a0。\par
+已保存原始R数据对象并导出5190×12完整CSV；无缺失，4141个零就诊者全部保留。派生的逐人拟合均数与零概率另存CSV。\par
+{\small \url{https://github.com/cran/AER/blob/master/data/DoctorVisits.rda}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-CAMPUS-BOOK}
+\noindent{\sffamily\bfseries\color{black}[46] Roback \& Legler：Beyond Multiple Linear Regression，Bookdown版第4章}\par
+定位：4.5 Case Study: Campus Crime；4.8.3 Negative Binomial Modeling。\par
+核对81校案例、合并SE/SW、删除nvrate>=5学校及外置未命名offset调用。代码解释是本次根据函数签名/R规则的分析，非作者已确认勘误；不把该调用输出当成正确offset模型结果。\par
+{\small \url{https://bookdown.org/roback/bookdown-BeyondMLR/ch-poissonreg.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-CAMPUS-PRETEXT}
+\noindent{\sffamily\bfseries\color{black}[47] BeyondMLR PreTeXt版：4.8 Overdispersion}\par
+定位：4.8.3 Negative Binomial Modeling；网页代码行577–580（本次抓取）。\par
+本次查看的PreTeXt网页仍展示同样的外置未命名offset调用，不能称其已修正；与Bookdown和GitHub源快照分别标注。未来更新须重新核对。\par
+{\small \url{https://pretextbooks.github.io/BeyondMLR/sec-overdispPois.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-CAMPUS-DATA}
+\noindent{\sffamily\bfseries\color{black}[48] 教材作者GitHub：data/c\_data.csv}\par
+定位：全部81行、6变量；快照blob 27d10d17d9aa46e80d9812eea4746d9e6f1572a4。\par
+原第二行Enrollment=540、enroll1000=0.54，不能与笔记的1040/1.04改动版混同。已保存完整CSV，按源规则审计筛选，不追认改动版数值。\par
+{\small \url{https://github.com/proback/BeyondMLR/blob/master/data/c_data.csv}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-CAMPUS-SOURCE}
+\noindent{\sffamily\bfseries\color{black}[49] 教材作者GitHub：04-Poisson-Regression.Rmd}\par
+定位：校园c.data预处理；nvrate<5筛选；c.data2的enroll1000下限钳制；modelinb调用；快照blob 347ccaba381f2f422b8f7151c1b18540cba83479。\par
+已读取作者源码并记录链接与快照哈希；随包不附整章书籍源码。题10将原mutate钳制整理为等价transform/pmax以便独立阅读，属代码审阅改编；不声称在本环境实际运行了R。\par
+{\small \url{https://github.com/proback/BeyondMLR/blob/master/04-Poisson-Regression.Rmd}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G7-R-LANGUAGE}
+\noindent{\sffamily\bfseries\color{black}[50] R Core：The R Language Definition}\par
+定位：4.3.2 Argument matching：先名称精确/部分匹配，再位置匹配。\par
+与MASS公开形参次序共同构成题10的静态分析依据；等价R脚本另给match.call检查语句，但本环境未运行R。\par
+{\small \url{https://stat.ethz.ch/CRAN/doc/manuals/r-devel/R-lang.html#Argument-matching}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-NOTES}
+\noindent{\sffamily\bfseries\color{black}[51] 用户原笔记：广义线性模型，第8章总复习与模型比较}\par
+定位：各模型对照表、变量/似然/效应指标、模型诊断和综合案例；并回核第2、5、7章对应细节。\par
+为8章正文中的复习章单独安排10题。数值均为教学构造，综合不同模型的估计目标与前提，不把本次问题冒充原考试题。\par
+{\small \url{https://github.com/fxt-gw-pb/public-health-statistics-notes/blob/2d799e0af68ae6a472a44f25aefbeec8cb59a1e1/notes/glm/content/lec8.tex}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-NONCOLL}
+\noindent{\sffamily\bfseries\color{black}[52] Greenland、Robins、Pearl（1999）：Confounding and Collapsibility in Causal Inference}\par
+定位：Statistical Science 14(1):29–46；第4节可折叠、第5.1节混杂与不可折叠的区别。\par
+核对‘调整前后OR不同不等于一定存在混杂’的论证。第8章补充题1使用自行构造的概率表，并非复制论文Table 1或Table 2。\par
+{\small \url{https://www.stat.ubc.ca/~rollin/papers/GreenlandStatSci1999.pdf}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-GEE}
+\noindent{\sffamily\bfseries\color{black}[53] geepack作者文档：On the usage of the geepack}\par
+定位：第1.2节与第2–3节：簇、相关结构、重复测量与id/waves。\par
+只用作复习章重复观察结构的选择依据，不引入超出原笔记要求的GEE估计推导。第8章补充题2的400人×4期为教学设定。\par
+{\small \url{https://cran.r-project.org/web/packages/geepack/vignettes/geepack-manual.pdf}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-ROC}
+\noindent{\sffamily\bfseries\color{black}[54] pROC作者项目页与Robin等（2011）软件论文}\par
+定位：Description、Citation及官方ROC分析文档入口。\par
+支持ROC/AUC的评价对象；严格递增变换保持排序的结论由本题直接推导。附8条教学记录检查AUC相同而Brier分数不同，不借用作者临床数据。\par
+{\small \url{https://xrobin.github.io/pROC/}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-AIC}
+\noindent{\sffamily\bfseries\color{black}[55] R stats官方文档：AIC}\par
+定位：Description与Details：参数惩罚、相同数据、对数似然常数及不同响应尺度。\par
+第8章补充题8的四行输出为明确给定的教学摘要；只复算AIC和合法的LR比较，不声称来自未提供的真实240人数据。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/stats/html/AIC.html}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-NB-LR}
+\noindent{\sffamily\bfseries\color{black}[56] Stata官方手册：nbreg}\par
+定位：第9页Technical note：alpha=0时的50:50混合卡方参照分布。\par
+只核对一个常数NB2离散参数的边界检验。第8章补充题5的LR=3.0为教学数值；不能把该混合分布无条件推广到额外零膨胀参数或多参数离散模型。\par
+{\small \url{https://www.stata.com/manuals/rnbreg.pdf}}\par
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}\raggedright\phantomsection\label{src:G8-NB-FAMILY}
+\noindent{\sffamily\bfseries\color{black}[57] MASS官方文档：negative.binomial}\par
+定位：Description与theta参数：已知theta的负二项GLM族。\par
+区分固定形状参数时的指数族模型与glm.nb额外估计形状参数的交替迭代；本章不对未知离散参数作固定已知处理。\par
+{\small \url{https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/negative.binomial.html}}\par
+\end{minipage}\par\medskip
+
+\section*{按题号查看选编理由}\begingroup\small\setlength{\parskip}{2pt}
+\subsection*{第1章 广义线性模型基本概念与方法}
+
+\noindent\textbf{题\ref*{q:SUPG1-01} 比例响应中的试验次数权重}：承接原题的方差与权重辨析，加入‘人数不同但比例相同’的响应尺度问题。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-02} 线性预测子中的二次项}：补充原章‘系统部分’定义的实际识别，并为后续非线性暴露效应和区间对比作准备。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-03} 由累积量函数恢复均值和方差}：避开正文已有的Poisson推导，训练从给定累积量函数辨认均值、方差及典型连接。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-04} 统一缩放相对精度权重}：由原题‘权重取方差倒数’推进到尺度识别，防止把归一化权重误当作增加信息量。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-05} 相同线性预测值与不同逆连接}：从连接函数的名称辨认推进到实际概率尺度，并为后续系数解释限定条件。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-06} 含截距Poisson模型的得分性质}：沿用原题的I/II/III组合形式，将极大似然思想落实到可检查的软件拟合性质。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-07} 先验权重与工作权重为何不同}：补充WLS与IRLS之间最容易混淆的对象和方差关系，为下一道迭代计算题提供概念支撑。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-08} Dobson案例：由glm输出还原模型}：沿用原作业的模型定义、软件系数和拟合解释题型；以能核对全数据的经典例子替代缺失数据依赖。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-09} 完成一次二项IRLS更新}：原题侧重列举估计方法，本题补可手算的一轮IRLS，并用得分而不是外观判断收敛。\par
+
+\noindent\textbf{题\ref*{q:SUPG1-10} 对数响应回归与log连接GLM}：延续原脂联素作业的连续指标背景，增加对数尺度结果解释与模型选择依据的完整评议。\par
+
+\subsection*{第2章 Logistic回归模型（一）}
+
+\noindent\textbf{题\ref*{q:SUPG2-01} 同一OR与不同概率差}：从原题的单个OR释义推进到同一模型下不同基线概率的比较，检验能否在优势与概率尺度之间正确转换。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-02} 病例对照抽样后的概率校正}：原题多停留在病例对照不能直接给风险，本题在抽样比明确时要求完成可识别的截距校正。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-03} 分组二项响应的事件方向}：补足原题没有直接考查的R二列响应方向，要求同时判断系数、概率与偏差三者。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-04} 三种检验分别需要哪些拟合}：避开原题简单选择总体检验名称，改考干扰参数存在时三种检验的拟合位置。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-05} 1:2匹配组的条件概率}：由原题1:1配对扩展到正文已定义的1:M条件似然，要求正确使用组内全部候选病例。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-06} 条件Logistic可估计的内容}：补足原匹配题只问没有截距的局限，区分组内恒定主效应与其可识别交互项。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-07} 二次项与指定区间的OR}：原题考两二分类暴露交互，本题考连续变量二次项的完整对比与联合检验，避免仅换交互题数字。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-08} 食管癌公开资料中的饮酒评分约束}：在已定位esoph案例中新增四分类对线性评分的两个约束和非参照饮酒组对比，避免重做原H2-1表格、原有简单总体检验或二分类交互题。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-09} 1:2匹配六种模式的完整条件似然}：原有计算题只含1:1配对四格表。本题提供完整1:2匹配六模式，需使用两种不同分母并求解条件MLE，新增信息量与区间。\par
+
+\noindent\textbf{题\ref*{q:SUPG2-10} 平均预测正确是否足够}：原题只笼统列拟合评价指标，本题给自足验证频数表，要求指出总量抵消、截距得分性质与分组校准之间的差别。\par
+
+\subsection*{第3章 Logistic回归模型（二）}
+
+\noindent\textbf{题\ref*{q:SUPG3-01} 跨方程对比的方差}：原题已考换参照时系数相减，本题进一步考换参照后的不确定性与跨方程协方差。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-02} 正系数与类别概率的方向}：原题只算给定点的三类概率，本题检验分母竞争如何使正的相对效应与负的类别概率变化同时出现。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-03} 有序等级反向编码}：原有题目只解释给定阈值和斜率，本题要求同时处理结局顺序反转、阈值排序和符号。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-04} 累积概率的合法次序}：补足从相邻累积概率还原类别概率时的基本合法性检查。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-05} 多类别预测因子的联合检验}：在正文单个数值自变量的总体检验上加入多分类自变量，补足哑变量与多方程共同计数。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-06} 比例优势的比较对象}：原题已有比例优势名词解释，本题用比较反向与相邻类别对比组合，检验能否识别定义不覆盖的结论。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-07} 分别二分拟合能做什么}：正文提到分别二分可诊断平行性；本题补足同一结局重复编码的依赖、正式联合似然和诊断工具的边界。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-08} 住宅满意度多项模型的联合与跨方程检验}：使用新公开案例考多水平预测因子的跨方程整体检验和直接差异推断，不重做原肿瘤题的单点概率与系数换参照。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-09} 住宅满意度的共同斜率模型}：原有题目主要问共同OR及参数个数，本题新增有序类别概率、正共同斜率下中间类别的实际变化，以及真实嵌套备择的平行线检验。\par
+
+\noindent\textbf{题\ref*{q:SUPG3-10} 遗漏频数权重后分析了什么}：以完整公开housing的表结构构造分析错误，考频数权重与单位；评论是教学情境，不归于原论文或教材作者。\par
+
+\subsection*{第4章 生存分析（一）}
+
+\noindent\textbf{题\ref*{q:SUPG4-01} 延迟入组与风险集}：补足原题未实际计算的左截断/延迟入组风险集，并明确边界约定。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-02} 独立删失的条件}：原题多问删失定义，本题转向估计所需的条件，并区分条件独立与边际独立。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-03} 分组记录与区间内顺序}：不再重复原寿命表内插题，而是从同一汇总表的极端顺序理解半数删失修正及信息损失。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-04} 生存率区间的反变换}：在原有Greenwood标准误计算基础上，增加变换区间端点方向和概率边界的实操判断。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-05} 并列事件时的期望与方差}：补充原选择题未覆盖的logrank方差构造，防止将并列事件按独立二项或Poisson计数处理。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-06} 检验权重与软件选项}：原题已有权重的定性比较，本题补上软件实现的非等价性及检验选择程序。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-07} 相同中位数能说明什么}：利用相同中位数但时间形态不同的自洽资料，补充原名词解释题未训练的统计目标区分。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-08} 公开肺癌资料的生存输出}：采用作者公开完整137例资料，改问四种病理类型、固定时点与整体检验，不重复原缺数据40例作业的治疗曲线设问。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-09} 两种生存检验的计算}：新增完整权重与方差计算，定量展示曲线交叉时贡献抵消；既有题只有检验名称及定性比较。\par
+
+\noindent\textbf{题\ref*{q:SUPG4-10} 诊断后登记的生存报告}：将左截断、目标人群与信息性失访结合成原练习没有的登记资料评议，强调正确软件不能恢复未观察的早期结局。\par
+
+\subsection*{第5章 生存分析（二）}
+
+\noindent\textbf{题\ref*{q:SUPG5-01} 改变协变量的参照点}：避开已有PI计算题，改练基线风险对协变量中心化的依赖及模型表示不变性。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-02} 并列事件的部分似然}：原练习的部分似然只有无并列例；本题直接比较两种常用并列处理，便于理解软件输出差异。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-03} 变量检验与全局PH检验}：将原题的PH定义与检查方法推进到逐项/全局输出不一致的判断，避免把诊断P值当作效应P值。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-04} 分层Cox模型的解释}：原题虽列分层Cox作为PH修正途径，但未考层内共同系数与层间效应不可直接读出的边界。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-05} 时间交互的代码判读}：对应作者文档的常见实现错误，避免只会写X×time而没有理解每个风险集的当前时间。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-06} 时依变量与分段记录}：用组合命题区分时依协变量、时变系数和分段数据，不重复原题的固定协变量PH定义。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-07} 重新表达时间尺度}：从部分似然仅比较风险集的机制推导时间重标度不变性，超出原题的口头定义但不引入新模型。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-08} 分类变量的整体检验与指定对比}：作者官方生存分析vignette使用trt+celltype+karno模型；本题保留该数据/模型结构，新增整体LR与两个非参照水平的协方差对比，避免重复原40例治疗作业。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-09} 时间更新用药状态的风险集}：在原无并列部分似然例之外，增加实际变化的协变量、分段资料、得分/信息与末次无信息事件的完整计算。\par
+
+\noindent\textbf{题\ref*{q:SUPG5-10} 检验值更新能否使用未来信息}：保留作者文档的公开教学记录，新增分段样本量、X(t)/beta(t)和内部变量解释的综合评议，未假造真实临床研究结果。\par
+
+\subsection*{第6章 对数线性模型}
+
+\noindent\textbf{题\ref*{q:SUPG6-01} 按层次原则删项}：补充高阶模型的实际删项操作；原题主要考层次定义或三维模型识别。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-02} 部分独立模型的拟合频数}：把最大生成项与所保留的边际联系起来，补充拟合频数而非只判读独立关系。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-03} 参数约束改变与优势比不变}：针对笔记零和约束与软件参照编码的衔接，避免将两种参数值直接互换。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-04} 抽样零格的偏差贡献}：补充零格的局部偏差计算和抽样零/结构零区别，原题未有此残差陷阱。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-05} Logistic交互项的对数线性对应}：由明确的Logistic交互式反推四维生成项，区别原题一般性的两类模型比较。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-06} 同质关联与可折叠条件}：把无三阶交互、同质OR及可折叠充分条件分开，补充可直接验证的反例。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-07} 固定边际与Poisson—二项联系}：把抽样方案、固定预测边际和Logistic联系连成完整论证，避免只背模型优缺点。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-08} 整体失拟与局部残差}：补充逐层MLE、整体检验和杠杆调整残差的一体化计算；区别原题仅由已有G²比较模型。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-09} 官方内置教学列联表的输出阅读}：完整使用官方教学表，新增不同检验原假设、局部诊断与数据来源边界；原练习未使用此数据。\par
+
+\noindent\textbf{题\ref*{q:SUPG6-10} 录取数据中的折叠与同质性}：采用真实完整院系表，补充同质模型仍失拟时不能仅看1df共同效应检验；与原折叠定义题不同。\par
+
+\subsection*{第7章 泊松回归与负二项回归}
+
+\noindent\textbf{题\ref*{q:SUPG7-01} 事件率与至少一次事件的概率}：在已学offset与率解释之上补充可重复事件率和二分类发生概率的转换，非原IRR定义题。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-02} 同协变量分组的合并率估计}：补充共同率的似然合并及不等人时权重，区别原4格Poisson回归精确IRR计算。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-03} 准Poisson的尺度调整}：补充尺度与标准误的数量关系及t参照分布，区别原过离散名词解释或处理方法简答。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-04} 总样本的方差均数比能说明什么}：补充条件分布与总体混合分布的区别，防止仅凭原始计数方差均数比选模型。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-05} NB2与准Poisson的方差形状}：把过离散方差关系转成可比较的数值形状，区别原题只识别NB2方差公式。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-06} 均值、相关性与零概率}：组合均值估计、相关结构和分布零概率，强化准似然/过离散/相关性三个层面的区别。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-07} 基线计数能否当作offset}：补充随机基线事件数与真正人时的区别及零值处理；区别原题只解释offset或对随访零计数截断。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-08} 年龄交互与率比对比}：新增交互层内对比、负协方差与置信区间，区别原主效应IRR和单一offset计算。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-09} 完整就诊资料的计数模型输出}：采用完整5190人和官方全变量加年龄平方公式，区别原题删除零后的1049人/简化公式；新增零概率与分布诊断而非AIC单选。\par
+
+\noindent\textbf{题\ref*{q:SUPG7-10} 校园犯罪案例的代码与版本审阅}：沿用已确认原教材完整81校，新增数据版本、依结局筛选及R实参匹配审阅；不重复原改动10校的类型系数或Poisson/NB边界检验。\par
+
+\subsection*{第8章 总复习与模型比较}
+
+\noindent\textbf{题\ref*{q:SUPG8-01} OR改变一定说明混杂吗}：把Logistic章与对数线性章的可折叠概念放到同一概率表，训练区分统计参数变化和混杂偏倚。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-02} 过离散与重复观察是两个问题}：综合原笔记关于独立性、计数方差与重复测量的提示，强调模型选择同时依赖观察单位和估计目标。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-03} 相同AUC不等于相同概率预测}：用可验证的变换区分区分度、校准和分类阈值，补充原笔记对模型评价的综合要求。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-04} 合并二项数据后的似然常数}：把二项表示与跨模型比较连接起来，补充‘系数一样但偏差不一样’的来源与判断。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-05} 相同LR值与不同参照分布}：对照两个模型中的似然比检验，训练先核对自由度与正则条件，再使用同一个统计量。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-06} 课程中的模型与GLM边界}：按照原复习章同时归纳GLM、Cox与负二项扩展，纠正仅凭回归式外观分类模型的做法。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-07} 分析前先写清观察单位与目标参数}：将原题名词解释与模型选择合并为三个短场景，要求把设计、单位、估计及效应指标连成完整答案。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-08} 四个模型中哪些比较有效}：沿用软件输出分析题，综合处理AIC、嵌套检验、连接函数和缺失数据引起的不可比性。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-09} 同一队列表中的OR、RR、IRR与HR}：把各章常见指数化系数放在同一临床随访背景中比较，同时训练识别汇总信息不足。\par
+
+\noindent\textbf{题\ref*{q:SUPG8-10} 三种显著结果是否构成相同结论}：延续原题的文献评议结构，把模型输出、观察窗口、效应含义和研究结论放在同一份报告中审核。\par
+
+\endgroup

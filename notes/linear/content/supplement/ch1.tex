@@ -1,0 +1,247 @@
+\setcounter{chapter}{1}
+\ExerciseNumber{1}
+\ExerciseChapter{矩阵知识简介}
+\section{单项选择题}
+每题只有一个最佳答案，请从A—E中选择。
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-01}{相关阵的可行性}
+对同一批完整观测的三个变量，某研究者报告的相关阵为
+\[
+R=\begin{pmatrix}1&0.8&0.8\\0.8&1&-0.8\\0.8&-0.8&1\end{pmatrix}.
+\]
+下列判断正确的是（\quad）。
+\begin{choices}
+\item 它是对称矩阵且对角线元素为1，因此必为合法相关阵
+\item 三个非对角线元素都在$[-1,1]$内，因此必为合法相关阵
+\item 只要增加样本量，就可以使该矩阵成为合法相关阵
+\item 该矩阵不是半正定矩阵，不能是所述完整样本的相关阵
+\item 只要三个变量不服从正态分布，就允许出现该相关阵
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-02}{两个线性组合的协方差}
+设随机向量$(X_1,X_2)^\top$的协方差阵为
+$\Sigma=\begin{pmatrix}4&3\\3&9\end{pmatrix}$。令$U=2X_1-X_2+5$、$V=X_1+X_2-3$，则$\Cov(U,V)$为（\quad）。
+\begin{choices}
+\item $-7$
+\item $2$
+\item $5$
+\item $13$
+\item $19$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-03}{矩阵逆的运算顺序}
+已知$A,B$均为$p$阶可逆矩阵，$X,C$均为$p\times q$矩阵，且$ABX=C$。在不附加$AB=BA$等条件时，$X$应为（\quad）。
+\begin{choices}
+\item $B^{-1}A^{-1}C$
+\item $A^{-1}B^{-1}C$
+\item $C B^{-1}A^{-1}$
+\item $(A^{-1}B^{-1})^\top C$
+\item $A^{-1}CB^{-1}$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-04}{正交变换的性质}
+设$X$为$p$维随机向量，协方差阵为$\Sigma$；$Q$为$p$阶正交矩阵，令$Y=Q^\top X$。考察以下命题：
+\begin{enumerate}[label=\Roman*.]
+\item $\Cov(Y)=Q^\top\Sigma Q$，且$\tr\{\Cov(Y)\}=\tr(\Sigma)$；
+\item 只要$Q$正交，$Y$的各分量就必定两两不相关；
+\item 对任意两个观测向量$x_i,x_j$，变换前后的欧氏距离相同。
+\end{enumerate}
+正确命题的组合为（\quad）。
+\begin{choices}
+\item 仅I
+\item 仅II
+\item I、II
+\item II、III
+\item I、III
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-05}{均数差的方差}
+从某总体独立抽取25名受试者，对每人测量同一指标的治疗前值$X_1$和治疗后值$X_2$。已知单个受试者的协方差阵为
+$\Sigma=\begin{pmatrix}25&15\\15&36\end{pmatrix}$，不同受试者之间相互独立。则$\Var(\bar X_2-\bar X_1)$为（\quad）。
+\begin{choices}
+\item $0.04$
+\item $0.44$
+\item $1.24$
+\item $2.44$
+\item $31$
+\end{choices}
+\end{minipage}\par\medskip
+
+\par\noindent\begin{minipage}{\linewidth}
+\Question{SUPL1-06}{样本协方差阵的秩}
+对4名研究对象分别测量5个连续变量，数据无缺失，且每个变量的样本方差均大于0。用通常的中心化公式计算$5\times5$样本协方差阵$S$。下列说法一定正确的是（\quad）。
+\begin{choices}
+\item $S$一定是正定矩阵
+\item $S$的秩至多为3，因此不可逆
+\item $S$的秩恰好为4
+\item 只要任意两个变量的相关系数都不等于$\pm1$，$S$就可逆
+\item 改用分母$n$计算协方差即可使$S$可逆
+\end{choices}
+\end{minipage}\par\medskip
+
+\section{简答、计算与案例分析}
+
+\Question{SUPL1-07}{不相关、独立与可逆}
+设随机变量$U$等概率取$-1,0,1$，定义$V=\mathbf 1(U=0)$。
+\begin{enumerate}[label=（\arabic*）]
+\item 求$(U,V)^\top$的均数向量和协方差阵；
+\item 判断$U,V$是否不相关、是否独立，并给出依据；
+\item 该协方差阵是否可逆？据此说明“两个变量之间存在确定的函数关系”是否必然使协方差阵奇异。
+\end{enumerate}
+
+\Question{SUPL1-08}{由原始数据填写矩阵输出}
+某材料的5次观测如下。三个变量依次表示长度、宽度和高度，数据取自NIST统计手册的小型示例。
+\begin{center}\begin{tabular}{rrrr}\toprule
+观测编号&$x_1$&$x_2$&$x_3$\\\midrule
+1&4.0&2.0&0.60\\2&4.2&2.1&0.59\\3&3.9&2.0&0.58\\4&4.3&2.1&0.62\\5&4.1&2.2&0.63\\\bottomrule
+\end{tabular}\end{center}
+\begin{enumerate}[label=（\arabic*）]
+\item 求样本均数向量$\bar X$与离差阵$L$；
+\item 求以$n-1$为分母的样本协方差阵$S$，并计算$r_{12},r_{13},r_{23}$；
+\item 某同学在R中直接运行\code{crossprod(X)}，把它当作$L$。指出其错误，并写出正确命令；
+\item 若先对每列作标准化，所得样本协方差阵是什么？是否为单位阵？
+\end{enumerate}
+
+\Question{SUPL1-09}{特征值、线性组合与逆矩阵}
+两个已标准化指标的总体相关阵为
+\[
+R=\begin{pmatrix}1&0.96\\0.96&1\end{pmatrix}.
+\]
+\begin{enumerate}[label=（\arabic*）]
+\item 求$R$的特征值和相应的单位特征向量，判断其是否可逆；
+\item 令$U=(X_1+X_2)/\sqrt2$、$V=(X_1-X_2)/\sqrt2$，求$\Var(U),\Var(V),\Cov(U,V)$；
+\item 求$R^{-1}$，并解方程$Rb=c$，其中$c=(1,1)^\top$；
+\item 若$c$改为$c^*=(1.01,0.99)^\top$，求新的解$b^*$。用特征值解释为何$c$的很小改变可以造成$b$较大的改变。
+\end{enumerate}
+
+\Question{SUPL1-10}{学生体格资料的分析报告评析}
+沿用本章例1.1的12名学生资料。原变量为身高（cm）、体重（kg）和胸围（cm），所给样本协方差阵已保留三位小数：
+\[
+S=\begin{pmatrix}45.722&50.362&32.232\\50.362&69.629&45.466\\32.232&45.466&35.324\end{pmatrix}.
+\]
+某同学将身高和胸围改用米记录，体重仍用千克，并写下以下结论：
+
+“单位转换后，协方差阵的迹从150.675下降到约69.637，说明这12名学生的总体变异减小了约54\%。身高与体重的协方差也显著缩小，说明二者关联变弱；再把各列减去各自均值，就能消除三个变量之间的相关性。”
+
+\begin{enumerate}[label=（\arabic*）]
+\item 写出转换矩阵$D$并计算新协方差阵$S^*$；
+\item 逐项评析上述三项结论，并说明为什么迹在这里不宜直接作跨单位比较；
+\item 若目的只是比较两两线性关联强弱，应报告什么量？给出单位转换前后身高与体重相关系数的关系。
+\end{enumerate}
+
+\clearpage
+\section{参考答案与解析}
+\Answer{SUPL1-01}{相关阵的可行性}
+选D。对任何系数向量$a$，相关阵应满足$a^\top Ra\geq0$。取$a=(-1,1,1)^\top$，得$a^\top Ra=-1.8<0$；其特征值也可算得为$1.8,1.8,-0.6$。相关阵要求整体半正定；逐个检查相关系数的范围还不够。增加样本量或放弃正态性都不能消除这个矛盾。题干限定同一批完整观测，未涉及缺失资料的逐对计算。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-02}{两个线性组合的协方差}
+选B。常数平移不改变协方差。用矩阵式计算：
+\[
+\Cov(U,V)=(2,-1)\Sigma(1,1)^\top=2(4+3)-(3+9)=2.
+\]
+也可展开为$2\Var(X_1)+\Cov(X_1,X_2)-\Var(X_2)$。$13$与$19$分别是$U$和$V$的方差，不能当作二者的协方差。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}、\hyperref[src:PSU-LC]{[2]}。\par}
+
+\Answer{SUPL1-03}{矩阵逆的运算顺序}
+选A。依次从左侧乘$A^{-1}$和$B^{-1}$，得$BX=A^{-1}C$，故$X=B^{-1}A^{-1}C$。这里$(AB)^{-1}=B^{-1}A^{-1}$。矩阵乘法通常不可交换；C、E项在一般$p\ne q$时甚至不满足乘法的维数条件。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-04}{正交变换的性质}
+选E。I由线性变换的协方差公式以及迹的循环性质成立：$\tr(Q^\top\Sigma Q)=\tr(\Sigma QQ^\top)=\tr(\Sigma)$。III由$QQ^\top=I$成立。II错误：任意正交变换只保证旋转或反射，未必使协方差阵成为对角阵；若$Q$的列为$\Sigma$的一组标准正交特征向量，则可以实现对角化。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-05}{均数差的方差}
+选C。先在同一受试者内求差值方差：$\Var(X_2-X_1)=36+25-2\times15=31$。25名受试者彼此独立，所以样本平均差的方差为$31/25=1.24$。若忽略同一个体内的协方差，会误得$(25+36)/25=2.44$；$31$是个体差值的方差。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}、\hyperref[src:PSU-LC]{[2]}。\par}
+
+\Answer{SUPL1-06}{样本协方差阵的秩}
+选B。设中心化数据矩阵为$X_c$，则$S=X_c^\top X_c/(n-1)$。中心化使各列之和为0，因此$\rank(X_c)\leq n-1=3$，并且$\rank(S)=\rank(X_c)\leq3<5$。每列方差为正并不能排除多列之间的线性依赖；把分母从$n-1$换为$n$只会整体缩放，不改变秩。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-07}{不相关、独立与可逆}
+（1）$E(U)=0$、$E(V)=1/3$、$E(U^2)=2/3$，且$UV$恒为0。故
+\[
+\mu=\begin{pmatrix}0\\1/3\end{pmatrix},\qquad
+\Sigma=\begin{pmatrix}2/3&0\\0&2/9\end{pmatrix}.
+\]
+（2）协方差为0，因此二者不相关。但$P(V=1\mid U=0)=1$，而$P(V=1)=1/3$，故不独立。
+
+（3）$\det(\Sigma)=4/27>0$，因此可逆。虽然$V$是$U$的确定函数，但该关系是非线性的；协方差阵奇异对应存在某个非零系数向量$a$，使$a^\top(U,V)^\top$几乎处处为常数，不能把任意非线性函数关系都等同于线性依赖。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-08}{由原始数据填写矩阵输出}
+（1）均数向量及离差阵为
+\[
+\bar X=\begin{pmatrix}4.10\\2.08\\0.604\end{pmatrix},\quad
+L=\begin{pmatrix}0.100&0.030&0.00700\\0.030&0.028&0.00540\\0.00700&0.00540&0.00172\end{pmatrix}.
+\]
+（2）$S=L/4$，即
+\[
+S=\begin{pmatrix}0.025&0.0075&0.00175\\0.0075&0.0070&0.00135\\0.00175&0.00135&0.00043\end{pmatrix}.
+\]
+按$r_{ij}=s_{ij}/\sqrt{s_{ii}s_{jj}}$计算，得到$r_{12}=0.5669$、$r_{13}=0.5337$、$r_{23}=0.7781$。
+
+（3）\code{crossprod(X)}给出未中心化的$X^\top X$。二者满足$X^\top X=L+n\bar X\bar X^\top$。例如未中心化结果的$(1,1)$元为$84.15$，而$L$的$(1,1)$元为$0.10$。正确命令为
+
+\begin{rcode}
+Xc <- scale(X, center = TRUE, scale = FALSE)
+L <- crossprod(Xc)
+S <- L / (nrow(X) - 1)
+\end{rcode}
+（4）按样本标准差标准化后的协方差阵就是原数据的样本相关阵：
+\[
+\widehat R=\begin{pmatrix}1&0.5669&0.5337\\0.5669&1&0.7781\\0.5337&0.7781&1\end{pmatrix}.
+\]
+它的对角线为1，但非对角线不为0，因此不是单位阵。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L1]{[1]}、\hyperref[src:NIST-MATRIX]{[3]}。\par}
+
+\Answer{SUPL1-09}{特征值、线性组合与逆矩阵}
+（1）特征值为$\lambda_1=1.96$、$\lambda_2=0.04$，对应的一组单位特征向量为$q_1=(1,1)^\top/\sqrt2$、$q_2=(1,-1)^\top/\sqrt2$。两特征值均为正，所以$R$正定且可逆，但第二个方向的方差很小。
+
+（2）$U,V$正是沿两个特征向量的线性组合，故$\Var(U)=1.96$、$\Var(V)=0.04$、$\Cov(U,V)=0$。未假设联合正态，不能仅据此断言独立。
+
+（3）由二阶逆矩阵公式，
+\[
+R^{-1}=\frac1{1-0.96^2}\begin{pmatrix}1&-0.96\\-0.96&1\end{pmatrix}
+\approx\begin{pmatrix}12.7551&-12.2449\\-12.2449&12.7551\end{pmatrix},
+\quad b=\begin{pmatrix}0.5102\\0.5102\end{pmatrix}.
+\]
+（4）$c^*-c=(0.01,-0.01)^\top$沿$q_2$方向；逆矩阵在该方向放大$1/0.04=25$倍。因此
+\[
+b^*-b=(0.25,-0.25)^\top,\qquad b^*\approx(0.7602,0.2602)^\top.
+\]
+这说明“可逆”不等于“数值稳定”。第三章讨论高度共线性时，正规方程中很小的特征值同样会放大相应方向上的扰动。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：知识点配套。题干与设问为新编；参考依据\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\Answer{SUPL1-10}{学生体格资料的分析报告评析}
+（1）$D=\operatorname{diag}(0.01,1,0.01)$，所以
+\[
+S^*=DSD^\top=
+\begin{pmatrix}
+0.0045722&0.50362&0.0032232\\
+0.50362&69.629&0.45466\\
+0.0032232&0.45466&0.0035324
+\end{pmatrix}.
+\]
+两迹的数值确为150.675和69.6371046，但数值下降约53.78\%不表示研究对象发生了任何变化。
+
+（2）第一项错误：原来相加的是以cm$^2$与kg$^2$计量的方差，转换后又混入m$^2$；各项数值受单位选择影响，不能解释成可直接比较的物理“总变异”。第二项错误：$s_{12}$由$50.362$变为$0.50362$只是身高缩放为原来的$1/100$，并非关联变弱。这里也未进行统计检验，不能把数值缩小说成“显著”缩小。第三项错误：减去均值只改变位置，不改变协方差与相关系数。
+
+（3）可报告相关系数。由于两次缩放因子均为正，
+\[
+r^*_{12}=\frac{0.01s_{12}}{\sqrt{0.01^2s_{11}s_{22}}}=r_{12}\approx0.8926.
+\]
+若要合成不同量纲的指标，应先依据分析目的规定尺度和权重，并解释合成量的含义。不能仅凭任意单位下的迹给样本“更均匀”的结论。
+\par\nobreak\smallskip\nobreak{\footnotesize\color{Muted}\noindent 来源与改编：案例改编。材料及改编范围见\hyperref[src:NOTE-L1]{[1]}。\par}
+
+\EndExercises

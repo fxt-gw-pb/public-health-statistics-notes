@@ -15,7 +15,11 @@ CONDITIONAL = {
 
 def answer_lead(answer):
     match = re.search(r'\\textbf\{答案[：:]\s*([^}]*)\}', answer)
-    return match[1].strip() if match else ''
+    if match:
+        return match[1].strip()
+    # The 2026-10-10 linear supplement opens each answer with “选C。”.
+    match = re.match(r'\s*选([A-Z])。', answer)
+    return match[1] + '。' if match else ''
 
 
 def grading_for(course, qid, answer, values):
