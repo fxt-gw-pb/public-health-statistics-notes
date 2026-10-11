@@ -277,6 +277,7 @@ def build_chapter(course, path, number=None, stem=None):
     text = macro(text, 'ExerciseChapter', 1, lambda _: '')
     text = macro(text, 'chapter', 1, lambda _: '')
     questions = []
+    contexts = {}
     if kind == 'exercises':
         answer_markers = list(re.finditer(r'\\Answer\{([^}]+)\}\{([^}]+)\}', text))
         answers = {}
@@ -291,6 +292,8 @@ def build_chapter(course, path, number=None, stem=None):
         question_markers = list(re.finditer(r'\\Question\{([^}]+)\}\{([^}]+)\}', question_text))
         # Keep shared tables, subheadings and preambles in their original order.
         replacements = []
+        context_html, context_id, previous_end = None, None, 0
+        context_family, context_serial = None, 0
         for index, marker in enumerate(question_markers):
             qid, qtitle = marker[1], marker[2]
             qnum = f'{number}.{index + 1}'
@@ -307,6 +310,29 @@ def build_chapter(course, path, number=None, stem=None):
             segment_end = question_markers[index + 1].start() if index + 1 < len(question_markers) else len(question_text)
             segment = question_text[marker.end():segment_end]
             choice_sets = list(re.finditer(r'\\begin\{choices\}(.*?)\\end\{choices\}', segment, re.S))
+            # Shared case material sits between questions; carry it until the next group.
+            between = question_text[previous_end:marker.start()]
+            headings = list(re.finditer(r'\\(?:sub)*section\*?\{', between))
+            if index and previous_end == question_markers[index - 1].end():
+                between = between[headings[-1].start():] if headings else ''
+            # The source marks where shared material begins but not where its group ends.
+            # Keep it only within one ID family with increasing numbers (E14-20, E14-21, ...).
+            family, serial = id_family(qid)
+            material = plain_tex(between)
+            if '共用资料' in between or len(material) >= 150:
+                context_id = f'{identifier}:{qid}'
+                labelled = [h.start() for h in headings if between.startswith('共用资料', h.end())]
+                context_html = converter.convert(between[labelled[-1]:] if labelled else between)
+                context_family, context_serial = family, serial - 1
+            elif headings:
+                context_id = context_html = None
+            if context_id and (family != context_family or serial <= context_serial):
+                context_id = context_html = None
+            if context_id:
+                context_serial = serial
+                question['context'] = context_id
+                contexts[context_id] = context_html
+            previous_end = marker.end() + choice_sets[0].end() if choice_sets else marker.end()
             if len(choice_sets) > 1:
                 raise ValueError(f'{identifier}:{qid}: multiple choice sets need explicit handling')
             if choice_sets:
@@ -315,6 +341,11 @@ def build_chapter(course, path, number=None, stem=None):
                 options = [dict(value=chr(65 + i), html=converter.convert(part.strip())) for i, part in enumerate(parts)]
                 grading = grading_for(course['id'], qid, answers.get(qid, ''), [o['value'] for o in options])
                 question['quiz'] = dict(options=options, grading=grading)
+                # A standalone stem for the challenge mode; anchors are namespaced like answers.
+                stem_html = converter.convert(segment[:choices.start()])
+                for sid in re.findall(r'\bid="([^"]+)"', stem_html):
+                    stem_html = stem_html.replace(f'id="{sid}"', f'id="stem-{qid}-{sid}"')
+                question['stem'] = stem_html
                 start = marker.end() + choices.start()
                 end = marker.end() + choices.end()
                 replacements.append((start, end, converter.token(quiz_markup(identifier, question, options, grading))))
@@ -342,13 +373,55 @@ def build_chapter(course, path, number=None, stem=None):
                   html=html, toc=outline.toc, questions=questions, text=searchable,
                   codeCount=converter.code_count, figureCount=len(converter.figures),
                   source=str(path.relative_to(ROOT)), sha256=hashlib.sha256(original.encode()).hexdigest())
+    record['contexts'] = contexts
     return record, converter.figures, converter.warnings
+
+
+LEVEL_SIZE = 6
+
+
+def id_family(qid):
+    """Split E17-C6 into ('E17-C', 6); IDs without a serial form their own family."""
+    match = re.match(r'(.*?)(\d+)[a-z]?$', qid)
+    return (match[1], int(match[2])) if match else (qid, 0)
+
+
+def plain_tex(text):
+    text = re.sub(r'WEBTOKEN\d+END', ' 材料 ' * 10, text)
+    text = re.sub(r'\\(?:sub)*section\*?\{[^}]*\}|\\[A-Za-z]+\*?|[{}\[\]$\s]', '', text)
+    return text
+
+
+def arena_questions(record):
+    """Choice questions with a usable answer key, for the challenge mode."""
+    return [dict(key=f'{record["id"]}:{q["id"]}', chapter=record['id'], course=record['course'], id=q['id'],
+                 context=q.get('context'),
+                 number=q['number'], title=q['title'], stem=q['stem'], options=q['quiz']['options'],
+                 grading=q['quiz']['grading'], answer=q['answer'])
+            for q in record['questions'] if q.get('quiz') and q['quiz']['grading']['status'] != 'unverified']
+
+
+def arena_levels(record):
+    """Split one exercise set into consecutive stages of about LEVEL_SIZE questions."""
+    keys = [q['key'] for q in arena_questions(record)]
+    if not keys:
+        return []
+    count = -(-len(keys) // LEVEL_SIZE)
+    base, extra = divmod(len(keys), count)
+    levels, start = [], 0
+    for index in range(count):
+        size = base + (index < extra)
+        levels.append(dict(id=f'{record["id"]}-{index + 1}', course=record['course'], chapter=record['id'],
+                           number=record['number'], title=record['title'], stage=index + 1, stages=count,
+                           questions=keys[start:start + size]))
+        start += size
+    return levels
 
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True); LOCAL.mkdir(exist_ok=True)
     manifest = dict(title='公卫统计 · 学习笔记', updated='2026-10-11', sourceUpdated='2026-10-11', courses=[], chapters=[])
-    figure_manifest = {}; search = []; all_warnings = []; coverage = {}
+    figure_manifest = {}; search = []; all_warnings = []; coverage = {}; levels = []
     for idx, course in enumerate(COURSES):
         course = dict(course)
         folder = ROOT / 'notes' / course['id']
@@ -371,8 +444,16 @@ def main():
         course['documents'] = []
         course['pdf'] = f'./pdfs/{course["id"]}.pdf'
         course.pop('supplements', None)
+        bank = dict(contexts={}, questions=[])
         for path, number, stem in entries:
             record, figures, warnings = build_chapter(course, path, number, stem)
+            contexts = record.pop('contexts')
+            if record['kind'] == 'exercises':
+                bank['questions'].extend(arena_questions(record))
+                used = {q['context'] for q in arena_questions(record) if q['context']}
+                bank['contexts'].update({k: v for k, v in contexts.items() if k in used})
+                levels.extend(arena_levels(record))
+            record['questions'] = [{k: v for k, v in q.items() if k not in ('stem', 'context')} for q in record['questions']]
             (DATA / (record['id'] + '.json')).write_text(json.dumps(record, ensure_ascii=False), encoding='utf-8')
             figure_manifest[course['id']].extend(figures)
             all_warnings.extend([record['id'] + ': ' + w for w in warnings])
@@ -389,10 +470,12 @@ def main():
         for asset in (folder / 'assets').glob('*.png'):
             shutil.copy2(asset, assetdir / asset.name)
         course['questionCount'] = counts['questions']; manifest['courses'].append(course)
+        (DATA / f'arena-{course["id"]}.json').write_text(json.dumps(bank, ensure_ascii=False), encoding='utf-8')
     manifest['stats'] = dict(lectures=sum(c['chapters'] for c in manifest['courses']),
                              exercises=sum(c['kind'] == 'exercises' for c in manifest['chapters']),
                              questions=sum(c['questionCount'] for c in manifest['courses']), pages=sum(c['pages'] for c in manifest['courses']),
                              figures=sum(len(v) for v in figure_manifest.values()))
+    manifest['levels'] = levels
     (DATA / 'index.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf-8')
     (DATA / 'search.json').write_text(json.dumps(search, ensure_ascii=False), encoding='utf-8')
     (LOCAL / 'figure-manifest.json').write_text(json.dumps(figure_manifest, ensure_ascii=False), encoding='utf-8')
