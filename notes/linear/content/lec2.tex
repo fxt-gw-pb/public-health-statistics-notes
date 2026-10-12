@@ -207,9 +207,9 @@ Y_i\mid x_i\sim N(\mu_{y\mid x_i},\sigma^2)\ \text{且相互独立},\qquad
 \quad\Longrightarrow\quad
 \widehat\sigma^2_{\mathrm{ML}}=\frac Qn,
 \]
-这里$Q=Q(\widehat\beta)$。常用的无偏估计则为
+这里$Q=Q(\widehat\beta)$。其中$\widehat\sigma^2_{\mathrm{ML}}=Q/n$是最大似然估计，常用的无偏估计为
 \[
-\widehat{\sigma}_{\mathrm{ML}}^2=Q/n,\qquad s^2=Q/(n-p).
+s^2=Q/(n-p).
 \]
 分母不同的原因：残差满足$X^\top e=0$这$p$个线性约束，只有$n-p$个自由度，$E(Q)=(n-p)\sigma^2$（见第\ref{sec:resid}节），故$E(Q/n)=\frac{n-p}{n}\sigma^2$偏小，$s^2$无偏。对例3.1，$Q=2.5579$，$n=29$，$p=3$：$\widehat\sigma^2_{\mathrm{ML}}=0.0882$，$s^2=0.0984$。将$\widehat\sigma^2_{\mathrm{ML}}$代回得最大对数似然
 \[
