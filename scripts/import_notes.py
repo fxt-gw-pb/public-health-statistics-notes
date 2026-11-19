@@ -30,6 +30,14 @@ COURSES = [
          description='将回归扩展到二分类、计数与生存资料，建立模型选择的全局视野。',
          topics=['Logistic 回归', '生存分析', '对数线性模型', '计数回归'], exercises={1: 1, 3: 2, 5: 3, 7: 4},
          supplements={8: 'supplement/ex8.tex'}),
+    # R practice notes: prepared from the R learning kit by scripts/prepare_rcode.py.
+    # Chapter 0 is the guide to the kit; there are no exercise sets.
+    dict(id='rcode', title='应用线性回归 · R 实操', english='Applied Linear Regression in R', pages=49,
+         description='把回归、方差分析与重复测量落到 R 代码：该运行哪几行，读哪几个数，结果怎么写。',
+         topics=['数据处理与公式', '回归诊断', '方差分析', '重复测量'], exercises={}, first=0, updated='2026-11-19',
+         downloads=[dict(label='下载原 PDF', href='./pdfs/rcode.pdf', filename='应用线性回归_R实操笔记.pdf'),
+                    dict(label='下载 R 学习包', href='./downloads/rcode-kit.zip', filename='应用线性回归_R实操学习包.zip',
+                         detail='代码 · 数据 · 作业脚本 · LaTeX 源文件')]),
 ]
 
 
@@ -175,6 +183,8 @@ class Converter:
         is_output = kind == 'routput'
         cls = 'code-block output-block' if is_output else 'code-block'
         label = '运行结果' if is_output else lang
+        if kind in ('rcode', 'routput') and options:
+            label = clean_text(re.sub(r'\\([_%&#$])', r'\1', options))
         return self.token(f'<div class="{cls}" data-language="{escape(lang)}"><div class="code-header"><span>{escape(label)}</span><button type="button" class="copy-code" aria-label="复制代码">复制</button></div><pre><code class="language-{escape(lang.lower())}">{escape(body)}</code></pre></div>')
     def figure(self, match):
         name = f'{self.stem}-{len(self.figures) + 1:02d}'
@@ -185,6 +195,9 @@ class Converter:
         # Verbatim comes first: R modulo operators and percent signs are not TeX comments.
         pattern = re.compile(r'\\begin\{(rcode|routput|coursecode|code|verbatim)\}(?:\[([^\]]*)\]|\{([^}]*)\})?(.*?)\\end\{\1\}', re.S)
         text = pattern.sub(lambda m: self.code(m[1], m[3] or m[2] or '', m[4]), text)
+        # Inline verbatim may hold %, braces or backslashes; keep it out of Pandoc.
+        text = re.sub(r'\\[vV]erb([^A-Za-z\s*])(.*?)\1',
+                      lambda m: self.token(f'<code>{escape(m[2])}</code>').strip(), text)
         # URLs may contain percent-encoding, which is not a TeX comment.
         text = macro(text, 'url', 1, lambda url: ' ' + self.token(f'<a class="uri" href="{escape(url)}" target="_blank" rel="noopener noreferrer">{escape(url)}</a>').strip() + ' ')
         text = strip_comments(text)
@@ -427,7 +440,7 @@ def main():
         folder = ROOT / 'notes' / course['id']
         entries = []
         lecture_paths = sorted((folder / 'content').glob('lec*.tex'), key=lambda p: int(p.stem[3:]))
-        for number, path in enumerate(lecture_paths, 1):
+        for number, path in enumerate(lecture_paths, course.pop('first', 1)):
             entries.append((path, number, None))
             if number in course['exercises']:
                 entries.append((folder / 'content' / f'ex{course["exercises"][number]}.tex', number, None))
@@ -443,6 +456,8 @@ def main():
         course['chapters'] = len(lecture_paths)
         course['documents'] = []
         course['pdf'] = f'./pdfs/{course["id"]}.pdf'
+        if not course.get('downloads'):
+            course.pop('downloads', None)
         course.pop('supplements', None)
         bank = dict(contexts={}, questions=[])
         for path, number, stem in entries:

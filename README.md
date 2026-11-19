@@ -2,13 +2,14 @@
 
 [在线阅读](https://fxt-gw-pb.github.io/public-health-statistics-notes/)
 
-应用线性回归、应用多元分析、广义线性模型三份学习总笔记的完整网页阅读版。共 **17 章讲解、14 组习题、518 道习题及解析、2 个勘误附录和 3 份补充题来源说明**，对应原 PDF 共 709 页。
+应用线性回归、应用多元分析、广义线性模型三份学习总笔记，以及应用线性回归的 R 实操笔记，共四门课程的完整网页阅读版。共 **27 章讲解、14 组习题、518 道习题及解析、2 个勘误附录、1 个 R 速查附录和 3 份补充题来源说明**，对应原 PDF 共 758 页。
 
 | 课程 | 讲解 | 习题 | 原笔记 |
 | --- | ---: | ---: | ---: |
 | 应用线性回归 | 5 章 | 210 道 | 234 页 |
 | 应用多元分析 | 4 章 | 135 道 | 180 页 |
 | 广义线性模型 | 8 章 | 173 道 | 295 页 |
+| 应用线性回归 · R 实操 | 10 章（0–9） | —（97 段代码与输出） | 49 页 |
 
 ## 学习功能
 
@@ -29,7 +30,7 @@
 - **段位**：样本新手 → 均值学徒 → 方差行者 → 回归骑士 → 主成分术士 → 似然大师 → 统计宗师，前六级各分 Ⅲ/Ⅱ/Ⅰ。XP 来自首次作答（答对 +10、条件题 +8、答错 +2）、订正、标记掌握（+5）、读完章节（+30）、星星（每颗 +15）、成就（每枚 +50）、每日挑战和学习天数（每天 +10）。同一题只按首次作答计分，章节内作答与闯关共用记录。
 - 16 枚成就徽章、连续学习天数、连击、晋级动画和可选音效（默认关闭）。系统设置“减少动态效果”时关闭彩带、浮动文字等动画。
 - 闯关题目和共用资料来自 `public/data/arena-<课程>.json`，由 `scripts/import_notes.py` 与章节数据一起生成；一组题共用的案例材料只在同一题号系列内连续沿用。
-- 适配电脑和手机，提供三份原 PDF 下载。
+- 适配电脑和手机，提供四份原 PDF 下载；R 实操课程另提供完整 R 学习包（`.Rproj`、数据、脚本、作业代码与 LaTeX 源文件）下载。R 实操没有习题，不进入闯关与习题练习。
 
 ## 个人存档与排行榜
 
@@ -77,7 +78,8 @@ server/               个人存档与排行榜后端（Cloudflare Worker + D1）
 notes/                三门课程最终 LaTeX 正文、宏与配图
 public/data/          已转换的 36 份章节数据、目录及搜索索引
 public/figures/       原图渲染结果与原笔记配图
-public/pdfs/          三份原始总笔记 PDF
+public/pdfs/          四份原始笔记 PDF
+public/downloads/     R 实操学习包 rcode-kit.zip
 scripts/              内容导入、配图渲染和完整性检查
 .github/workflows/    自动构建及 GitHub Pages 发布
 ```
@@ -88,6 +90,12 @@ scripts/              内容导入、配图渲染和完整性检查
 python3 scripts/import_notes.py
 python3 scripts/verify_content.py
 node scripts/check_math.mjs
+```
+
+R 实操笔记来自本机的 R 学习包（`应用线性回归_R实操/`），其 LaTeX 用的是另一套模板。更新时先运行准备脚本，它把原文件复制到 `notes/rcode/source/`，改写成转换脚本能读的 `notes/rcode/content/*.tex`，生成 `references.json` 与配图 PNG，并更新 `public/pdfs/rcode.pdf` 和 `public/downloads/rcode-kit.zip`；然后照常运行上面三条命令：
+
+```sh
+python3 scripts/prepare_rcode.py /path/to/应用线性回归_R实操
 ```
 
 内容转换需要 Pandoc。若修改了 TikZ 统计图，再运行 `python3 scripts/render_figures.py`，它需要 XeLaTeX、Poppler 和 Pillow。`notes/<课程>/references.json` 保留原书引用编号；正文编号或标签变化时应根据新编译的 `main.aux` 更新。原 PDF 可替换 `public/pdfs/` 中对应文件。

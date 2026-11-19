@@ -1,0 +1,140 @@
+\chapter{共线性诊断与岭回归}
+
+\begin{studysource}
+\textbf{来源说明}　课件：第二讲第 10–15 页　课堂代码：回归诊断.R 末尾　脚本：\texttt{scripts/05\_共线性与岭回归.R}　数据：datasetB
+\end{studysource}
+
+
+\section{后果：五个模型并排}
+\begin{rcode}[R · 同一批人、不同自变量组合]
+x <- c("age", "bmi", "waist")
+round(cor(d[, c(x, "glu")]), 3)                  # r(bmi, waist) = 0.968
+mods <- list(bmi = lm(glu ~ bmi, d), waist = lm(glu ~ waist, d),
+             "age+bmi" = lm(glu ~ age + bmi, d), "age+waist" = lm(glu ~ age + waist, d),
+             "age+bmi+waist" = m)
+get <- function(fit, v) {                        # 取某个变量的 b、SE、P，不在模型里就给 NA
+  out <- if (v %in% names(coef(fit))) coef(summary(fit))[v, c(1, 2, 4)] else rep(NA, 3)
+  setNames(out, c("b", "SE", "P"))
+}
+round(t(sapply(mods, function(f) c(bmi = get(f, "bmi"), waist = get(f, "waist")))), 4)
+\end{rcode}
+\begin{routput}
+> round(t(sapply(mods, ...)), 4)
+               bmi.b bmi.SE  bmi.P waist.b waist.SE waist.P
+bmi           0.0634 0.0179 0.0005      NA       NA      NA
+waist             NA     NA     NA  0.0266   0.0072  0.0003
+age+bmi       0.0520 0.0138 0.0002      NA       NA      NA
+age+waist         NA     NA     NA  0.0200   0.0056  0.0005
+age+bmi+waist 0.0671 0.0552 0.2260 -0.0063   0.0223  0.7780
+\end{routput}
+单独放都显著，一起放都不显著，waist 还变了号；但整个方程的 $R^2$ 和 $F$ 几乎不受影响。共线性伤的是“解释单个系数”，不是预测。
+
+\section{VIF、容忍度与条件数}
+\begin{rcode}[R · 共线性诊断]
+vif(m)                                           # 1.03、16.02、16.14
+1 / vif(m)                                       # 容忍度
+1 / (1 - summary(lm(bmi ~ age + waist, data = d))$r.squared)   # 手算 bmi 的 VIF
+sapply(x, function(v)                            # 一行算全部
+  1 / (1 - summary(lm(reformulate(setdiff(x, v), v), data = d))$r.squared))
+coef(summary(m))["bmi", 2] / coef(summary(lm(glu ~ age + bmi, d)))["bmi", 2]   # 4.00
+sqrt(vif(m)["bmi"])                              # 4.00：√VIF 就是标准误膨胀倍数
+ev <- eigen(cor(d[, x]))$values                  # 1.988、0.981、0.032
+sqrt(max(ev) / min(ev))                          # 条件数 kappa = 7.93
+kappa(scale(d[, x]), exact = TRUE)               # 同一个数
+\end{rcode}
+VIF 的经验界是 5（警惕）和 10（严重），条件数的界在教材里从 15 到 30 不等。本例 bmi 加进 waist 后标准误恰好放大 4.00 倍，等于 $\sqrt{16.02}$。
+
+
+\begin{studyexplain}
+\textbf{课堂代码里的两个小问题}
+
+
+\Verb|回归诊断.R| 末尾写的是 \Verb|vif(fit)|，而此时 \Verb|fit| 已被前一行改成了 \Verb|regsubsets| 对象，会报错 \Verb|缺少参数"id"|；\Verb|vif()| 只接受 lm 对象。另一行 \Verb|kappa(scale(d))| 把因变量 glu 也放进了矩阵，而且 \Verb|kappa()| 默认只给近似值。诊断共线性只放自变量，并写 \Verb|exact = TRUE|。
+
+\end{studyexplain}
+
+
+\section{岭回归：MASS::lm.ridge()}
+\begin{rcode}[R · 拟合一串 lambda]
+lam <- seq(0, 100, by = 0.5)
+rr  <- lm.ridge(glu ~ age + bmi + waist, data = d, lambda = lam)
+select(rr)                                  # HKB 1.16、L-W 1.21、GCV 最小在 7.5
+rr$lambda[which.min(rr$GCV)]                # 7.5
+round(t(rr$coef)[lam %in% c(0, 7.5, 20, 30, 60), ], 3)    # 画岭迹用的系数
+round(coef(rr)[lam %in% c(0, 7.5, 30), ], 4)              # 写方程用的系数
+\end{rcode}
+\begin{routput}
+> round(t(rr$coef)[lam %in% c(0, 7.5, 20, 30, 60), ], 3)
+        age   bmi  waist
+  0.0 0.454 0.216 -0.050
+  7.5 0.429 0.129  0.035
+ 20.0 0.397 0.100  0.061
+ 30.0 0.375 0.091  0.066
+ 60.0 0.322 0.079  0.070
+> round(coef(rr)[lam %in% c(0, 7.5, 30), ], 4)
+                age    bmi   waist
+  0.0 2.4617 0.0314 0.0671 -0.0063
+  7.5 2.3235 0.0297 0.0400  0.0044
+ 30.0 2.4546 0.0260 0.0283  0.0083
+\end{routput}
+
+
+\begin{studyexplain}
+\textbf{lm.ridge 的两套系数}
+
+
+\Verb|rr$coef| 是“变量 × λ”的矩阵，自变量已经标准化（按 $n$ 作分母的 SD），不含截距，画岭迹用它，画之前要 \Verb|t()| 转置；\Verb|coef(rr)| 是“λ × 变量”的矩阵，已还原到原始单位并带截距，写回归方程用它。$\lambda=0$ 那一行就是 OLS。
+
+\end{studyexplain}
+
+
+\begin{rcode}[R · 岭迹图]
+matplot(rr$lambda, t(rr$coef), type = "l", lty = 1, lwd = 2,
+        col = c("#0072B2", "#D55E00", "#009E73"),
+        xlab = expression(lambda), ylab = "standardized coefficient")
+abline(h = 0, col = "grey70"); abline(v = 7.5, lty = 2)
+legend("topright", x, col = c("#0072B2", "#D55E00", "#009E73"), lty = 1, bty = "n")
+plot(rr$lambda, rr$GCV, type = "l")         # GCV 曲线
+\end{rcode}
+
+
+\includegraphics{fig2_ridge.pdf}
+
+\figtitle{图 2　datasetB 的岭迹与 GCV 曲线。waist 系数在 λ 很小时就穿过 0 变正，之后稳定；GCV 在 0–20 之间几乎是平的}
+
+
+GCV 在 $\lambda=0$ 与 $\lambda=7.5$ 之间只差 0.6\%（图 \ref{fig:ridge}b）。GCV 衡量的是预测误差，而共线性不伤预测，所以它帮不上“读系数”的忙；岭参数要结合岭迹是否平稳、系数是否合理来定，并说明理由。
+
+\section{自己写一遍岭回归}
+\begin{rcode}[R · 按定义手算岭回归]
+lambda <- 30
+X  <- as.matrix(d[, x])
+Xc <- scale(X, center = TRUE, scale = FALSE)
+sc <- sqrt(colSums(Xc^2) / nrow(X))        # lm.ridge 用 n 作分母
+Z  <- sweep(Xc, 2, sc, "/")                # 标准化后的自变量
+b_std <- solve(crossprod(Z) + lambda * diag(3), crossprod(Z, d$glu - mean(d$glu)))
+b_raw <- drop(b_std) / sc                  # 还原到原始单位
+b0    <- mean(d$glu) - sum(b_raw * colMeans(X))
+c(b0, b_raw)                               # 与 coef(lm.ridge(..., lambda = 30)) 完全相同
+R <- cor(X); ry <- cor(X, d$glu)
+solve(R + (lambda / nrow(X)) * diag(3), ry)   # 课件笔记的 (R + kI)^{-1} r_y，k = lambda/n
+\end{rcode}
+最后一行与课件笔记的相关阵形式一致，只是尺度不同：\Verb|lm.ridge| 的 $\lambda$ 对应 $k=\lambda/n$。不同软件对标准化的分母（$n$ 或 $n-1$）和 $\lambda$ 的归一方式不同，岭参数的数值不能跨软件直接比。
+
+\section{比岭回归更常用的处理}
+\begin{rcode}[R · 只留一个，或合成一个]
+summary(lm(glu ~ age + bmi, data = d))                       # 只留 BMI
+d$obesity <- (as.numeric(scale(d$bmi)) + as.numeric(scale(d$waist))) / 2
+summary(lm(glu ~ age + obesity, data = d))                   # z 分数平均
+pc <- prcomp(d[, c("bmi", "waist")], scale. = TRUE)
+summary(pc)                                                  # 第一主成分占 98.4%
+\end{rcode}
+课件第 15 页给的顺序是：先由研究问题决定只留一个，其次合成一个指标，再次才是岭回归。合成指标与第一主成分在本例给出相同的 $t$（3.70），因为两个标准化变量的平均就是第一主成分的方向（主成分的正负号是任意的）。
+
+\section{强影响点会改变岭参数的选择}
+\begin{routput}
+> for (s in c("all", "del149")) ...
+all : GCV 最优 lambda = 7.5 ；bmi、waist 同时为正的最小 lambda = 3
+del149 : GCV 最优 lambda = 1.5 ；bmi、waist 同时为正的最小 lambda = 18.5
+\end{routput}
+删掉 149 号后，要把 waist 拉成正号需要大得多的 λ。作业二第二题因此在“全样本、删 149、删 150、两人都删”四种样本下画岭迹，选了一个在四种情形下都已平稳的 λ = 30，而没有采用全样本 GCV 给出的 7.5（第 9 章）。

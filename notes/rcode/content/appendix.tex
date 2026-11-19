@@ -1,0 +1,150 @@
+\chapter{附录}
+\section{A　函数速查表}
+\label{app:cheat}
+按“要做的事”查函数。包名写在函数前，\Verb|stats| 与 \Verb|graphics| 是 R 自带的，不用 \Verb|library()|。
+
+
+
+\tbltitle{表 11　任务 → R 函数 → 读哪个数}
+\begin{tabular}{p{3.3cm}p{6.6cm}p{4.6cm}}
+\toprule
+任务 & 写法 & 读什么\\
+\midrule
+
+
+\multicolumn{3}{l}{\textbf{拟合与输出}}\\
+拟合线性模型 & \Verb|fit <- lm(y ~ x1 + x2, data = d)| & ——\\
+系数表、$R^2$、整体 F & \Verb|summary(fit)| & Estimate、SE、P；R²；F 行\\
+系数 CI & \Verb|confint(fit, level = 0.95)| & 2.5\%、97.5\%\\
+均数 CI / 个体 PI & \Verb|predict(fit, newdata, interval = "confidence"/"prediction")| & fit、lwr、upr\\
+标准化系数 & \Verb|coef(fit)[-1] * sapply(X, sd) / sd(y)| & 同一模型内比较\\
+偏相关 & \Verb|ppcor::pcor.test(x, y, z)|；或残差对残差的 \Verb|cor()| & estimate、P\\
+\midrule
+\multicolumn{3}{l}{\textbf{检验与模型比较}}\\
+嵌套模型 F 检验 & \Verb|anova(small, big)| & F、Pr(>F)\\
+逐个删 / 加变量 & \Verb|drop1(fit, test = "F")|、\Verb|add1(fit, scope, test = "F")| & 每行的 F、P\\
+I 型平方和 & \Verb|anova(fit)| & 注意顺序\\
+II / III 型平方和 & \Verb|car::Anova(fit, type = "II")|；III 型先 \Verb|options(contrasts = c("contr.sum", "contr.poly"))| & ——\\
+信息准则 & \Verb|AIC(fit)|、\Verb|BIC(fit)|、\Verb|extractAIC(fit)| & 越小越好\\
+\midrule
+\multicolumn{3}{l}{\textbf{变量筛选}}\\
+全子集 & \Verb|leaps::regsubsets(y ~ ., data, nbest = 1)| & \Verb|summary()$adjr2|、\Verb|$cp|、\Verb|$bic|\\
+按 AIC / BIC 逐步 & \Verb|step(m0, scope = list(lower = ~1, upper = formula(full)), direction = "both", k = 2 或 log(n))| & 最终模型\\
+按 P 值逐步 & \Verb|olsrr::ols_step_forward_p(fit, p_val = )|、\Verb|ols_step_both_p(fit, p_enter = , p_remove = )| & 入选过程\\
+\midrule
+\multicolumn{3}{l}{\textbf{回归诊断}}\\
+四张诊断图 & \Verb|par(mfrow = c(2, 2)); plot(fit)| & 形状\\
+正态 & \Verb|shapiro.test(resid(fit))|、\Verb|car::qqPlot(fit)| & W、P；两端\\
+等方差 & \Verb|car::ncvTest(fit)|、\Verb|car::spreadLevelPlot(fit)| & χ²、P\\
+独立（有序数据） & \Verb|car::durbinWatsonTest(fit)|、\Verb|lmtest::dwtest(fit)| & DW≈2\\
+线性 & \Verb|car::residualPlots(fit)|、\Verb|crPlots()|、\Verb|avPlots()| & 曲率检验 P\\
+加权最小二乘 & \Verb|lm(..., weights = w)| & 再做一次诊断\\
+稳健标准误 & \Verb|lmtest::coeftest(fit, vcov = sandwich::vcovHC(fit, type = "HC3"))| & 新的 SE、P\\
+杠杆 / 残差 / Cook & \Verb|hatvalues()|、\Verb|rstandard()|、\Verb|rstudent()|、\Verb|cooks.distance()| & 界值见第 \ref{sec:influence} 节\\
+影响点总览 & \Verb|car::influencePlot(fit)|、\Verb|car::outlierTest(fit)|、\Verb|influence.measures(fit)| & ——\\
+删点重拟合 & \Verb|update(fit, data = d[-k, ])| & 系数变化\\
+稳健回归 & \Verb|MASS::rlm(formula, data, method = "MM")| & 系数、权重 \Verb|$w|\\
+\midrule
+\multicolumn{3}{l}{\textbf{共线性与岭回归}}\\
+VIF & \Verb|car::vif(fit)| & > 10 严重\\
+条件数 & \Verb|sqrt(max(ev)/min(ev))|，\Verb|ev <- eigen(cor(X))$values| & 15–30 以上\\
+岭回归 & \Verb|MASS::lm.ridge(formula, data, lambda = seq(...))| & \Verb|select()|、\Verb|$coef|、\Verb|coef()|\\
+岭迹图 & \Verb|matplot(rr$lambda, t(rr$coef), type = "l")| & 平稳的位置\\
+\midrule
+\multicolumn{3}{l}{\textbf{一般线性模型}}\\
+t 检验 & \Verb|t.test(y ~ g, data, var.equal = TRUE)| & 等价于 \Verb|lm(y ~ g)|\\
+设计矩阵 & \Verb|model.matrix(fit)| & X 的列\\
+换参照组 & \Verb|relevel(f, ref = "...")|、\Verb|factor(f, levels = c(...))| & 只换对比\\
+单因素多重比较 & \Verb|TukeyHSD(aov(...))|、\Verb|pairwise.t.test(y, g, p.adjust.method = "bonferroni")| & 校正 P\\
+交互图 & \Verb|interaction.plot(x, trace, y)| & 是否平行\\
+单元格均数 & \Verb|tapply(y, list(a, b), mean)| & ——\\
+简单效应 & \Verb!pairs(emmeans(fit, ~ a | b))! & 每个 b 下 a 的差\\
+\midrule
+\multicolumn{3}{l}{\textbf{协方差分析}}\\
+斜率同质性 & \Verb|anova(lm(y ~ g + x), lm(y ~ g * x))| & P > 0.05\\
+校正后组间检验 & \Verb|car::Anova(lm(y ~ x + g), type = "II")| & g 一行\\
+校正均数与比较 & \Verb|emm <- emmeans(fit, ~ g)|；\Verb|pairs(emm, adjust = "bonferroni")| & emmean、estimate、P\\
+\midrule
+\multicolumn{3}{l}{\textbf{重复测量}}\\
+宽转长 & \Verb|tidyr::pivot_longer(d, cols, names_to, values_to)| & ——\\
+重复测量方差分析 & \Verb|afex::aov_ez(id, dv, data, within, between)|；\Verb|summary()| & F、Mauchly、GG/HF\\
+校正后的表 & \Verb|anova(mod, correction = "GG", es = "pes")| & 校正自由度、P\\
+基础 R 写法 & \Verb|aov(y ~ g * t + Error(id / t))| & 分层误差\\
+Mauchly 检验 & \Verb|mauchly.test(lm(Y ~ 1), X = ~ 1)|（Y 为宽型矩阵） & W、P\\
+两个方向的简单效应 & \Verb!emmeans(mod, ~ time | group)!、\Verb!emmeans(mod, ~ group | time)! & pairs()\\
+交互对比 & \Verb|contrast(emmeans(mod, ~ time * group), interaction = c("consec", "pairwise"))| & 差距的变化\\
+\bottomrule
+\end{tabular}
+
+
+
+\section{B　课件笔记例题的复现}
+\label{app:notes}
+《应用线性回归\_课件笔记》各章的 R 代码块，数据原先直接写在代码里。现在数据存为 \Verb|data/| 下的 CSV，代码整理在 \Verb|scripts/09_课件笔记例题复现.R|，可以从头跑到尾。笔记修订记录中提到当时本机没装 leaps 和 ez，这两段未能直接运行；现在两个包都已安装，全部代码块均已运行，结果与笔记给出的数值一致：
+
+
+\tbltitle{表 10　课件笔记例题与复现结果}
+\begin{tabular}{p{3.2cm}p{3.8cm}p{7.0cm}}
+\toprule
+例题 & 数据文件 & 复现的关键数值\\
+\midrule
+第 1 章 矩阵 & body12.csv & 均数向量、协方差阵、相关阵、特征值\\
+例 3.1 肺活量 & lung29.csv & $b=(-0.5657, 0.005017, 0.05406)$；$Q=2.558$，$s^2=0.0984$\\
+例 15-1 全子集与 AIC & diabetes27\_hw.csv & \Verb|which.max(adjr2)| = 11；AIC = 120.78；extractAIC = 42.157\\
+偏回归图 & 同上 & 斜率 −0.2870 = 全模型中 x3 的系数\\
+岭回归 & 同上 & GCV 最优 λ = 8.83；系数 6.325、0.279、0.243、−0.207、0.500\\
+y 方向异常值 & outlier\_toy6.csv & 第 3 点 $t_3=4.316$，$P=0.0497$；加入第 6 点后 $h_{66}=0.836$，$D_6=0.106$\\
+偏相关 & score\_iq18.csv & 控制智商后数学与语文偏相关 0.4612；$t=2.013$，$P=0.062$\\
+完全随机设计 & mice\_oneway30.csv & 设计矩阵秩为 3；\Verb|lm(x ~ g - 1)| 给出各组均数\\
+随机区组 & rabbit\_block24.csv & 正规方程解与 \Verb|lm()| 相同；\Verb|anova()|\\
+2×2 析因 & anemia\_factorial12.csv & SS = 1.6875、0.9075、0.3675\\
+协方差分析 & chol\_ancova26.csv & 平行性 $P=0.935$；组别 $P=0.03755$（以 fit3 为分母 0.04202）；校正均数 5.491、6.386\\
+单组重复测量 & weight\_rm10.csv & $W=0.1305$，一阶近似 $P=0.0882$，GG = 0.5397\\
+多组重复测量 & anesthesia\_rm15.csv & $W=0.2931$，GG = 0.6787\\
+\bottomrule
+\end{tabular}
+
+
+\section{C　常见报错与排查}
+\label{app:errors}
+
+
+\tbltitle{表 12　本课程代码里实际会遇到的报错}
+\begin{tabular}{p{5.2cm}p{4.2cm}p{4.8cm}}
+\toprule
+报错（中文环境的提示） & 原因 & 改法\\
+\midrule
+
+
+\Verb|cannot open file 'd://data/a.csv'|（无法打开文件） & 课堂代码的绝对路径 & 用 .Rproj 打开，改成 \Verb|"data/datasetA.csv"|\\
+\Verb|object 'lwt_group' not found|（找不到对象） & 变量在数据框里，没写 \Verb|data =|；或依赖 \Verb|attach()| & 函数里写 \Verb|data = da|\\
+\Verb|could not find function "pivot_longer"| & 没有加载包 & \Verb|library(tidyr)|；包没装就先 \Verb|install.packages()|\\
+\Verb|'newdata' had 1 row but variables found have 200 rows| & newdata 的列名与模型变量名不一致 & 列名照模型公式写\\
+\Verb|contrasts can be applied only to factors with 2 or more levels| & 子集后某个因子只剩一个水平 & \Verb|droplevels()|，或检查筛选条件\\
+\Verb|non-conformable arrays|（非整合陈列） & \Verb|tapply()| 结果是一维数组，和矩阵运算 & \Verb|as.vector()| 包一下\\
+\Verb|argument "id" is missing|（缺少参数 “id”） & 对 regsubsets 对象调用 \Verb|vif()|、\Verb|coef()| & \Verb|vif()| 用在 lm 上；\Verb|coef(fit, id = 3)|\\
+\Verb|Cannot add <ggproto> objects together| & ggplot 某行末尾漏了 \Verb|+|，或 \Verb|+| 写在了行首 & 每行末尾写 \Verb|+|\\
+\Verb|The package "Hmisc" is required| & \Verb|mean_cl_normal| 依赖 Hmisc & 改用 \Verb|mean_se|，或安装 Hmisc\\
+中文显示为乱码 & 文件编码 & \Verb|read.csv(..., fileEncoding = "UTF-8")|\\
+因子水平变成 NA & \Verb|factor(x, levels = )| 中的名字与原值不一致（如 \Verb|"(110, Inf]"| 的空格） & 先 \Verb|levels(x)| 再复制\\
+III 型结果与课件不同 & 没设和为零编码 & \Verb|options(contrasts = c("contr.sum", "contr.poly"))|\\
+olsrr 阈值没生效 & 参数名写错被忽略 & 前进 / 后退用 \Verb|p_val|\\
+\bottomrule
+\end{tabular}
+
+
+
+\section{D　课堂原始代码与整理版对照}
+\label{app:orig}
+原件保存在 \Verb|课堂原始代码/|，没有改动；完整对照表在 \Verb|课堂原始代码/对照说明.md|。这里只列直接运行原件会出问题的地方：
+
+\begin{itemize}
+\item \textbf{所有原件}：路径 \Verb|d://data/…|（\Verb|a.csv| 即 datasetA，\Verb|hw.csv| 即 diabetes27\_hw）；大量 \Verb|attach()|。
+\item \textbf{回归诊断.R}：\Verb|regsubsets(glu ~ ., data = d[,-1])| 把 age 也删掉了；\Verb|vif(fit)| 时 fit 已是 regsubsets 对象，报错；\Verb|kappa(scale(d))| 包含了因变量且是近似值。
+\item \textbf{筛选自变量.R}：\Verb|predict(lm(y ~ x), …)| 中 x 未定义。
+\item \textbf{stepwise.R}：第 17–18 行是粘贴的输出，source 时语法错误。
+\item \textbf{第三讲.R}：\Verb|var.test(bwt ~ lwt_group)| 等没写 \Verb|data = da|；协方差分析 \Verb|anova()| 中分组在协变量前面。
+\item \textbf{第四讲.R}：读入对象叫 \Verb|da|、后面用 \Verb|bp|；\Verb|pivot_longer| 前未加载 tidyr；\Verb|anova(lm(post ~ group + base))| 的分组一行未校正（第 \ref{sec:bp} 节）。
+\end{itemize}
+
+课件中与数据不符、本笔记已注明的地方：第二讲第 7 页残差 SD 的四等分数值；第四讲第 22 页 Mauchly 卡方近似的校正项；第四讲第 31 页折线图上的均数；第四讲第 10–11 页方差分析表中的“分组”一行。

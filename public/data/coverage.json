@@ -214,5 +214,71 @@
     "webQuestions": 0,
     "sourceChars": 34017,
     "webChars": 19842
+  },
+  "rcode-lec0": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 3200,
+    "webChars": 2427
+  },
+  "rcode-lec1": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 6167,
+    "webChars": 1055
+  },
+  "rcode-lec2": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 8627,
+    "webChars": 2757
+  },
+  "rcode-lec3": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 7962,
+    "webChars": 3118
+  },
+  "rcode-lec4": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 8497,
+    "webChars": 3615
+  },
+  "rcode-lec5": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 5792,
+    "webChars": 2209
+  },
+  "rcode-lec6": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 8878,
+    "webChars": 3239
+  },
+  "rcode-lec7": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 8153,
+    "webChars": 3715
+  },
+  "rcode-lec8": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 8252,
+    "webChars": 2264
+  },
+  "rcode-lec9": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 5179,
+    "webChars": 4358
+  },
+  "rcode-appendix": {
+    "sourceQuestions": 0,
+    "webQuestions": 0,
+    "sourceChars": 7853,
+    "webChars": 2458
   }
 }

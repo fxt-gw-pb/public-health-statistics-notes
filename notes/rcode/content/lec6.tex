@@ -1,0 +1,218 @@
+\chapter{一般线性模型：分类变量、方差分析与交互}
+
+\begin{studysource}
+\textbf{来源说明}　课件：第三讲第 2–19 页、第 25 页练习　课堂代码：第三讲.R 前半、析因变异分解.docx　脚本：\texttt{scripts/06\_一般线性模型\_分类变量与方差分析.R}　数据：MASS::birthwt、glucose\_block、sbp\_factorial2x2、datasetC\_glm
+\end{studysource}
+
+
+第三讲的核心一句话：t 检验、方差分析、回归、协方差分析都是 $y=X\beta+\varepsilon$，差别只在 $X$ 里放什么列。在 R 里这句话的意思是：它们都可以用 \Verb|lm()| 拟合，\Verb|t.test()|、\Verb|aov()| 只是换了一种输出格式。
+
+\section{两样本 t 检验就是一个 0/1 列的回归}
+\begin{rcode}[R · birthwt：母亲体重是否 > 110 磅]
+library(MASS)
+bw <- birthwt                                          # 189 名产妇，R 自带
+bw$lwt_group <- cut(bw$lwt, breaks = c(-Inf, 110, Inf))
+t.test(bwt ~ lwt_group, data = bw, var.equal = TRUE)    # 方差齐的成组 t 检验
+fit_t <- lm(bwt ~ lwt_group, data = bw)
+summary(fit_t)
+c(t2 = coef(summary(fit_t))[2, "t value"]^2, F = anova(fit_t)[1, "F value"])
+head(model.matrix(fit_t))                              # 一列 1，一列 0/1
+\end{rcode}
+\begin{routput}
+> summary(fit_t)
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)          2656.34      97.31  27.298  < 2e-16 ***
+lwt_group(110, Inf]   400.58     114.71   3.492 0.000598 ***
+> c(t2 = ..., F = ...)
+      t2        F
+12.19377 12.19377
+\end{routput}
+截距 2656.34 是参照组（≤ 110 磅）的平均出生体重，系数 400.58 是两组均数差，$t=3.492$、$P=0.0006$ 与 t 检验完全相同，$t^2=F$。\Verb|t.test()| 默认是 Welch 检验（\Verb|var.equal = FALSE|），要和回归对上必须写 \Verb|var.equal = TRUE|。
+
+\section{分类变量不能当数字用}
+\begin{rcode}[R · 四组：编成 1/2/3/4 与哑变量的区别]
+bw$lwt4 <- cut(bw$lwt, breaks = c(-Inf, 110, 130, 150, Inf))
+coef(lm(bwt ~ as.integer(lwt4), data = bw))   # 只有一个斜率 151.4：强加了等距、线性
+coef(lm(bwt ~ lwt4, data = bw))               # 3 个哑变量，各组均数自由
+\end{rcode}
+\begin{routput}
+> coef(lm(bwt ~ lwt4, data = bw))
+   (Intercept)  lwt4(110,130]  lwt4(130,150] lwt4(150, Inf]
+     2656.3396       353.8318       428.3604       468.3270
+\end{routput}
+因子进入 \Verb|lm()| 时，R 自动把 $k$ 个水平拆成 $k-1$ 个 0/1 列（处理编码，contr.treatment），系数 = 各组均数 − 参照组均数。这就是课件第 11 页的 $\hat y=2656.34+353.83g_2+428.36g_3+468.33g_4$。如果分组变量在数据里是 1、2、3 这样的数字（如 \Verb|glucose_block.csv| 的 subject），建模前一定要 \Verb|factor()|。
+
+\section{单因素方差分析、参照组与多重比较}
+\begin{rcode}[R · 整体检验、换参照组、两两比较]
+fit4 <- lm(bwt ~ lwt4, data = bw)
+anova(fit4)                                       # F = 4.26，P = 0.006
+bw$lwt4_r <- relevel(bw$lwt4, ref = "(150, Inf]") # 名字要和 levels() 一字不差
+coef(lm(bwt ~ lwt4_r, data = bw))                 # 系数全变
+anova(lm(bwt ~ lwt4_r, data = bw))                # F、P 不变
+TukeyHSD(aov(bwt ~ lwt4, data = bw))              # Tukey HSD
+pairwise.t.test(bw$bwt, bw$lwt4, p.adjust.method = "bonferroni")
+library(emmeans); pairs(emmeans(fit4, ~ lwt4), adjust = "tukey")
+\end{rcode}
+换参照组只改变“读哪一组对比”，不改变拟合值、残差、$R^2$ 和整体 $F$，这正是课件第 25 页练习 2 要说明的。多重比较三种写法中，\Verb|TukeyHSD()| 只接受 \Verb|aov()| 对象；\Verb|emmeans()| 可以接任何 \Verb|lm|，含协变量、含交互时也能用，后面几章一直用它。
+
+\section{用 AIC 比较不嵌套的模型}
+\begin{rcode}[R · 连续、二分、四分]
+c(continuous  = AIC(lm(bwt ~ lwt, data = bw)),    # 3026.5
+  two_groups  = AIC(fit_t),                        # 3021.2
+  four_groups = AIC(fit4))                         # 3024.5
+\end{rcode}
+三个模型互不嵌套，不能用 \Verb|anova()| 比，但可以比 AIC：同一个因变量、同一批 189 人、都是 \Verb|lm()| 的最大似然，三条前提都满足。
+
+\section{对比编码：处理编码与和为零编码}
+\begin{rcode}[R · contrasts]
+contrasts(bw$lwt4)                                    # 默认处理编码
+options(contrasts = c("contr.sum", "contr.poly"))     # 改为和为零编码
+coef(lm(bwt ~ lwt4, data = bw))       # 截距 = 各组均数的平均 2968.97；系数 = 效应 alphai
+options(contrasts = c("contr.treatment", "contr.poly"))  # 用完立即恢复
+\end{rcode}
+\Verb|options(contrasts = ...)| 是全局设置，改了不恢复，后面所有模型的系数含义都会变。只想对一个模型改编码，可以写 \Verb|lm(y ~ g, contrasts = list(g = "contr.sum"))|。
+
+\section{随机区组设计}
+\begin{rcode}[R · 处理 + 区组]
+gb <- read.csv("data/glucose_block.csv")      # 8 人 × 4 个放置时间
+gb$time <- factor(gb$time_min); gb$subject <- factor(gb$subject)   # 必须是因子
+fit_rb <- lm(glucose ~ time + subject, data = gb)
+anova(fit_rb)
+anova(lm(glucose ~ time, data = gb))          # 不控制区组
+\end{rcode}
+\begin{routput}
+> anova(fit_rb)
+          Df Sum Sq Mean Sq F value    Pr(>F)
+time       3 943.59 314.531  78.487 1.412e-11 ***
+subject    7 806.22 115.174  28.740 2.199e-09 ***
+Residuals 21  84.16   4.007
+> anova(lm(glucose ~ time, data = gb))
+time       3 943.59 314.531  9.8912 0.0001295 ***
+Residuals 28 890.38  31.799
+\end{routput}
+与课件第 15 页一致：$F=78.49$，$P=1.4\times10^{-11}$。不放区组时，区组间变异 806.22 全部进了误差，$F$ 从 78.5 掉到 9.9。\Verb|coef(fit_rb)| 给出课件第 14 页的 $b$（截距 96.03 是“第 1 人、0 分钟”的拟合值，time45 = −1.50 等是与 0 分钟之差），\Verb|model.matrix(fit_rb)| 就是那张 32 × 11 的设计矩阵。
+
+\section{2×2 析因设计与交互作用}
+\begin{rcode}[R · 交互模型、单元格均数、交互图]
+f2 <- read.csv("data/sbp_factorial2x2.csv")
+f2$a <- factor(f2$a); f2$b <- factor(f2$b)
+fit_ab <- lm(sbp_drop ~ a * b, data = f2)
+anova(fit_ab)
+with(f2, tapply(sbp_drop, list(A = a, B = b), mean))      # 单元格均数
+with(f2, interaction.plot(a, b, sbp_drop, type = "b"))    # 基础 R 交互图
+\end{rcode}
+\begin{routput}
+> anova(fit_ab)
+          Df  Sum Sq Mean Sq F value    Pr(>F)
+a          1 1278.24 1278.24 755.345 < 2.2e-16 ***
+b          1  583.11  583.11 344.576 < 2.2e-16 ***
+a:b        1   91.03   91.03  53.789 3.713e-09 ***
+Residuals 44   74.46    1.69
+> with(f2, tapply(sbp_drop, list(A = a, B = b), mean))
+   B
+A           0      1
+  0  2.933333  7.150
+  1 10.500000 20.225
+\end{routput}
+
+
+\includegraphics{fig3_factorial.pdf}
+
+\figtitle{图 3　2×2 析因的交互图（均数 ± 标准误）。两条线不平行：B 药存在时 A 药的降压效果更大}
+
+
+交互 $F=53.79$，$P=3.7\times10^{-9}$，与课件第 19 页一致。课堂代码用 ggplot 画交互图，写法见脚本 §6.7；关键是 \Verb|stat_summary(fun = mean, geom = "line")| 加 \Verb|group = b|。
+
+\section{手算析因的平方和分解}
+课堂上的 \Verb|析因变异分解.docx| 列出了单元格均数、边际均数，以及“如果没有交互”时各格应有的均数。这几步在 R 里是：
+
+\begin{rcode}[R · SSA、SSB、SSAB]
+y <- f2$sbp_drop; gm <- mean(y); nc <- 12
+cm <- with(f2, tapply(sbp_drop, list(a, b), mean))    # 2×2 单元格均数
+am <- rowMeans(cm); bm <- colMeans(cm)                 # 边际均数
+SSA  <- 2 * nc * sum((am - gm)^2)                      # 1278.235
+SSB  <- 2 * nc * sum((bm - gm)^2)                      #  583.110
+SSAB <- nc * sum((cm - outer(am, rep(1, 2)) - outer(rep(1, 2), bm) + gm)^2)   # 91.025
+SSE  <- sum((y - gm)^2) - SSA - SSB - SSAB             #   74.459
+outer(am, rep(1, 2)) + outer(rep(1, 2), bm) - gm       # 无交互时的格均数
+\end{rcode}
+最后一行给出 1.556、8.527、11.877、18.848，就是 docx 第三张表；实际格均数与它的差（如 $2.933-1.556$）就是交互效应 $(\alpha\beta)_{ij}$。\Verb|outer(u, v)| 生成 $u_iv_j$ 矩阵，\Verb|outer(am, rep(1, 2))| 就是把行边际均数铺满每一列。作业三的 3×3 手算用的是同一套写法。
+
+\section{III 型平方和必须配和为零编码}
+\label{sec:type3}
+\begin{rcode}[R · Anova(type = "III") 的正确与错误写法]
+library(car)
+options(contrasts = c("contr.sum", "contr.poly"))
+Anova(lm(sbp_drop ~ a * b, data = f2), type = "III")   # 正确
+options(contrasts = c("contr.treatment", "contr.poly"))
+Anova(lm(sbp_drop ~ a * b, data = f2), type = "III")   # 错误：主效应那两行不对
+\end{rcode}
+\begin{routput}
+> Anova(..., type = "III")      # contr.sum
+a           1278.2  1  755.345 < 2.2e-16 ***
+b            583.1  1  344.576 < 2.2e-16 ***
+a:b           91.0  1   53.789 3.713e-09 ***
+> Anova(..., type = "III")      # 默认 contr.treatment
+a           343.53  1 203.000 < 2.2e-16 ***
+b           106.68  1  63.041 4.922e-10 ***
+a:b          91.03  1  53.789 3.713e-09 ***
+\end{routput}
+在默认处理编码下，含交互模型里 a 的系数是“b 取参照水平时”A 的效应，III 型检验的就是它，所以 SS 变成 343.5。第三讲课堂代码在 \Verb|Anova(fit, type = "III")| 之前写了 \Verb|options(contrasts = c("contr.sum", "contr.poly"))|，就是这个原因。平衡设计里 I、II、III 型相同；不平衡时三者不同，下一节的练习 3 就是例子。
+
+\section{交互显著之后：简单效应}
+\begin{rcode}[R · emmeans 的条件比较]
+pairs(emmeans(fit_ab, ~ a | b))     # 固定 B 的每个水平，比较 A
+pairs(emmeans(fit_ab, ~ b | a))     # 固定 A 的每个水平，比较 B
+contrast(emmeans(fit_ab, ~ a * b), interaction = "pairwise")   # 交互对比本身
+\end{rcode}
+\begin{routput}
+> pairs(emmeans(fit_ab, ~ a | b))
+b = 0:
+ contrast estimate    SE df t.ratio p.value
+ a0 - a1     -7.57 0.531 44 -14.248 <0.0001
+b = 1:
+ a0 - a1    -13.07 0.531 44 -24.620 <0.0001
+\end{routput}
+不用 B 药时 A 药多降 7.57 mmHg，用 B 药时多降 13.07 mmHg；两者之差 5.51 就是交互对比的估计值。\Verb!~ a | b! 里竖线读作“在 b 的每个水平下”，第 8 章重复测量的两个方向的简单效应也是这样写。
+
+\section{课件第 25 页四道练习}
+数据 \Verb|datasetC_glm.csv|，完整代码在脚本 §6.11，这里只列要点和结果。
+
+
+\begin{studyexplain}
+\textbf{练习：glu \textasciitilde{} sex：t 检验与回归逐项核对}
+
+
+\Verb|t.test(glu ~ sex, data = g, var.equal = TRUE)| 与 \Verb|lm(glu ~ sex, data = g)|：均数差 0.4895，$t=4.641$，$P=5.7\times10^{-6}$，$t^2=F=21.54$。设计矩阵前 3 行 \Verb|model.matrix(m1)[1:3, ]| 都是 (1, 1)，因为前三人都是男性、female 是参照组。
+
+\end{studyexplain}
+
+
+
+\begin{studyexplain}
+\textbf{练习：glu \textasciitilde{} bmi3：换参照组}
+
+
+以 normal 为参照：截距 4.838，overwt +0.843，obese +1.203；以 obese 为参照：截距 6.041，normal −1.203，overwt −0.360。整体 $F=50.72$ 不变，\Verb|all.equal(fitted(m2a), fitted(m2b))| 为 TRUE。
+
+\end{studyexplain}
+
+
+
+\begin{studyexplain}
+\textbf{练习：glu \textasciitilde{} sex * ov：不平衡的两因素设计}
+
+
+性别与超重的人数不平衡（61/59/39/81），三种平方和不同：sex 一行 I 型 14.38、II 型 6.34、III 型 4.15；交互一行三者都相同，$F=12.99$，$P=0.0004$。简单效应：女性中超重者血糖高 0.557，男性中高 1.216（\Verb!pairs(emmeans(m3, ~ ov | sex))!），男性中超重的影响更大。
+
+\end{studyexplain}
+
+
+
+\begin{studyexplain}
+\textbf{练习：glu \textasciitilde{} bmi3 + age：协方差分析}
+
+
+见下一章第 \ref{sec:ancova-c} 节。
+
+\end{studyexplain}

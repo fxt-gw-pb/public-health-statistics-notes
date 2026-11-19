@@ -1,0 +1,138 @@
+\section{R 工作流：从读数据到取结果}
+\srcnote{脚本：\texttt{scripts/01\_R工作流与数据处理.R}\quad 数据：datasetA、bp、dm、sbp\_factorial3x3}
+
+课上的代码默认大家已经会 R 的基本操作，但作业里卡住的地方，多半不是模型本身，而是数据没读对、因子水平顺序不对、长宽格式不对，或者不知道结果存在模型对象的哪里。这一章把这些操作集中过一遍。
+
+\subsection{路径与读入}
+在 \Verb|.Rproj| 打开的项目里，工作目录就是项目根目录，路径一律写相对路径：
+
+\begin{RCode}[R · 读入数据]
+getwd()                                   # 应当是 .../应用线性回归_R实操
+d  <- read.csv("data/datasetA.csv")       # 默认 header = TRUE，逗号分隔
+bp <- read.csv("data/bp.csv", fileEncoding = "UTF-8")   # 含中文的文件加编码
+f3 <- read.csv("data/sbp_factorial3x3.csv", check.names = FALSE,
+               fileEncoding = "UTF-8")    # 中文列名原样保留
+names(f3) <- c("id", "A", "B", "y")       # 再改成短的英文名
+read.csv("data/datasetC.csv")[, -1]       # [, -1]：去掉第 1 列 id
+\end{RCode}
+
+几个参数的作用：\Verb|fileEncoding = "UTF-8"| 防止中文乱码，在 Windows 上尤其需要；\Verb|check.names = FALSE| 让列名原样保留（默认会改写不合规的列名，例如以数字开头的列名前面加 \Verb|X|，带 BOM 的首列变成 \Verb|X.U.FEFF.编号|）；课堂代码里常见的 \Verb|[, -1]| 是把第一列（id 或行号）去掉，只留分析变量，这样后面可以写 \Verb|glu ~ .|。
+
+\subsection{先看数据}
+任何分析之前先做三件事：\Verb|str()| 看每列的类型，\Verb|summary()| 看量级和范围，\Verb|head()| 看前几行。数值变量被读成了字符（chr）、单位差了 10 倍、出现了不合理的极端值，都能在这一步发现。
+
+\begin{RCode}[R · 第一眼]
+str(d); summary(d); head(d)
+sapply(d[, -1], mean); sapply(d[, -1], sd)   # 每列的均数、标准差
+round(cor(d[, -1]), 3)                        # 相关矩阵
+colSums(is.na(d))                             # 每列缺失数
+\end{RCode}
+
+取子集的几种写法在诊断时会反复用到：\Verb|d[d$age > 70, ]| 按条件取行，\Verb|subset(d, age > 70, select = c(id, glu))| 同时选列，\Verb|which(d$glu == max(d$glu))| 返回行号，\Verb|d[-149, ]| 删掉第 149 行（删点做敏感性分析就是这样写的）。
+
+\subsection{因子：分组变量与参照组}
+分类变量在 R 里要是因子（factor）。建模时，因子的\textbf{第一个水平}就是参照组，回归系数都是“其他水平减参照组”。所以水平顺序必须自己掌握。
+
+\begin{RCode}[R · cut、factor 与 relevel]
+d$agegrp <- cut(d$age, breaks = c(29, 45, 58, 79),         # 区间 (29,45]、(45,58]、(58,79]
+                labels = c("30-45", "46-58", "59-78"))
+table(d$agegrp)                                           # 56 / 94 / 50
+levels(d$agegrp)                                          # 第一个就是参照组
+d$agegrp2 <- relevel(d$agegrp, ref = "59-78")             # 只换参照组
+d$agegrp3 <- factor(d$agegrp, levels = c("46-58", "30-45", "59-78"))  # 指定全部顺序
+bp$group  <- factor(bp$group, levels = c("方案A", "方案B"), labels = c("A", "B"))
+\end{RCode}
+
+\begin{notebox}[易错：cut() 生成的水平名]
+\Verb|cut()| 不给 \Verb|labels| 时，水平名形如 \Verb|"(-Inf,110]"|、\Verb|"(110, Inf]"|——注意后者逗号后面有一个空格（R 对 \Verb|Inf| 的格式化造成的）。第三讲课堂代码 \Verb|factor(..., levels = c("(110, Inf]", "(-Inf,110]"))| 必须一字不差，少了空格就会把整组变成 \Verb|NA|。最稳妥的办法是先 \Verb|levels(x)| 看一眼，再复制粘贴。
+\end{notebox}
+
+\subsection{分组汇总}
+\begin{RCode}[R · 分组汇总的四种写法]
+tapply(d$glu, d$agegrp, mean)                                  # 向量
+aggregate(glu ~ agegrp, data = d, FUN = mean)                  # 数据框
+aggregate(cbind(base, post) ~ group, data = bp, FUN = mean)    # 多个变量
+aggregate(glu ~ agegrp, data = d,
+          FUN = function(x) c(mean = mean(x), sd = sd(x), n = length(x)))
+sapply(split(d, d$agegrp), function(s) coef(lm(glu ~ bmi, data = s))[2])  # 分层回归
+\end{RCode}
+最后一行先用 \Verb|split()| 把数据按组拆成列表，再对每一组拟合回归、取斜率，第一讲“分层看斜率”、第三讲“各组单独拟合斜率”、作业四“各组斜率”都是这一行。
+
+\subsection{宽型与长型}
+重复测量数据常以宽型录入（一人一行，每个时点一列），而 \Verb|aov_ez()|、\Verb|emmeans()|、\Verb|ggplot()| 都要长型（一人每个时点一行）。转换用 tidyr：
+
+\begin{RCode}[R · pivot\_longer]
+library(tidyr)
+dm <- read.csv("data/dm.csv", fileEncoding = "UTF-8")
+dl <- pivot_longer(dm, cols = c(hba1c_0, hba1c_3, hba1c_6),
+                   names_to = "time", values_to = "hba1c")
+dl$time <- factor(dl$time, levels = c("hba1c_0", "hba1c_3", "hba1c_6"),
+                  labels = c("T0", "M3", "M6"))       # 时间必须是因子，且顺序要对
+nrow(dm); nrow(dl)                                    # 40 → 120
+pivot_wider(dl, names_from = time, values_from = hba1c)   # 转回宽型
+\end{RCode}
+
+\subsection{模型公式}
+\Verb|lm()|、\Verb|aov()|、\Verb|t.test()|、\Verb|aggregate()| 都用同一套公式语法，波浪线左边是因变量，右边描述设计矩阵 $X$ 的列：
+
+\begin{table}[htbp]
+\centering\small
+\caption{常用公式写法}
+\begin{tabular}{@{}ll@{}}
+\toprule
+写法 & 含义\\
+\midrule
+\Verb|y ~ x1 + x2| & 两个主效应\\
+\Verb|y ~ .| & 数据框中除 y 外的全部变量\\
+\Verb|y ~ a * b| & 等于 \Verb|a + b + a:b|，主效应加交互\\
+\Verb|y ~ a:b| & 只有交互项\\
+\Verb|y ~ x - 1| & 去掉截距（分类变量时系数即各组均数）\\
+\Verb|y ~ x + I(x^2)| & 公式里做算术要包 \Verb|I()|，否则 \Verb|^| 被理解为交互展开\\
+\Verb|log(y) ~ x| & 对因变量变换\\
+\Verb|update(fit, . ~ . - x1)| & 在原模型上删变量；\Verb|. ~ . + I(x^2)| 加二次项\\
+\Verb|update(fit, data = d[-149, ])| & 换数据重拟合（删点敏感性分析）\\
+\Verb|reformulate(c("a","b"), "y")| & 用字符串拼出 \Verb|y ~ a + b|，循环建模时用\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\Verb|model.matrix(fit)| 可以把公式实际生成的设计矩阵打印出来。第三讲“把研究设计翻译成 X 的列”，在 R 里就是看这个矩阵。
+
+\subsection{从模型对象里取结果}
+\Verb|lm()| 的返回值是一个列表，\Verb|summary(fit)| 也是。写报告、做表、手算核对时，用提取函数比从屏幕上抄数字可靠：
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{lm 对象的常用提取函数}
+\label{tab:extract}
+\begin{tabular}{@{}ll@{\qquad}ll@{}}
+\toprule
+函数 & 取出什么 & 函数 & 取出什么\\
+\midrule
+\Verb|coef(fit)| & 系数 $b$ & \Verb|fitted(fit)| & 拟合值 $\hat y$\\
+\Verb|confint(fit)| & 系数的 95\% CI & \Verb|resid(fit)| & 残差 $e$\\
+\Verb|vcov(fit)| & $s^2(X^\top X)^{-1}$ & \Verb|hatvalues(fit)| & 杠杆值 $h_{ii}$\\
+\Verb|sigma(fit)| & 剩余标准差 $s$ & \Verb|rstandard(fit)| & 内学生化残差\\
+\Verb|df.residual(fit)| & $n-p-1$ & \Verb|rstudent(fit)| & 外学生化残差\\
+\Verb|deviance(fit)| & 残差平方和 SSE & \Verb|cooks.distance(fit)| & Cook 距离\\
+\Verb|nobs(fit)| & 样本量 & \Verb|model.matrix(fit)| & 设计矩阵 $X$\\
+\Verb|logLik(fit)| & 对数似然 & \Verb|AIC(fit)|、\Verb|BIC(fit)| & 信息准则\\
+\Verb|coef(summary(fit))| & 系数表（矩阵） & \Verb|extractAIC(fit)| & step() 用的简略 AIC\\
+\Verb|summary(fit)$r.squared| & $R^2$ & \Verb|summary(fit)$adj.r.squared| & 校正 $R^2$\\
+\Verb|summary(fit)$fstatistic| & 整体 $F$ 及自由度 & \Verb|anova(fit)| & 方差分析表（I 型）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+例如 \Verb!coef(summary(fit))["bmi", "Pr(>|t|)"]! 直接取出 bmi 的 P 值；\Verb|coef(summary(fit))[, "t value"]^2| 一次算出各变量的偏 $F$。
+
+\subsection{不用 attach()}
+课堂代码常写 \Verb|attach(d)|，之后直接用列名。它的问题是：先后 attach 两份含同名变量的数据，后面的会被前面的遮盖；对 \Verb|d| 做的修改不会同步到已 attach 的副本。第二讲的 \Verb|回归诊断.R| 连续 attach 了三份数据，就是这个隐患。整理版一律改为在函数里写 \Verb|data = d|，临时计算用 \Verb|with(d, cor(bmi, glu))|。
+
+\subsection{保存结果}
+\begin{RCode}[R · 存表、存图、存模型]
+write.csv(tab, "output/table.csv", row.names = FALSE)
+pdf("output/scatter.pdf", width = 5, height = 4)    # 矢量图，插进 LaTeX/Word 都清楚
+plot(glu ~ bmi, data = d); dev.off()                 # dev.off() 才真正写完文件
+saveRDS(fit, "output/fit.rds"); fit <- readRDS("output/fit.rds")
+\end{RCode}

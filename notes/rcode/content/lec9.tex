@@ -1,0 +1,74 @@
+\chapter{四次作业的代码导读}
+
+\begin{studysource}
+\textbf{来源说明}　脚本：\texttt{homework/hw1–hw4\_*.R}，内容与各次作业 LaTeX 附录中的代码相同，只把读数据和存图的路径改成了学习包的 \texttt{data/}、\texttt{output/}；四份脚本都已在学习包里重新跑通
+\end{studysource}
+
+
+这一章不重复作业报告的结论，而是按“题目要什么 → 用哪几个函数 → 输出里看哪个数”梳理每份脚本，方便复习时对照。
+
+\section{作业一：偏 F 筛选、标准化系数、区间估计}
+
+\tbltitle{表 9　作业一（diabetes27\_hw.csv，n = 27）}
+\begin{tabular}{p{3.6cm}p{5.6cm}p{5.0cm}}
+\toprule
+题目要求 & 代码 & 关键结果\\
+\midrule
+含 4 个自变量的初始模型，drop1 偏 F 检验定最终模型 & \Verb|drop1(full, test = "F")|；\Verb|m3 <- update(full, . ~ . - tc)|；\Verb|drop1(m3, test = "F")|；\Verb|anova(m3, full)| & tc：$F(1,22)=0.152$，$P=0.70$，删去；余下三个 $P<0.05$，停\\
+最终模型的偏回归系数、$R^2$ & \Verb|summary(fit)|、\Verb|confint(fit)| & tg 0.402、insulin −0.287、hba1c 0.663；$R^2=0.598$，校正 0.546\\
+标准化偏回归系数 & \Verb|b * sx / sy|；或 \Verb|scale()| 后回归 & 0.354、−0.360、0.413，hba1c 最大\\
+自变量取均数时的 CI 与 PI & \Verb|predict(fit, new, interval = "confidence"/"prediction")| & 11.93；CI 11.14–12.71，PI 7.77–16.08\\
+思考：tc 为何进入全模型后不显著 & 偏相关（残差对残差）、逐个加变量看 tc 系数的变化、25 号删除前后 & tc 与 tg 相关 0.63，且 25 号 tc、tg 都极高\\
+思考：逐步法的不足 & \Verb|add1|/\Verb|drop1| 手工前进；\Verb|step()|；bootstrap 500 次 & 前进与后退终点不同；最常选中的模型只占约 3 成\\
+\bottomrule
+\end{tabular}
+
+
+值得记住的几行写法：\Verb|coef(summary(full))[, "t value"]^2| 一次得到所有变量的偏 $F$；\Verb|reformulate(setdiff(names(b), v), v)| 构造“某个 x 对其余 x”的公式以手算 VIF；\Verb|backward()| 函数里的 \Verb|repeat {...; break}| 循环是写任何逐步过程的模板。
+
+\section{作业二：全模型的回归诊断与 datasetB 的岭回归}
+\paragraph{第一题（diabetes27 全模型）。}
+\begin{itemize}
+\item LINE：\Verb|plot(m, labels.id = d1$id)| 四张图；\Verb|shapiro.test|（$P=0.82$）、\Verb|ncvTest|（$P=0.98$）、\Verb|durbinWatsonTest|（行序无意义，仅作参考）。题目指定的三项检验都不针对线性，所以补了 \Verb|residualPlots(m, plot = FALSE)| 和 hba1c 二次项：\Verb|anova(m, update(m, . ~ . + I(hba1c^2)))|，$P=0.016$，线性存疑。
+\item 共线性：\Verb|vif(m)| 为 2.19、1.78、1.28、1.27，条件数由 \Verb|eigen(cor(...))| 计算，不严重；tc 不显著主要不是共线性，而是 25 号与 tg 的重叠。
+\item 强影响点：把 \Verb|hatvalues|、\Verb|rstudent|、\Verb|cooks.distance| 放进一个数据框后排序。25 号 $h=0.613$、$D=0.990$，学生化残差只有 1.86，是高杠杆而非离群；学生化残差最大的是 26 号（2.85）。\Verb|outlierTest(m)| 做 Bonferroni 校正。
+\item 删除 25 号：\Verb|update(m, data = d1[-k, ])|，tc 系数 0.142 → −0.243，符号翻转；\Verb|rlm(..., method = "MM")| 给出不删点的稳健估计。
+\end{itemize}
+
+\paragraph{第二题（datasetB 岭回归）。}
+\begin{itemize}
+\item 四种样本（全部、删 149、删 150、两人都删）用 \Verb|lapply(sets, function(i) lm.ridge(..., d2[i, ], lambda = lam))| 一次拟合。
+\item GCV 最优 λ 分别为 7.5、1.5、6.0、1.0；bmi 与 waist 同时为正的最小 λ 分别为 3、18.5、3、15.5；“λ 再增 10 系数变化不超过 0.01”的最小 λ 分别为 18.5、30、20、30.5。综合取 λ = 30。
+\item 最终方程 \Verb|coef(lm.ridge(glu ~ age + bmi + waist, d2, lambda = 30))|：$\hat y=2.4546+0.0260\,\text{age}+0.0283\,\text{bmi}+0.0083\,\text{waist}$，并用 $(Z^\top Z+\lambda I)^{-1}Z^\top y$ 手算核对（\Verb|stopifnot(all.equal(...))|）。
+\item \Verb|ridge.inf()| 函数计算岭回归下的杠杆值和类 Cook 距离：$\lambda=0$ 时与 \Verb|cooks.distance()| 完全相同（脚本用 \Verb|stopifnot| 检查），λ = 30 时 149 号的影响明显减小。
+\end{itemize}
+
+\section{作业三：3×3 析因设计方差分析}
+\begin{itemize}
+\item 读入与整理：\Verb|check.names = FALSE| 保留中文列名后改名；\Verb|factor(substr(d$A, 1, 2))| 把“A1(10mg)”截成 A1；\Verb|table(d$A, d$B)| 确认每格 6 人；\Verb|tapply(d$y, list(d$A, d$B), mean)| 得到 3×3 均数表。
+\item 编码：开头 \Verb|options(contrasts = c("contr.sum", "contr.poly"))|，与模型 $\sum\alpha_i=0$ 的约束一致，也保证 III 型平方和正确（第 6.9 节）。
+\item 方差分析表：\Verb|anova(lm(y ~ A * B))|，A $F(2,45)=74.92$，B $F=48.26$，A×B $F(4,45)=3.26$，$P=0.020$。平衡设计 I、II、III 型相同。再由表 1 的均数和标准差手算 SS（\Verb|SSE <- (n - 1) * sum(cs^2)|），与软件一致。
+\item 前提：\Verb|leveneTest(y ~ A * B)|（$P=0.57$）、\Verb|shapiro.test(resid(m))|（$P=0.030$）、\Verb|outlierTest(m)| 找到 28 号（Bonferroni $P=0.013$）；删去 28 号后不平衡，改用 \Verb|Anova(m28, type = 2)|，结论不变。
+\item 主效应：\Verb|TukeyHSD(aov(y ~ A * B), c("A", "B"))|；自写 \Verb|contr1()| 函数做剂量的线性、二次趋势对比，$SS=nL^2/\sum w^2$。
+\item 交互：\Verb|outer(lin, lin)| 等生成 4 个交互对比，线性 × 线性 SS = 96.08，占交互 SS 的 90\%（$F=11.75$，$P=0.0013$），其余 3 个自由度 $P=0.73$；\Verb|simple()| 函数做单独效应（用全模型 MSE）。
+\end{itemize}
+
+\section{作业四：三组协方差分析与两组重复测量}
+\paragraph{第 1 题（knee3.csv，三种康复方案）。}按第 7 章的三步：\Verb|anova(lm(post ~ pre * group))| 斜率同质 $P=0.758$（各组斜率 1.00、1.07、0.95）；\Verb|Anova(lm(post ~ pre + group), type = 2)| 组间 $F(2,86)=8.03$，$P=0.0006$，偏 $\eta^2=0.157$；\Verb|emmeans(fit, ~ group)| 校正均数 A 78.6、B 76.6、C 82.7；\Verb|pairs(emm, adjust = "bonferroni")|：C 比 A 高 4.04（$P=0.034$），比 B 高 6.07（$P=0.0005$），A、B 无差别（$P=0.62$）。脚本还特意对照了 \Verb|anova(lm(post ~ group + pre))|，演示顺序反了时组别一行是未校正的。
+
+\paragraph{第 2 题（stroke.csv，60 例脑卒中，两组 × 三个时点）。}
+\begin{itemize}
+\item \Verb|pivot_longer()| 转长型后 \Verb|aov_ez(id = "id", dv = "y", data = L, within = "time", between = "group", type = 3)|。
+\item 球形：Mauchly $W=0.683$，$P=1.9\times10^{-5}$，拒绝；GG $\varepsilon=0.759$，按 GG 校正报告。脚本还用合并协方差阵和正交对比手算了 $W$ 与 $\varepsilon$，并写了 \Verb|boxM()| 函数检验两组协方差阵是否相同（$P=0.14$）。
+\item 三个 $F$：组别 $F(1,58)=3.51$，$P=0.066$；时间 $F=170.7$；交互 $F=13.70$，GG 校正 $P=4.2\times10^{-5}$。
+\item 简单效应：\Verb!emmeans(mod, ~ time | group)! 与 \Verb!emmeans(mod, ~ group | time)! 两个方向；交互对比 \Verb|contrast(..., interaction = c("consec", "pairwise"))|：两组差距在 0–4 周扩大 5.23（$P<0.0001$），4–8 周再扩大 3.10（$P=0.12$）。
+\end{itemize}
+
+
+\begin{studyexplain}
+\textbf{作业代码的共同写法}
+
+
+四份脚本都遵循同一个结构：开头读数据并 \Verb|str()| 核对 → 描述统计与题目给的表核对 → 主分析 → 前提检查 → 敏感性分析 → 画图（\Verb|pdf(..., useDingbats = FALSE)| 存矢量图）。复习时可以把它当作一份完整分析的模板。
+
+\end{studyexplain}

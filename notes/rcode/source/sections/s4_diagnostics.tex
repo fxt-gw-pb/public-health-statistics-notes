@@ -1,0 +1,203 @@
+\section{回归诊断}
+\srcnote{课件：第二讲第 3–9 页、第 16–21 页\quad 脚本：\texttt{scripts/04\_回归诊断.R}\quad 数据：datasetB（n = 150，模拟数据，埋了异方差、共线性和 149、150 两个异常个体）}
+
+第二讲的例子是一个“看起来很好”的模型：$R^2=0.459$，$F=41.35$，$P<0.001$。诊断要回答的是：这些数字能不能信。
+
+\begin{RCode}[R · 模型]
+library(car); library(MASS); library(lmtest); library(sandwich)
+d <- read.csv("data/datasetB.csv")          # 注意 id 在最后一列
+m <- lm(glu ~ age + bmi + waist, data = d)
+n <- nrow(d); p <- 3                        # p = 自变量个数
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{诊断清单：每一项用什么函数、看什么、本例结果}
+\label{tab:diag}
+\begin{tabular}{@{}p{1.7cm}p{4.6cm}p{3.6cm}p{4.4cm}@{}}
+\toprule
+条件 & R & 看什么 & 本例\\
+\midrule
+线性 & \Verb|plot(m, which = 1)|、\Verb|residualPlots(m)|、\Verb|crPlots(m)| & 平滑线是否贴着 0；曲率检验 P & 大体可以；bmi、waist 曲率 P≈0.01–0.04\\
+独立 & 研究设计；有序数据才用 \Verb|durbinWatsonTest(m)| & 抽样是否独立 & 横断面数据，DW 无意义\\
+正态 & \Verb|plot(m, which = 2)|、\Verb|shapiro.test(resid(m))| & Q-Q 图两端 & W = 0.900，P = 1.4e-8，重尾\\
+等方差 & \Verb|plot(m, which = 3)|、\Verb|ncvTest(m)| & 点带是否喇叭形 & χ² = 57.6，P = 3.2e-14\\
+共线性 & \Verb|vif(m)|、条件数 & VIF > 10 & bmi 16.0、waist 16.1（第 5 章）\\
+强影响点 & \Verb|hatvalues|、\Verb|rstudent|、\Verb|cooks.distance|、\Verb|influencePlot| & 杠杆 × 残差 & 149 号 D = 0.86；150 号 t = 6.85\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{四张诊断图}
+\Verb|plot(m)| 依次输出四张图（\Verb|par(mfrow = c(2, 2))| 放在一页）：
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig1_diag4.pdf}
+\caption{datasetB 全模型的四张诊断图。左上：残差–拟合值；右上：正态 Q-Q；左下：尺度–位置；右下：残差–杠杆（虚线为 Cook 距离等高线）}
+\label{fig:diag4}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{which = 1 残差–拟合值}：平滑线是否贴着 0 看线性，点带宽度是否一致看等方差。本例平滑线大体水平，点带左窄右宽。
+\item \textbf{which = 2 Q-Q 图}：只看两端。本例右上 150、149 号明显上翘，左下 102 号下坠。
+\item \textbf{which = 3 尺度–位置}：纵轴是 $\sqrt{|\text{标准化残差}|}$，平滑线上斜就是方差随拟合值增大。
+\item \textbf{which = 5 残差–杠杆}：右上角越过 Cook 等高线的点是强影响点，本例是 149 号。
+\end{itemize}
+\Verb|plot(m, which = 4)| 是 Cook 距离针状图，\Verb|plot(m, which = 1, id.n = 3)| 可以改标注点的个数。
+
+\subsection{正态性与等方差}
+\begin{RCode}[R · 正态与方差齐性]
+shapiro.test(resid(m))                   # W = 0.900，P = 1.4e-8
+qqPlot(m, id = list(n = 2))              # car 版 Q-Q 图，带置信带，标出 102、150
+ncvTest(m)                               # Chisquare = 57.6，P = 3.2e-14
+q <- cut(fitted(m), quantile(fitted(m), 0:4 / 4), include.lowest = TRUE)
+round(tapply(resid(m), q, sd), 2)        # 按拟合值四等分后各段残差的 SD
+\end{RCode}
+\begin{ROut}
+> round(tapply(resid(m), q, sd), 2)
+   [4,4.55] (4.55,4.85] (4.85,5.37] (5.37,6.01]
+       0.20        0.34        0.50        0.88
+\end{ROut}
+最高段残差标准差是最低段的 4 倍多。课件第 7 页表中写的是 0.19 → 0.98，分段方式略有不同，结论一致。\Verb|ncvTest()| 的原假设是“方差齐”；它和 Shapiro 检验一样对样本量很敏感，图和检验要一起看。
+
+\subsection{独立性}
+\begin{RCode}[R · Durbin–Watson]
+durbinWatsonTest(m)                                   # DW = 1.653，P ~ 0.04（bootstrap，每次略不同）
+dwtest(m)                                             # lmtest 版本，单侧
+durbinWatsonTest(update(m, data = d[sample(n), ]))    # 打乱行序，结果就变了
+\end{RCode}
+DW 检验的前提是观测有天然顺序（时间、空间）。本例是横断面体检数据，行序只是录入先后，打乱行序 DW 就变，说明它在这里没有意义。独立性靠研究设计判断：重复测量、整群抽样、同一家庭或医院的人，误差都不独立，要用重复测量方差分析、混合效应模型或 GEE（第 8 章）。
+
+\subsection{线性}
+\begin{RCode}[R · 线性的几种查法]
+residualPlots(m)        # 每个自变量一张残差图 + 曲率检验；Tukey test 针对整体
+crPlots(m)              # 成分 + 残差图：看某个自变量是否需要非线性项
+avPlots(m)              # 偏回归图：斜率等于该变量在全模型里的系数
+anova(m, update(m, . ~ . + I(age^2)))     # 怀疑谁弯曲，就加谁的二次项检验
+\end{RCode}
+\begin{ROut}
+> residualPlots(m)
+           Test stat Pr(>|Test stat|)
+age           1.8721          0.06320 .
+bmi           2.0911          0.03826 *
+waist         2.5092          0.01320 *
+Tukey test    1.1185          0.26337
+\end{ROut}
+\Verb|residualPlots()| 每一行是把该变量的二次项加进模型后的 $t$ 检验，最后一行 Tukey 检验看拟合值的二次项。作业二第一题就是靠这一步发现 hba1c 的二次项显著（$P=0.016$）。偏回归图也可以手工画，原理就是第 2 章“残差对残差”：
+
+\begin{RCode}[R · 手工偏回归图（以 bmi 为例）]
+e_y <- resid(lm(glu ~ age + waist, data = d))   # y 中扣掉其他自变量的部分
+e_x <- resid(lm(bmi ~ age + waist, data = d))   # bmi 中扣掉其他自变量的部分
+plot(e_x, e_y); abline(lm(e_y ~ e_x))
+coef(lm(e_y ~ e_x))[2]                          # 0.0671，等于 coef(m)["bmi"]
+\end{RCode}
+
+\subsection{方差不齐的三种补救}
+\begin{RCode}[R · WLS、稳健标准误、对数变换]
+w  <- 1 / fitted(lm(abs(resid(m)) ~ fitted(m)))^2     # 估计每人的 SD，权重 = 1/SD²
+mw <- lm(glu ~ age + bmi + waist, data = d, weights = w)
+ncvTest(mw)                                             # P = 0.28：补救后再查一遍
+coeftest(m, vcov = vcovHC(m, type = "HC3"))             # 系数不变，只换标准误
+ml <- lm(log(glu) ~ age + bmi + waist, data = d)
+ncvTest(ml)                                             # chi2 = 40.9，改善但未根治
+(exp(coef(ml)[-1]) - 1) * 100                           # log(y) 模型：每增 1 单位变化的百分数
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{三种处理下 bmi 的系数与标准误}
+\begin{tabular}{@{}lS[table-format=1.4]S[table-format=1.4]S[table-format=1.3]l@{}}
+\toprule
+做法 & {系数} & {标准误} & {P} & 说明\\
+\midrule
+普通 OLS & 0.0671 & 0.0552 & 0.226 & 标准误按方差齐算，不可信\\
+加权最小二乘 & 0.0642 & 0.0238 & 0.008 & 对症：系数略变，标准误缩小\\
+OLS + HC3 稳健标准误 & 0.0671 & 0.0705 & 0.343 & 系数不动，标准误更保守\\
+\bottomrule
+\end{tabular}
+\TableNote{数据为 datasetB，模型 glu ~ age + bmi + waist。WLS 权重按课件第 21 页的做法估计。}
+\end{table}
+加权之后 bmi 的 P 值跨过了 0.05，但 waist 依然不显著。这说明 bmi、waist 不显著的主因不在方差，而在共线性（第 5 章）。
+
+\subsection{杠杆值、学生化残差与 Cook 距离}
+\label{sec:influence}
+\begin{RCode}[R · 影响度量]
+inf <- data.frame(id = d$id, h = hatvalues(m), r_int = rstandard(m),
+                  r_ext = rstudent(m), D = cooks.distance(m))
+head(inf[order(-inf$D), ], 3)                    # 按 Cook 距离排序
+c(mean_h = (p + 1) / n, h_cut = 2 * (p + 1) / n, D_cut = 4 / (n - p - 1))
+which(hatvalues(m) > 2 * (p + 1) / n)            # 高杠杆
+which(abs(rstudent(m)) > 3)                      # 响应方向离群
+which(cooks.distance(m) > 4 / (n - p - 1))       # 强影响
+influencePlot(m)                                 # 横轴杠杆，纵轴学生化残差，圈大小 = D
+outlierTest(m)                                   # 最大 |t| 的 Bonferroni 校正 P
+summary(influence.measures(m))                   # DFBETAS、DFFIT、COVRATIO 一次给出
+\end{RCode}
+\begin{ROut}
+> head(inf[order(-inf$D), ], 3)
+     id          h     r_int     r_ext          D
+149 149 0.29653465  2.863906  2.937793 0.86435133
+150 150 0.03165966  5.972340  6.846671 0.29154614
+102 102 0.03030998 -3.150737 -3.252448 0.07757414
+> c(mean_h = ..., h_cut = ..., D_cut = ...)
+    mean_h      h_cut      D_cut
+0.02666667 0.05333333 0.02739726
+\end{ROut}
+149 号（24 岁、BMI 36.2、腰围 119）杠杆值 0.297，是平均值的 11 倍，Cook 距离最大；150 号（70 岁、偏瘦、血糖 8.8）学生化残差 6.85，但待在自变量空间中心，“拽不动”回归线，D 反而较小。残差最大的点不一定是影响最大的点。
+
+\begin{notebox}[几个界值的写法要和自己的 p 对上]
+本笔记和课件中 $p$ 指自变量个数，含截距的参数个数是 $p+1$。平均杠杆 $=(p+1)/n$，高杠杆界 $2(p+1)/n$，Cook 距离界 $4/(n-p-1)$。如果写成 \Verb|k <- length(coef(m))|（已含截距），界值就是 \Verb|2*k/n| 和 \Verb|4/(n-k)|，数值相同。这些都只是“筛出来逐个看原始记录”的筛子。
+\end{notebox}
+
+三个量都可以手算，公式与课件笔记第 3 章一致：
+
+\begin{RCode}[R · 手算核对]
+h <- hatvalues(m); e <- resid(m); s <- sigma(m); k <- p + 1
+r  <- e / (s * sqrt(1 - h))                       # 内学生化残差 = rstandard(m)
+tt <- r * sqrt((n - k - 1) / (n - k - r^2))       # 外学生化残差 = rstudent(m)
+D  <- r^2 / k * h / (1 - h)                       # Cook 距离 = cooks.distance(m)
+yhat_del <- predict(update(m, data = d[-149, ]), newdata = d)
+sum((fitted(m) - yhat_del)^2) / (k * s^2)         # 定义：删掉 149 号后全部拟合值的移动
+\end{RCode}
+
+\subsection{敏感性分析与稳健回归}
+\begin{RCode}[R · 删点重拟合与 rlm]
+m149 <- update(m, data = d[-149, ]); m150 <- update(m, data = d[-150, ])
+sapply(list(all = m, del149 = m149, del150 = m150), function(x)
+  c(coef(x), R2 = summary(x)$r.squared, sigma = sigma(x)))
+mr  <- rlm(glu ~ age + bmi + waist, data = d)               # Huber M 估计
+round(mr$w[c(149, 150)], 3)                                 # 0.375、0.161：异常点被降权
+mmm <- rlm(glu ~ age + bmi + waist, data = d, method = "MM")
+\end{RCode}
+\begin{ROut}
+> sapply(...)
+                all  del149  del150
+(Intercept)  2.4617  3.4314  2.4427
+age          0.0314  0.0336  0.0287
+bmi          0.0671  0.1241  0.0739
+waist       -0.0063 -0.0369 -0.0068
+R2           0.4594  0.4791  0.4963
+sigma        0.5438  0.5301  0.4744
+\end{ROut}
+删掉 149 号，bmi 系数从 0.067 跳到 0.124；删掉 150 号，系数几乎不变但残差标准差明显下降。这张“删除前 / 删除后”对照表就是作业二第一题第 4 问要的东西。\Verb|update(m, data = d[-k, ])| 是最简洁的写法；按 id 删更不容易出错：\Verb|d[d$id != 149, ]|。
+
+\begin{resultbox}[强影响点的处理顺序]
+先查原始记录（录入错误、单位错误能核实就核实）；确认是真实数据就保留，把含与不含该点的结果都报告；也可以用 \Verb|MASS::rlm()| 做稳健回归作为补充。不能因为删掉之后 P 值更好看就删点。
+\end{resultbox}
+
+\subsection{一份可复用的诊断函数}
+脚本 §4.11 把上面的检查写成了 \Verb|diag_report(fit)|，拿到新模型可以直接调用：
+
+\begin{ROut}
+> diag_report(lm(glucose ~ tc + tg + insulin + hba1c, data = read.csv("data/diabetes27_hw.csv")))
+Shapiro-Wilk P = 0.823
+ncvTest P      = 0.984
+VIF:
+     tc      tg insulin   hba1c
+   2.19    1.78    1.28    1.27
+h > 2k/n      : 7 25
+|rstudent| > 3:
+Cook D > 4/(n-k): 6 13 25 26
+\end{ROut}
+这是作业二第一题的全模型：正态和等方差都没问题，共线性不严重，25 号同时是高杠杆点和 Cook 距离最大的点（D = 0.99），删掉它后 tc 的系数由正变负（第 9 章）。

@@ -1,0 +1,196 @@
+\chapter{重复测量方差分析}
+
+\begin{studysource}
+\textbf{来源说明}　课件：第四讲第 14–35 页　课堂代码：第四讲.R 后半　脚本：\texttt{scripts/08\_重复测量方差分析.R}　数据：dm（宽型）、df\_long（长型），40 例 2 型糖尿病 × 3 个时点 HbA1c
+\end{studysource}
+
+
+\section{数据准备：长型，时间和个体都是因子}
+\begin{rcode}[R · 宽转长]
+library(tidyr); library(afex); library(emmeans)
+dm <- read.csv("data/dm.csv", fileEncoding = "UTF-8")
+dl <- pivot_longer(dm, cols = c(hba1c_0, hba1c_3, hba1c_6),
+                   names_to = "time", values_to = "hba1c")
+dl$time  <- factor(dl$time, levels = c("hba1c_0", "hba1c_3", "hba1c_6"),
+                   labels = c("T0", "M3", "M6"))
+dl$group <- factor(dl$group); dl$id <- factor(dl$id)
+aggregate(hba1c ~ group + time, data = dl,
+          FUN = function(x) round(c(mean = mean(x), sd = sd(x)), 2))
+\end{rcode}
+\begin{routput}
+> aggregate(hba1c ~ group + time, ...)
+  group time hba1c.mean hba1c.sd
+1 A药组   T0       8.21     0.68
+2 B药组   T0       8.80     0.65
+3 A药组   M3       7.01     0.62
+4 B药组   M3       8.01     0.63
+5 A药组   M6       6.66     0.81
+6 B药组   M6       7.66     0.72
+\end{routput}
+与课件第 24 页的表一致。第 31 页折线图上标的 B 组 8.62、7.62 和 A 组 7.62、6.62 与数据不符，以表格为准。
+
+
+\includegraphics{fig5_rm.pdf}
+
+\figtitle{图 5　dm.csv 两组 HbA1c 的轨迹。(a) 各时点均数与 95\% CI；(b) 每个人的轨迹（细线）与组均数（粗线）}
+
+
+\section{单组：只有时间一个因素}
+\begin{rcode}[R · aov\_ez 单组]
+dA <- droplevels(subset(dl, group == "A药组"))     # 20 人 × 3 时点
+mod1 <- aov_ez(id = "id", dv = "hba1c", data = dA, within = "time")
+summary(mod1)                                      # 一次给出 F、Mauchly、GG、HF
+anova(mod1, correction = "GG")                     # 按 GG 校正后的表
+summary(aov(hba1c ~ time + Error(id / time), data = dA))   # 基础 R 的等价写法
+\end{rcode}
+\begin{routput}
+> summary(mod1)
+            Sum Sq num Df Error SS den Df F value    Pr(>F)
+(Intercept) 3191.6      1   25.344     19  2392.7 < 2.2e-16 ***
+time          26.7      2    3.249     38   156.4 < 2.2e-16 ***
+
+Mauchly Tests for Sphericity
+     Test statistic p-value
+time        0.80165 0.13674
+
+Greenhouse-Geisser and Huynh-Feldt Corrections
+      GG eps Pr(>F[GG])
+time 0.83448  2.821e-16 ***
+       HF eps   Pr(>F[HF])
+time 0.905294 1.802841e-17
+\end{routput}
+读法：time 一行 $F(2,38)=156.4$；Error SS 3.249 是受试者内误差，受试者间变异 25.344（课件第 18 页的“受试者”一行）显示在 (Intercept) 行的 Error SS 里，不要把 Intercept 那一行的 Sum Sq 3191.6 当成变异来源；Mauchly $W=0.802$，$P=0.137$；GG $\varepsilon=0.834$、HF $\varepsilon=0.905$。与课件第 18–19 页一致。
+
+
+\begin{studyexplain}
+\textbf{aov\_ez 的参数}
+
+
+\Verb|id| 是个体编号列，\Verb|dv| 是因变量列，\Verb|within| 是组内因素（时间），\Verb|between| 是组间因素（分组），都写成字符串。数据必须是长型，每人每个时点一行。afex 会提示 “Contrasts set to contr.sum”，它内部用和为零编码算 III 型平方和，不影响你在别处的设置。课件笔记用的 \Verb|ez::ezANOVA(data, dv = y, wid = id, within = t)| 是另一个包的同类函数，参数不加引号，结果相同（附录 B）。
+
+\end{studyexplain}
+
+
+单组的变异分解可以手算核对：
+
+\begin{rcode}[R · 变异分解手算（单组）]
+Y  <- as.matrix(dm[dm$group == "A药组", c("hba1c_0", "hba1c_3", "hba1c_6")])
+n  <- nrow(Y); k <- ncol(Y); gm <- mean(Y)
+SS_time    <- n * sum((colMeans(Y) - gm)^2)          # 26.744
+SS_subject <- k * sum((rowMeans(Y) - gm)^2)          # 25.344
+SS_error   <- sum((Y - gm)^2) - SS_time - SS_subject # 3.249
+(SS_time / (k - 1)) / (SS_error / ((n - 1) * (k - 1)))   # F = 156.4
+\end{rcode}
+受试者间变异被单独剥离出去，误差只剩同一个人内部的波动，所以 $F$ 很大。这与随机区组（第 6.6 节）的分解完全相同，区组就是“人”。
+
+\section{球形检验与 GG、HF 校正：手算一遍}
+\begin{rcode}[R · 差值方差、Mauchly W、eps]
+S <- cov(Y); round(S, 3)                            # 课件第 21 页的协方差阵
+D <- cbind(Y[, 1] - Y[, 2], Y[, 1] - Y[, 3], Y[, 2] - Y[, 3])
+round(apply(D, 2, var), 3)                          # 0.117 0.245 0.151：球形要求三者相等
+C  <- rbind(c(1, -1, 0) / sqrt(2), c(1, 1, -2) / sqrt(6))   # 正交单位化对比，k-1 行
+Sc <- C %*% S %*% t(C); p <- nrow(Sc); nu <- n - 1
+W   <- det(Sc) / (sum(diag(Sc)) / p)^p              # 0.8017
+chi <- -(nu - (2 * p^2 + p + 2) / (6 * p)) * log(W) # 3.979
+pchisq(chi, p * (p + 1) / 2 - 1, lower.tail = FALSE)   # 0.1367
+lam <- eigen(Sc)$values
+sum(lam)^2 / (p * sum(lam^2))                       # GG：0.8345
+mauchly.test(lm(Y ~ 1), X = ~ 1)                    # 基础 R：W = 0.80165，P = 0.1367
+\end{rcode}
+几点说明：
+
+\begin{itemize}
+\item $S_c$ 必须用\textbf{正交、单位化}的 $k-1$ 个对比去变换，课堂代码那段“手动逐行标准化”的循环做的就是单位化；直接用三个两两差值的协方差阵，秩只有 2，行列式为 0。
+\item 卡方近似的校正项按 $(2p^2+p+2)/(6p)$ 计算（$p=k-1$），这与 \Verb|mauchly.test()|、afex 一致；课件第 22 页写的 $(2p^2+2p+3)/(6p)$ 与软件对不上。
+\item HF 系数的单组公式 \Verb|(n*p*eps - 2) / (p*(nu - p*eps))|（上限 1）在脚本 §8.5 里，结果 0.905。
+\item 校正就是把分子、分母自由度都乘以 $\varepsilon$，$F$ 值不变：\Verb|pf(156.4, 2*0.834, 38*0.834, lower.tail = FALSE)| 得到 GG 校正的 P。
+\item $W$ 的 $P=0.137$ 只说明没有足够证据拒绝球形，差值方差实际相差两倍；$\varepsilon$ 只有 0.834，报告时可以同时给出 GG 校正结果（课件第 19、21 页）。
+\end{itemize}
+
+\section{多组：药物（组间）× 时间（组内）}
+\begin{rcode}[R · aov\_ez 多组]
+mod <- aov_ez(id = "id", dv = "hba1c", data = dl, within = "time", between = "group")
+summary(mod)
+anova(mod, correction = "GG", es = "pes")                       # 带偏 eta^2
+summary(aov(hba1c ~ group * time + Error(id / time), data = dl))  # 两层误差项
+\end{rcode}
+\begin{routput}
+> summary(mod)
+            Sum Sq num Df Error SS den Df  F value    Pr(>F)
+(Intercept) 7159.5      1   46.313     38 5874.486 < 2.2e-16 ***
+group         22.3      1   46.313     38   18.276 0.0001238 ***
+time          39.5      2    7.529     76  199.550 < 2.2e-16 ***
+group:time     1.1      2    7.529     76    5.588 0.0054428 **
+
+Mauchly Tests for Sphericity
+           Test statistic p-value
+time              0.89178 0.12017
+group:time        0.89178 0.12017
+            GG eps Pr(>F[GG])
+time       0.90235    < 2e-16 ***
+group:time 0.90235    0.00722 **
+\end{routput}
+三个 $F$ 与课件第 27 页一致：药物 $F(1,38)=18.28$，时间 $F(2,76)=199.55$，交互 $F(2,76)=5.59$，$P=0.005$（GG 校正后 0.007）。注意分母不同：药物用受试者间误差（Error SS 46.313，df 38），时间和交互用受试者内误差（7.529，df 76）。\Verb|aov(... + Error(id/time))| 的输出把这两层分成 \Verb|Error: id| 与 \Verb|Error: id:time| 两块，结构一目了然。
+
+
+\begin{studyexplain}
+\textbf{错误示范：当作独立观测}
+
+
+\Verb|anova(lm(hba1c ~ group * time, data = dl))| 把 120 个观测当作 120 个人：误差自由度变成 114，组间 $F$ 被夸大到 47.2，而交互 $F$ 只有 1.17（$P=0.31$）——个体差异全混进了误差，真实存在的交互反而检验不出来。同理，在每个时点分别做 t 检验也是错的。
+
+\end{studyexplain}
+
+
+\paragraph{多组的变异分解手算。}脚本 §8.7 按课件第 29–30 页的五个公式逐项计算：组间 22.2741、受试者间 46.3125、时间 39.5372、交互 1.1072、受试者内误差 7.5290，合计 116.76，三个 $F$ 为 18.28、199.55、5.59。代码里 \Verb|mik[grp, ]| 把“组 × 时点”均数按每个人所在的组展开成 40 × 3 矩阵，\Verb|outer(mij, rep(1, K))| 把个体均数铺成 40 × 3，然后按公式加减即可。
+
+
+\begin{studyexplain}
+\textbf{易错：tapply 返回的是一维数组}
+
+
+\Verb|mi <- tapply(rowMeans(Y), grp, mean)| 返回的是带 dim 属性的一维数组，\Verb|mi[grp]| 与 40 × 3 的矩阵相加会报“非整合陈列”（non-conformable arrays）。写成 \Verb|as.vector(tapply(...))| 就好了。
+
+\end{studyexplain}
+
+
+\paragraph{多组时的球形检验}用的是合并组内协方差阵 $S_p=\sum_i(n_i-1)S_i/(N-a)$，自由度 $\nu=N-a$；其余步骤与单组相同，脚本 §8.8 算出 $W=0.892$、$P=0.120$、GG $\varepsilon=0.902$，与 afex 一致。课件笔记例 12-3（三组麻醉诱导，附录 B）也是这个算法。
+
+\section{交互显著之后：两个方向的简单效应}
+\begin{rcode}[R · emmeans]
+pairs(emmeans(mod, ~ time | group), adjust = "bonferroni")   # (1) 组内：每组各时点比
+pairs(emmeans(mod, ~ group | time))                          # (2) 组间：每个时点两组比
+contrast(emmeans(mod, ~ time * group), interaction = c("consec", "pairwise"))
+\end{rcode}
+\begin{routput}
+> pairs(emmeans(mod, ~ time | group), adjust = "bonferroni")
+group = A药组:
+ contrast estimate     SE df t.ratio p.value
+ T0 - M3     1.205 0.0818 38  14.725 <0.0001
+ T0 - M6     1.560 0.1050 38  14.858 <0.0001
+ M3 - M6     0.355 0.1100 38   3.241  0.0074
+group = B药组:
+ T0 - M3     0.800 0.0818 38   9.776 <0.0001
+ T0 - M6     1.150 0.1050 38  10.953 <0.0001
+ M3 - M6     0.350 0.1100 38   3.195  0.0084
+> pairs(emmeans(mod, ~ group | time))
+time = T0:   A药组 - B药组   -0.590 0.210 38  -2.808  0.0078
+time = M3:   A药组 - B药组   -0.995 0.197 38  -5.058 <0.0001
+time = M6:   A药组 - B药组   -1.000 0.243 38  -4.123  0.0002
+> contrast(..., interaction = c("consec", "pairwise"))
+ time_consec group_pairwise estimate    SE df t.ratio p.value
+ M3 - T0     A药组 - B药组    -0.405 0.116 38  -3.500  0.0012
+ M6 - M3     A药组 - B药组    -0.005 0.155 38  -0.032  0.9744
+\end{routput}
+与课件第 32 页一致：两组各阶段都显著下降；两组差距在 0–3 个月拉开 0.405，3–6 个月不再变化。最后一个交互对比把“差距在哪个阶段变化”直接检验出来，是解释交互作用最清楚的一步。两个方向的多重比较要分开校正：组内每组 $k(k-1)/2$ 次，组间每个时点 $g(g-1)/2$ 次。
+
+\paragraph{不依赖球形假设的多元检验。}\Verb|summary(mod$Anova, multivariate = TRUE)| 给出 Pillai、Wilks 等多元检验，交互 $F(2,37)=7.36$，$P=0.002$，与单变量检验的结论一致。
+
+
+\begin{studyreview}
+\textbf{重复测量的报告要点}
+
+
+写明球形检验结果和采用的校正方法（未校正、GG 或 HF）；三个 $F$ 都给出统计量、自由度、P 值和效应量（\Verb|es = "pes"| 或 \Verb|"ges"|）；交互显著时以简单效应描述“哪一组、在哪个阶段”变化不同；配一张均数轨迹图。
+
+\end{studyreview}

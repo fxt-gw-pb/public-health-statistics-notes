@@ -1,0 +1,197 @@
+\chapter{协方差分析}
+
+\begin{studysource}
+\textbf{来源说明}　课件：第三讲第 20–24 页；第四讲第 3–13 页　课堂代码：第三讲.R 后半、第四讲.R 前半　脚本：\texttt{scripts/07\_协方差分析.R}　数据：datasetC\_glm、bp、knee
+\end{studysource}
+
+
+协方差分析就是“分组因子 + 一个连续协变量”的线性模型。R 里的流程固定为三步：
+
+
+\begin{studyreview}
+\textbf{协方差分析的三步}
+
+
+\begin{enumerate}
+\item \textbf{斜率同质性}：\Verb|anova(lm(y ~ g + x), lm(y ~ g * x))|，P > 0.05 才继续。
+\item \textbf{校正模型}：\Verb|fit <- lm(y ~ x + g)|，用 \Verb|Anova(fit, type = "II")| 或把协变量写在前面的 \Verb|anova(fit)| 检验组别。
+\item \textbf{校正均数与两两比较}：\Verb|emm <- emmeans(fit, ~ g)|，\Verb|pairs(emm, adjust = "bonferroni")|。
+\end{enumerate}
+
+\end{studyreview}
+
+
+\section{第三讲的例子：三组 BMI，年龄不齐}
+\label{sec:ancova-c}
+\begin{rcode}[R · 为什么要校正]
+g <- read.csv("data/datasetC_glm.csv")
+g$bmi3 <- factor(g$bmi3, levels = c("normal", "overwt", "obese"))   # 按专业顺序排水平
+aggregate(cbind(age, glu) ~ bmi3, data = g, FUN = mean)
+anova(lm(age ~ bmi3, data = g))            # 三组年龄不同：F = 8.76，P = 0.0002
+\end{rcode}
+\begin{routput}
+> aggregate(cbind(age, glu) ~ bmi3, data = g, FUN = mean)
+    bmi3      age      glu
+1 normal 49.30303 4.838081
+2 overwt 54.56250 5.681339
+3  obese 56.44828 6.041379
+\end{routput}
+\Verb|read.csv()| 读进来的字符变量按字母顺序排水平（normal、obese、overwt），课堂代码就是这个顺序；这里用 \Verb|factor(..., levels = )| 改成专业上的顺序，参照组仍是 normal，结果相同，只是输出更好读。
+
+\paragraph{第一步：斜率同质性。}
+\begin{rcode}[R · 平行性检验]
+sapply(split(g, g$bmi3), function(s) coef(lm(glu ~ age, data = s))["age"])
+m_par <- lm(glu ~ bmi3 + age, data = g)      # 共同斜率
+m_int <- lm(glu ~ bmi3 * age, data = g)      # 各组斜率不同
+anova(m_par, m_int)
+\end{rcode}
+\begin{routput}
+> sapply(...)
+normal.age overwt.age  obese.age
+0.03503285 0.03244822 0.02993767
+> anova(m_par, m_int)
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1    236 92.498
+2    234 92.419  2  0.078634 0.0995 0.9053
+\end{routput}
+三组斜率 0.035、0.032、0.030，$F=0.0995$，$P=0.905$，可以用共同斜率。与课件第 21 页一致。
+
+\paragraph{第二步：校正模型——协变量要写在前面。}
+\label{sec:ancova-order}
+\begin{rcode}[R · 三种写法对比]
+anova(lm(glu ~ age + bmi3, data = g))     # 协变量在前：bmi3 一行是校正年龄后的
+anova(lm(glu ~ bmi3 + age, data = g))     # 分组在前：bmi3 一行没有校正年龄
+library(car); Anova(m_par, type = "II")   # 与顺序无关，推荐
+\end{rcode}
+\begin{routput}
+> anova(lm(glu ~ age + bmi3, data = g))
+           Df Sum Sq Mean Sq F value    Pr(>F)
+age         1 49.976  49.976 127.508 < 2.2e-16 ***
+bmi3        2 30.769  15.385  39.252 1.922e-15 ***
+> anova(lm(glu ~ bmi3 + age, data = g))
+bmi3        2 51.927 25.9636  66.244 < 2.2e-16 ***
+age         1 28.817 28.8173  73.525 1.327e-15 ***
+> Anova(m_par, type = "II")
+          Sum Sq  Df F value    Pr(>F)
+bmi3      30.769   2  39.252 1.922e-15 ***
+age       28.817   1  73.525 1.327e-15 ***
+\end{routput}
+这是第 2 章“I 型平方和看顺序”在协方差分析里的后果：分组写在前面时，bmi3 那一行（$F=66.24$）就是不校正年龄的单因素方差分析。协方差分析要检验的是校正后的组间差异（$F=39.25$），所以要么把协变量写在前面，要么用 \Verb|Anova(type = "II")|。课堂代码 \Verb|anova(lm(glu ~ bmi3 + age + bmi3*age))| 和第四讲的 \Verb|anova(lm(post ~ group + base))| 都是分组在前，见第 \ref{sec:bp} 节。
+
+\paragraph{校正前后对照。}
+\begin{rcode}[R · 粗差与校正差]
+m_crude <- lm(glu ~ bmi3, data = g)
+rbind(crude = coef(summary(m_crude))[2:3, 1:2], adjusted = coef(summary(m_par))[2:3, 1:2])
+c(sigma(m_crude), sigma(m_par)); c(summary(m_crude)$r.squared, summary(m_par)$r.squared)
+\end{rcode}
+
+\tbltitle{表 8　datasetC\_glm：校正年龄前后与正常组的差值}
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{超重 vs 正常} & \multicolumn{2}{c}{肥胖 vs 正常}\\
+
+ & {差值} & {标准误} & {差值} & {标准误}\\
+\midrule
+未校正 \Verb|lm(glu ~ bmi3)| & 0.843 & 0.099 & 1.203 & 0.151\\
+校正年龄 \Verb|lm(glu ~ bmi3 + age)| & 0.669 & 0.089 & 0.966 & 0.135\\
+\bottomrule
+\end{tabular}
+
+\begin{studysource}
+注：剩余标准差 0.715 → 0.626，$R^2$ 0.300 → 0.466。
+\end{studysource}
+
+差值缩小两成（控混杂），标准误同时变小（提精度），与课件第 22 页一致。
+
+\paragraph{第三步：校正均数。}
+\begin{rcode}[R · 三种算法]
+library(emmeans)
+emm <- emmeans(m_par, ~ bmi3); emm                         # (1) emmeans
+predict(m_par, newdata = data.frame(bmi3 = levels(g$bmi3), age = mean(g$age)))   # (2) 在总平均年龄处预测
+lxy <- sum(sapply(split(g, g$bmi3), function(s)            # (3) 手算：合并组内斜率
+  sum((s$age - mean(s$age)) * (s$glu - mean(s$glu)))))
+lxx <- sum(sapply(split(g, g$bmi3), function(s) sum((s$age - mean(s$age))^2)))
+b_w <- lxy / lxx                                           # 0.03316 = coef(m_par)["age"]
+tapply(g$glu, g$bmi3, mean) - b_w * (tapply(g$age, g$bmi3, mean) - mean(g$age))
+\end{rcode}
+\begin{routput}
+> emm
+ bmi3   emmean     SE  df lower.CL upper.CL
+ normal   4.95 0.0642 236     4.82     5.07
+ overwt   5.62 0.0596 236     5.50     5.73
+ obese    5.91 0.1170 236     5.68     6.15
+> tapply(...) - b_w * (...)
+  normal   overwt    obese
+4.948095 5.616956 5.914467
+\end{routput}
+三种算法结果相同：校正均数就是“把三组都放到总平均年龄 52.6 岁时”模型的预测值，等于组均数减去 $b_w(\bar x_i-\bar x)$。手算那几行对应课堂代码里的 \Verb|分子 / 分母|（\Verb|cov(...)*98| 就是组内离均差积和，98 = 组内人数 − 1）。
+
+\begin{rcode}[R · 两两比较]
+pairs(emm, adjust = "tukey")                       # 课件第 24 页列的几种方法之一
+pairs(emm, adjust = "bonferroni")
+confint(pairs(emm, adjust = "bonferroni"))
+contrast(emm, method = "trt.vs.ctrl", ref = "normal")   # 都与正常组比（Dunnett）
+\end{rcode}
+\begin{routput}
+> pairs(emm, adjust = "tukey")
+ contrast        estimate     SE  df t.ratio p.value
+ normal - overwt   -0.669 0.0887 236  -7.539 <0.0001
+ normal - obese    -0.966 0.1350 236  -7.156 <0.0001
+ overwt - obese    -0.298 0.1310 236  -2.277  0.0610
+\end{routput}
+\Verb|adjust =| 可以取 \Verb|"tukey"|、\Verb|"bonferroni"|、\Verb|"sidak"|、\Verb|"scheffe"|、\Verb|"none"|；与对照组比较用 \Verb|method = "trt.vs.ctrl"|（Dunnett）。
+
+
+\includegraphics{fig4_ancova.pdf}
+
+\figtitle{图 4　(a) datasetC\_glm：三条平行线，竖虚线为总平均年龄，线在虚线处的高度就是校正均数；(b) bp.csv：校正基线后两组的高低顺序反转}
+
+
+画平行线的思路：造一张“三组 × 一串年龄”的网格，用 \Verb|predict(m_par, newdata = grid)| 得到拟合值，再按组画线。脚本 §7.6 用 \Verb|expand.grid()| 加 ggplot 完成，这也是课堂代码的写法。
+
+\paragraph{练习 4 后半：把年龄切成三组再校正。}\Verb|lm(glu ~ bmi3 + age3)| 得到的超重、肥胖差值是 0.681、1.030，比连续年龄的 0.669、0.966 大，剩余标准差也更大（0.641 vs 0.626）：切组后组内仍有年龄差，校正不彻底。协变量是连续的就保持连续。
+
+\section{第四讲的例子：基线不齐，结论反转}
+\label{sec:bp}
+\begin{rcode}[R · bp.csv]
+bp <- read.csv("data/bp.csv", fileEncoding = "UTF-8")
+bp$group <- factor(bp$group, levels = c("方案A", "方案B"), labels = c("A", "B"))
+aggregate(cbind(base, post) ~ group, data = bp, FUN = mean)   # A 158→137，B 142→131
+t.test(post ~ group, data = bp, var.equal = TRUE)             # 只比终点：A 更高，P = 0.035
+anova(lm(post ~ group * base, data = bp))                     # 交互 P = 0.929，平行
+fit <- lm(post ~ base + group, data = bp)                     # 协变量在前
+anova(fit)
+anova(lm(post ~ group + base, data = bp))                     # 分组在前（课件的写法）
+pairs(emmeans(fit, ~ group))
+\end{rcode}
+\begin{routput}
+> anova(fit)
+          Df  Sum Sq Mean Sq F value    Pr(>F)
+base       1 11627.8 11627.8 195.612 < 2.2e-16 ***
+group      1  1506.8  1506.8  25.349 2.206e-06 ***
+Residuals 97  5766.0    59.4
+> anova(lm(post ~ group + base, data = bp))
+group      1    841   841.0  14.148 0.0002891 ***
+base       1  12294 12293.6 206.813 < 2.2e-16 ***
+> pairs(emmeans(fit, ~ group))
+ contrast estimate   SE df t.ratio p.value
+ A - B       -9.42 1.87 97  -5.035 <0.0001
+\end{routput}
+校正均数 A 129.2、B 138.6，A 方案低 9.42 mmHg（$t=-5.04$），与只比终点的结论相反。
+
+
+\begin{studyexplain}
+\textbf{课件第 10–11 页方差分析表里的“分组”一行}
+
+
+那两张表中分组 SS = 841.0、$F=14.148$、$P=0.00029$，来自 \Verb|anova(lm(post ~ group + base))|——分组写在基线前面，841.0 恰好是两组终点均数之差 5.8 对应的平方和（$50\times50/100\times5.8^2$），是\textbf{未校正}的。校正基线后的组间检验是 SS = 1506.8、$F(1,97)=25.35$、$P=2.2\times10^{-6}$，与 emmeans 两两比较的 $t^2=5.035^2$ 一致。课件给出的校正均数 129.17、138.59 和差值 −9.42 本身没有问题。写作业时请用协变量在前的 \Verb|anova()| 或 \Verb|Anova(type = "II")|。
+
+\end{studyexplain}
+
+
+\paragraph{前提检查。}\Verb|t.test(base ~ group)|：两组基线相差 15.8 mmHg（$t=6.79$），在随机化试验里这么大的基线差本身就值得核查；\Verb|anova(fit, update(fit, . ~ . + I(base^2)))| 检查线性（$P=0.40$）；\Verb|shapiro.test(resid(fit))|（$P=0.63$）；\Verb|leveneTest(resid(fit) ~ bp$group)|（$P=0.16$）；\Verb|outlierTest(fit)| 没有离群点。协变量必须是处理前测得、不受处理影响的变量，这一条靠设计保证，检验不出来。
+
+\paragraph{比降幅行不行。}\Verb|t.test(I(base - post) ~ group)| 比较降幅，A 降 21.0、B 降 11.0。差值分析相当于假定基线对终点的斜率恰好为 1；本例协方差分析估计的斜率是 0.964，两种方法结论一致。斜率明显偏离 1 时，差值分析会把基线差异的影响混进来，协方差分析更稳妥。
+
+\section{knee.csv：另一个反转的例子}
+第四讲文件夹里的 \Verb|knee.csv| 是两组膝关节术后康复数据（课件第 13 页三组练习的两组版本）：未校正时 B 组术后评分高（77.2 vs 75.6）；平行性检验 $P=0.27$；校正术前评分后 A 组校正均数 78.4、B 组 74.5，A − B = 3.86，$P=0.036$。代码在脚本 §7.10。三组的版本 \Verb|knee3.csv| 是作业四第 1 题（第 9 章）。

@@ -1,0 +1,45 @@
+% !TeX program = xelatex
+% Study notes with restrained red accents. Build: python build.py notes-starter
+\AddToHook{package/projlib-language/before}{\RequirePackage{fvextra}}
+\documentclass[11pt,a4paper,plain,CN,colored-proof=false,
+  load-custom-latin-font-file=pku-font-latin.tex,
+  load-custom-math-font-file=pku-font-math.tex,
+  load-custom-cjk-font-file=pku-font-cjk.tex]{einfart}
+\input{settings}
+\renewcommand{\PKUDocumentType}{notes}
+\renewcommand{\PKUShortTitle}{应用线性回归 R 实操笔记}
+\renewcommand{\PKUSubtitle}{从方法到代码：四讲课件、课堂代码与四次作业的 R 落地}
+\usepackage{pku-notes}
+% R 输出框：灰字、无行号，与代码框区分
+\newtcblisting{ROut}[1][输出]{pkucode,listing only,colback=white,
+  colbacktitle=white,fonttitle=\sffamily\small\color{black!60},
+  listing options={basicstyle=\ttfamily\footnotesize\color{black!78},
+    columns=fullflexible,keepspaces=true,breaklines=true,numbers=none,
+    upquote=true,showstringspaces=false,extendedchars=false},title={#1}}
+\newcommand{\fn}[1]{\texttt{#1}}
+% 行内代码允许在任意位置断行，避免长代码撑出版心
+\fvinlineset{breaklines=true,breakanywhere=true}
+% R 代码行常带对齐注释，代码框字号小一档，减少折行
+\lstdefinestyle{pkuinline}{style=pkuinlinebase,basicstyle=\ttfamily\footnotesize}
+\title{应用线性回归 R 实操笔记}
+\author{学习网站：\url{https://fxt-gw-pb.github.io/public-health-statistics-notes/}\\[2pt]2026 年 11 月 19 日}
+\date{}
+
+\begin{document}
+\MakeNotesTitle
+\input{sections/s0_abstract}
+\tableofcontents
+\setcounter{section}{-1}
+\input{sections/s0_guide}
+\input{sections/s1_workflow}
+\input{sections/s2_mlr}
+\input{sections/s3_selection}
+\input{sections/s4_diagnostics}
+\input{sections/s5_ridge}
+\input{sections/s6_glm}
+\input{sections/s7_ancova}
+\input{sections/s8_rm}
+\input{sections/s9_homework}
+\appendix
+\input{sections/sA_appendix}
+\end{document}

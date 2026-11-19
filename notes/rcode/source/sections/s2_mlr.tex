@@ -1,0 +1,195 @@
+\section{多重线性回归：拟合、读输出与报告}
+\srcnote{课件：第一讲第 3–19 页\quad 课堂代码：R上手\_课件一.R、回归2.R\quad 脚本：\texttt{scripts/02\_多重回归\_拟合与解读.R}\quad 数据：datasetA（n = 200，模拟）}
+
+\subsection{粗效应与调整效应}
+第一讲的主线是“BMI 对血糖的效应，扣掉年龄之后还剩多少”。在 R 里就是两个模型：
+
+\begin{RCode}[R · 两个模型]
+d <- read.csv("data/datasetA.csv")
+fit1 <- lm(glu ~ bmi, data = d)          # 粗效应
+fit2 <- lm(glu ~ age + bmi, data = d)    # 调整年龄后的偏回归系数
+rbind(crude    = coef(summary(fit1))["bmi", ],
+      adjusted = coef(summary(fit2))["bmi", ])
+\end{RCode}
+\begin{ROut}
+> rbind(crude = ..., adjusted = ...)
+           Estimate Std. Error  t value     Pr(>|t|)
+crude    0.10630299 0.01289497 8.243759 2.271622e-14
+adjusted 0.07678527 0.01196717 6.416326 1.016509e-09
+\end{ROut}
+0.106 降到 0.077，粗效应比调整效应高 38\%（\Verb|coef(fit1)["bmi"] / coef(fit2)["bmi"] - 1|）。两个都高度显著，但只有后者是“年龄固定时”的 BMI 效应。
+
+\paragraph{分层的写法。}课件第 5 页把年龄切成三层看斜率，代码是 \Verb|cut()| 加 \Verb|split()|；“三条线能否合成一条共斜率”是一个嵌套模型比较：
+
+\begin{RCode}[R · 分层斜率与平行性检验]
+d$agegrp <- cut(d$age, breaks = c(29, 45, 58, 79), labels = c("30-45", "46-58", "59-78"))
+sapply(split(d, d$agegrp), function(s) coef(lm(glu ~ bmi, data = s))["bmi"])
+m_common <- lm(glu ~ bmi + agegrp, data = d)    # 三层共用一个斜率
+m_sep    <- lm(glu ~ bmi * agegrp, data = d)    # 三层各自的斜率
+anova(m_common, m_sep)
+\end{RCode}
+\begin{ROut}
+> sapply(...)
+ 30-45.bmi  46-58.bmi  59-78.bmi
+0.10124182 0.07102748 0.10060479
+> anova(m_common, m_sep)
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1    196 64.239
+2    194 63.777  2   0.46247 0.7034 0.4962
+\end{ROut}
+$P = 0.50$，三条斜率的差别在抽样误差之内，\Verb|coef(m_common)["bmi"]| 给出共斜率 0.086。这个"先拟合含交互的大模型，再用 \Verb|anova(小, 大)| 检验交互"的套路，在第 7 章协方差分析的斜率同质性检验里会原样再出现一次。
+
+\subsection{summary() 里该读的数}
+\begin{ROut}[summary(fit2) 的输出]
+> summary(fit2)
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept) 1.654476   0.295334   5.602 7.06e-08 ***
+age         0.029963   0.003894   7.695 6.65e-13 ***
+bmi         0.076785   0.011967   6.416 1.02e-09 ***
+
+Residual standard error: 0.5393 on 197 degrees of freedom
+Multiple R-squared:  0.4276,	Adjusted R-squared:  0.4218
+F-statistic: 73.58 on 2 and 197 DF,  p-value: < 2.2e-16
+\end{ROut}
+
+\begin{table}[htbp]
+\centering\small
+\caption{summary() 输出的七个数及提取方式}
+\begin{tabular}{@{}lll@{}}
+\toprule
+输出位置 & 含义 & 取出来的写法\\
+\midrule
+Estimate & 偏回归系数 $b$ & \Verb|coef(fit2)|\\
+Std. Error & $b$ 的标准误 & \Verb|sqrt(diag(vcov(fit2)))|\\
+t value、Pr(>|t|) & $t=b/\mathrm{SE}$ 及其双侧 P & \Verb|coef(summary(fit2))[, 3:4]|\\
+Residual standard error & 剩余标准差 $s$，自由度 $n-p-1$ & \Verb|sigma(fit2)|、\Verb|df.residual(fit2)|\\
+Multiple R-squared & $R^2$ & \Verb|summary(fit2)$r.squared|\\
+Adjusted R-squared & 校正 $R^2$ & \Verb|summary(fit2)$adj.r.squared|\\
+F-statistic & 整个方程的 $F$ 检验 & \Verb|summary(fit2)$fstatistic|\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+整体检验的 P 值 summary 只显示“< 2.2e-16”，要精确值可以 \Verb|pf(F, df1, df2, lower.tail = FALSE)|，本例为 $1.36\times10^{-24}$。各项都可以手算核对：
+
+\begin{RCode}[R · 手算核对]
+b <- coef(fit2); se <- sqrt(diag(vcov(fit2)))
+cbind(t = b / se, P = 2 * pt(-abs(b / se), df.residual(fit2)))   # 与 summary 相同
+n <- 200; p <- 2
+1 - (1 - summary(fit2)$r.squared) * (n - 1) / (n - p - 1)        # 校正 R² = 0.4218
+deviance(fit2) / df.residual(fit2); sigma(fit2)^2                 # MSE = 0.2908
+\end{RCode}
+
+\subsection{方差分析表：顺序很重要}
+\begin{ROut}
+> anova(fit2)                          # age 先进
+           Df Sum Sq Mean Sq F value    Pr(>F)
+age         1 30.824 30.8237 105.987 < 2.2e-16 ***
+bmi         1 11.973 11.9730  41.169 1.017e-09 ***
+Residuals 197 57.292  0.2908
+> anova(lm(glu ~ bmi + age, data = d)) # bmi 先进
+bmi         1 25.575 25.5754  87.941 < 2.2e-16 ***
+age         1 17.221 17.2213  59.215 6.646e-13 ***
+Residuals 197 57.292  0.2908
+\end{ROut}
+\Verb|anova(fit)| 给的是 I 型（顺序）平方和：每一行是“在它前面的变量都已入模后”新增的解释量。bmi 写在后面时 SS = 11.97，是“调整年龄后”的贡献；写在前面时 SS = 25.58，是它单独的贡献。残差行永远不变。最后一个变量那一行的 $F$（41.17）等于它在 summary 里的 $t^2$（$6.416^2$）。这一点在协方差分析里会变成一个真实的陷阱（第 \ref{sec:ancova-order} 节）。
+
+\subsection{系数的置信区间}
+\begin{RCode}[R · confint 与手算]
+confint(fit2)                        # 默认 95%；level = 0.99 改水平
+tq <- qt(0.975, df.residual(fit2))   # 1.972
+cbind(b - tq * se, b + tq * se)      # bmi：0.053 — 0.100
+\end{RCode}
+
+\subsection{预测：均数的 CI 与个体的 PI}
+\begin{RCode}[R · predict]
+new <- data.frame(age = 52, bmi = 24)     # 列名必须与模型中完全一致
+predict(fit2, newdata = new, interval = "confidence")
+predict(fit2, newdata = new, interval = "prediction")
+pr <- predict(fit2, newdata = new, se.fit = TRUE)
+c(se_mean = pr$se.fit, se_indiv = sqrt(sigma(fit2)^2 + pr$se.fit^2))
+\end{RCode}
+\begin{ROut}
+> predict(fit2, newdata = new, interval = "confidence")
+       fit      lwr      upr
+1 5.055392 4.980162 5.130622
+> predict(fit2, newdata = new, interval = "prediction")
+1 5.055392 3.989228 6.121556
+> c(se_mean = ..., se_indiv = ...)
+   se_mean   se_indiv
+0.03814755 0.54062936
+\end{ROut}
+两个区间中心相同，宽度差 14 倍，差别全在标准误：均数的 CI 只含估计误差（0.038），个体的 PI 还要加上个体本身的波动 $s$（$\sqrt{0.539^2+0.038^2}=0.541$）。\Verb|newdata| 可以一次放多行，得到多个点的预测。
+
+\begin{notebox}[易错：newdata 的列名]
+报错 \Verb|'newdata' had 1 row but variables found have 200 rows| 几乎都是 \Verb|newdata| 的列名和模型里的变量名不一致（或少了某个自变量），于是 R 退回去用原数据。课堂代码 \Verb|筛选自变量.R| 里先把变量改名为 \Verb|x2, x3, x4| 再建模，\Verb|newdata| 也必须用 \Verb|x2, x3, x4|。建模时始终写 \Verb|data =|、不要 \Verb|attach()|，这个问题就少很多。
+\end{notebox}
+
+\subsection{标准化偏回归系数}
+\begin{RCode}[R · 三种写法]
+b[-1] * sapply(d[, c("age", "bmi")], sd) / sd(d$glu)    # b* = b × SD(x)/SD(y)
+dz <- as.data.frame(scale(d[, c("age", "bmi", "glu")]))
+coef(lm(glu ~ age + bmi, data = dz))                    # y、x 都标准化后回归
+coef(lm(glu ~ scale(age) + scale(bmi), data = d))       # 错：只标准化了 x
+\end{RCode}
+前两种都得到 age 0.438、bmi 0.365（原始系数是 bmi 大，标准化后 age 大，排序反转）；第三种得到 0.311、0.259，是只除了 SD(x) 的“半标准化”系数，差一个 SD(y) 倍。课堂代码 \Verb|R上手_课件一.R| 专门提醒过这一点。标准化系数不改变任何检验结论，作业一要求的 95\% CI 也按同一比例缩放：\Verb|confint(fit)[-1, ] * sx / sy|。
+
+\subsection{三种相关：r、复相关 R、偏相关}
+\begin{RCode}[R · 相关]
+cor(d$glu, d$bmi)                                   # 简单相关 0.5055
+cor(d$glu, fitted(fit2)); sqrt(summary(fit2)$r.squared)   # 复相关 R = 0.6539
+e_y <- resid(lm(glu ~ age, data = d))               # 偏相关：两组残差的相关
+e_x <- resid(lm(bmi ~ age, data = d))
+cor(e_y, e_x)                                       # 0.4158
+library(ppcor)
+pcor.test(d$glu, d$bmi, d$age)                      # estimate 0.4158，statistic 6.416
+\end{RCode}
+\Verb|pcor.test(x, y, z)| 的 statistic 就是偏相关的 $t$，它与全模型中 bmi 的 $t$（6.416）完全相同；也可以手算 $r\sqrt{(n-2-q)/(1-r^2)}$，$q$ 为控制变量个数。“残差对残差”的写法要记住，第 4 章的偏回归图、作业一思考题的偏相关都是它。
+
+\subsection{lm() 背后的矩阵运算}
+\begin{RCode}[R · 正规方程、帽子矩阵与系数协方差阵]
+X <- model.matrix(fit2); y <- d$glu
+XtX_inv <- solve(t(X) %*% X)
+bhat <- XtX_inv %*% t(X) %*% y            # b = (X'X)^{-1} X'y，与 coef(fit2) 相同
+H <- X %*% XtX_inv %*% t(X)               # 帽子矩阵，yhat = H y
+h <- diag(H)                              # 杠杆值，等于 hatvalues(fit2)
+mean(h)                                   # = (p + 1)/n = 0.015
+which.max(h)                              # 51 号：x 方向离中心最远
+s2 <- sum((y - X %*% bhat)^2) / (200 - 3)
+s2 * XtX_inv                              # 等于 vcov(fit2)
+\end{RCode}
+\Verb|%*%| 是矩阵乘法，\Verb|t()| 转置，\Verb|solve()| 求逆，\Verb|diag()| 取对角线。\Verb|crossprod(X)| 是 \Verb|t(X) %*% X| 的快捷写法。
+
+\subsection{对数似然、AIC 与 BIC}
+\begin{RCode}[R · 手算与 R 函数对照]
+sse <- deviance(fit2); n <- 200; K <- 4          # K = 截距 + 2 个系数 + sigma²
+ll <- -n/2 * log(2*pi) - n/2 * log(sse/n) - n/2
+c(ll, logLik(fit2))                              # -158.77
+c(-2*ll + 2*K, AIC(fit2))                        # 325.55
+c(-2*ll + log(n)*K, BIC(fit2))                   # 338.74
+extractAIC(fit2)                                 # 3, -244.03：step() 用的简略版
+n * log(sse/n) + 2 * 3                           # 简略 AIC = n·ln(SSE/n) + 2(p+1)
+AIC(fit2) - extractAIC(fit2)[2]                  # 569.58 = n(1 + ln 2pi) + 2
+\end{RCode}
+\Verb|AIC()| 与 \Verb|extractAIC()| 只差一个对同一数据恒定的常数，比较模型时结论相同，但数值不能混着报。\Verb|step()| 打印的 “AIC=” 是 \Verb|extractAIC()|。
+
+\subsection{整理成论文表格}
+\begin{RCode}[R · 结果表]
+tab <- data.frame(term = names(coef(fit2))[-1], b = coef(fit2)[-1],
+                  lo = confint(fit2)[-1, 1], hi = confint(fit2)[-1, 2],
+                  P = coef(summary(fit2))[-1, 4])
+tab$report <- sprintf("%.3f (%.3f, %.3f)", tab$b, tab$lo, tab$hi)
+tab$P <- format.pval(tab$P, digits = 3, eps = 0.001)
+tab[, c("term", "report", "P")]
+\end{RCode}
+\begin{ROut}
+> tab[, c("term", "report", "P")]
+    term               report      P
+age  age 0.030 (0.022, 0.038) <0.001
+bmi  bmi 0.077 (0.053, 0.100) <0.001
+\end{ROut}
+
+\begin{resultbox}[写法]
+在同时调整年龄后，BMI 每增加 1 kg/m²，空腹血糖平均升高 0.077 mmol/L（95\% CI 0.053–0.100，$P<0.001$）；模型 $R^2=0.428$，剩余标准差 0.539 mmol/L，$n=200$。报告时写清调整了哪些变量，给效应量和区间，不要只给 P 值，也不要把标准化系数当作带单位的效应来解释。
+\end{resultbox}

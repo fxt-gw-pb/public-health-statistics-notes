@@ -24,7 +24,7 @@ def expand(text,course):
 
 def main():
     manifest=json.loads((ROOT/'public/data/index.json').read_text())
-    assert len(manifest['chapters'])==36, 'Expected all 36 documents'
+    assert len(manifest['chapters'])==47, 'Expected all 47 documents'
     figures=set(); questions=0; codes=0; choices=0; issues=[]
     for c in manifest['chapters']:
         d=json.loads((ROOT/'public/data'/(c['id']+'.json')).read_text())
@@ -64,6 +64,8 @@ def main():
         questions+=len(web_q);codes+=d['codeCount']
     for c in manifest['courses']:
         if not (ROOT/'public'/c['pdf'].removeprefix('./')).is_file():issues.append('Missing original PDF '+c['id'])
+        for f in c.get('downloads',[]):
+            if not (ROOT/'public'/f['href'].removeprefix('./')).is_file():issues.append('Missing download '+f['href'])
     (ROOT/'public/data/index.json').write_text(json.dumps(manifest,ensure_ascii=False))
     result=dict(documents=len(manifest['chapters']),questions=questions,choices=choices,figures=len(figures),codeBlocks=codes,issues=issues)
     print(json.dumps(result,ensure_ascii=False,indent=2))
