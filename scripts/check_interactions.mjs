@@ -17,13 +17,15 @@ for(const q of questions){
   }
   if(quiz.grading.status==='verified')verified++;else if(quiz.grading.status==='conditional')conditional++;else unverified++;
 }
-assert.deepEqual({verified,conditional,unverified},{verified:291,conditional:5,unverified:6});
+assert.deepEqual({verified,conditional,unverified},{verified:297,conditional:5,unverified:0});
 function question(chapter,id){return questions.find(q=>q.chapter===chapter&&q.id===id).quiz;}
 // Known source cases, including supplemental option F and ambiguous definitions.
 assert.equal(gradeChoice(question('multivariate-ex1','M15-1'),'A').status,'correct');
 assert.equal(gradeChoice(question('multivariate-ex1','M15-1'),'B').status,'incorrect');
 assert.equal(gradeChoice(question('linear-ex2','E17-L2'),'F').status,'correct');
-assert.equal(gradeChoice(question('linear-ex2','E14-19'),'A').status,'unverified');
+// Rewritten questions whose source material was lost are graded like any other.
+assert.equal(gradeChoice(question('linear-ex2','E14-19r'),'C').status,'correct');
+assert.equal(gradeChoice(question('linear-ex4','E17-L6'),'E').status,'incorrect');
 assert.equal(gradeChoice(question('linear-ex2','E21-2'),'B').status,'conditional');
 assert.equal(gradeChoice(question('linear-ex2','E21-2'),'E').status,'conditional');
 assert.equal(gradeChoice(question('multivariate-ex4','M15-4'),'D').status,'conditional');
@@ -58,7 +60,7 @@ for (const course of manifest.courses) {
     bank.set(q.key, q);
   }
 }
-assert.equal(bank.size, 296);
+assert.equal(bank.size, 302);
 const levelKeys = manifest.levels.flatMap(l => l.questions);
 assert.equal(levelKeys.length, bank.size); assert.equal(new Set(levelKeys).size, bank.size);
 assert.ok(manifest.levels.every(l => l.questions.length >= 4 && l.questions.length <= 6));
