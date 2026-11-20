@@ -32,8 +32,8 @@
   "linear-ex2": {
     "sourceQuestions": 60,
     "webQuestions": 60,
-    "sourceChars": 43201,
-    "webChars": 12555
+    "sourceChars": 45345,
+    "webChars": 7517
   },
   "linear-lec4": {
     "sourceQuestions": 0,
@@ -44,8 +44,8 @@
   "linear-ex3": {
     "sourceQuestions": 61,
     "webQuestions": 61,
-    "sourceChars": 40883,
-    "webChars": 12506
+    "sourceChars": 41438,
+    "webChars": 12690
   },
   "linear-lec5": {
     "sourceQuestions": 0,
@@ -56,8 +56,8 @@
   "linear-ex4": {
     "sourceQuestions": 41,
     "webQuestions": 41,
-    "sourceChars": 29959,
-    "webChars": 14123
+    "sourceChars": 32926,
+    "webChars": 12304
   },
   "linear-appendix": {
     "sourceQuestions": 0,
@@ -92,8 +92,8 @@
   "multivariate-ex2": {
     "sourceQuestions": 37,
     "webQuestions": 37,
-    "sourceChars": 36869,
-    "webChars": 23120
+    "sourceChars": 37015,
+    "webChars": 23246
   },
   "multivariate-lec3": {
     "sourceQuestions": 0,
@@ -116,8 +116,8 @@
   "multivariate-ex4": {
     "sourceQuestions": 40,
     "webQuestions": 40,
-    "sourceChars": 31609,
-    "webChars": 21264
+    "sourceChars": 31849,
+    "webChars": 21467
   },
   "multivariate-sources": {
     "sourceQuestions": 0,

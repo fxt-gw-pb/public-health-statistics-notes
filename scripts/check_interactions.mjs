@@ -17,7 +17,7 @@ for(const q of questions){
   }
   if(quiz.grading.status==='verified')verified++;else if(quiz.grading.status==='conditional')conditional++;else unverified++;
 }
-assert.deepEqual({verified,conditional,unverified},{verified:285,conditional:5,unverified:12});
+assert.deepEqual({verified,conditional,unverified},{verified:291,conditional:5,unverified:6});
 function question(chapter,id){return questions.find(q=>q.chapter===chapter&&q.id===id).quiz;}
 // Known source cases, including supplemental option F and ambiguous definitions.
 assert.equal(gradeChoice(question('multivariate-ex1','M15-1'),'A').status,'correct');
@@ -58,7 +58,7 @@ for (const course of manifest.courses) {
     bank.set(q.key, q);
   }
 }
-assert.equal(bank.size, 290);
+assert.equal(bank.size, 296);
 const levelKeys = manifest.levels.flatMap(l => l.questions);
 assert.equal(levelKeys.length, bank.size); assert.equal(new Set(levelKeys).size, bank.size);
 assert.ok(manifest.levels.every(l => l.questions.length >= 4 && l.questions.length <= 6));

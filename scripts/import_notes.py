@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'public' / 'data'
 LOCAL = ROOT / '.local'
 COURSES = [
-    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=234,
+    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=236,
          description='从矩阵与最小二乘出发，理解回归模型的构建、诊断与解释。',
          topics=['矩阵基础', '多重线性回归', '一般线性模型', '重复测量'], exercises={2: 1, 3: 2, 4: 3, 5: 4},
          supplements={1: 'supplement/ch1.tex'}),
