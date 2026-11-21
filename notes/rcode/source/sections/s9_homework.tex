@@ -1,66 +1,518 @@
-\section{四次作业的代码导读}
-\srcnote{脚本：\texttt{homework/hw1–hw4\_*.R}，内容与各次作业 LaTeX 附录中的代码相同，只把读数据和存图的路径改成了学习包的 \texttt{data/}、\texttt{output/}；四份脚本都已在学习包里重新跑通}
+\section{四次作业完整题解与 R 代码}
+\srcnote{脚本：\texttt{homework/hw1–hw4\_*.R}，均已在学习包内重新跑通。本章按“题目要求 → 关键 R 语句 → 统计结果与图表 → 结果解读与局限”的统一体例完整收录四次作业的全部题解，方便复习时把理论方法与实战代码一一对照。}
 
-这一章不重复作业报告的结论，而是按“题目要什么 → 用哪几个函数 → 输出里看哪个数”梳理每份脚本，方便复习时对照。
+% ============================================================================
+\subsection{作业一：27 例糖尿病患者空腹血糖的多重线性回归}
 
-\subsection{作业一：偏 F 筛选、标准化系数、区间估计}
+数据为 \texttt{diabetes27\_hw.csv}（$n=27$，无缺失值），包含总胆固醇 \texttt{tc}（mmol/L）、甘油三酯 \texttt{tg}（mmol/L）、空腹胰岛素 \texttt{insulin}（mU/L）、糖化血红蛋白 \texttt{hba1c}（\%）和空腹血糖 \texttt{glucose}（mmol/L）。读入数据后先核对描述统计与简单相关：
+
+\begin{RCode}[作业一：读入与描述统计]
+d <- read.csv("data/diabetes27_hw.csv")
+round(sapply(d[, -1], mean), 2); round(sapply(d[, -1], sd), 2)
+round(cor(d[, -1]), 3)
+\end{RCode}
+
 \begin{table}[htbp]
 \centering\small
-\caption{作业一（diabetes27\_hw.csv，n = 27）}
-\begin{tabular}{@{}p{3.6cm}p{5.6cm}p{5.0cm}@{}}
+\caption{作业一各变量的描述统计及其与空腹血糖的简单相关（$n=27$）}
+\begin{tabular}{@{}llccc@{}}
 \toprule
-题目要求 & 代码 & 关键结果\\
+变量 & 含义（单位） & 均数 & 标准差 & 与 glucose 的 $r$\\
 \midrule
-含 4 个自变量的初始模型，drop1 偏 F 检验定最终模型 & \Verb|drop1(full, test = "F")|；\Verb|m3 <- update(full, . ~ . - tc)|；\Verb|drop1(m3, test = "F")|；\Verb|anova(m3, full)| & tc：$F(1,22)=0.152$，$P=0.70$，删去；余下三个 $P<0.05$，停\\
-最终模型的偏回归系数、$R^2$ & \Verb|summary(fit)|、\Verb|confint(fit)| & tg 0.402、insulin −0.287、hba1c 0.663；$R^2=0.598$，校正 0.546\\
-标准化偏回归系数 & \Verb|b * sx / sy|；或 \Verb|scale()| 后回归 & 0.354、−0.360、0.413，hba1c 最大\\
-自变量取均数时的 CI 与 PI & \Verb|predict(fit, new, interval = "confidence"/"prediction")| & 11.93；CI 11.14–12.71，PI 7.77–16.08\\
-思考：tc 为何进入全模型后不显著 & 偏相关（残差对残差）、逐个加变量看 tc 系数的变化、25 号删除前后 & tc 与 tg 相关 0.63，且 25 号 tc、tg 都极高\\
-思考：逐步法的不足 & \Verb|add1|/\Verb|drop1| 手工前进；\Verb|step()|；bootstrap 500 次 & 前进与后退终点不同；最常选中的模型只占约 3 成\\
+tc      & 总胆固醇（mmol/L） & 5.81  & 1.59 & 0.559\\
+tg      & 甘油三酯（mmol/L） & 2.84  & 2.57 & 0.459\\
+insulin & 空腹胰岛素（mU/L） & 6.15  & 3.67 & $-0.510$\\
+hba1c   & 糖化血红蛋白（\%） & 9.12  & 1.82 & 0.610\\
+glucose & 空腹血糖（mmol/L） & 11.93 & 2.93 & ---\\
+\bottomrule
+\end{tabular}
+\TableNote{自变量间相关最强的是 tc 与 tg（$r=0.632$），其次是 tc 与 hba1c（$0.415$）、tc 与 insulin（$-0.355$）。25 号患者的 tc（11.54）、tg（10.89）与 glucose（20.0）均为全样本最高。}
+\end{table}
+
+\subsubsection*{第 1 题\quad 初始模型与 drop1 偏 $F$ 检验}
+\emph{题目要求：根据专业知识建立含 4 个自变量的初始模型后，用 \texttt{drop1} 做偏 $F$ 检验确定最终模型，写出检验过程（$F$ 值、自由度与 $P$ 值）。}
+
+\paragraph{1. 初始模型与检验原理。}糖化血红蛋白反映近 2--3 个月平均血糖，预期正相关；空腹胰岛素反映胰岛 $\beta$ 细胞分泌功能，预期负相关；甘油三酯与总胆固醇同属脂代谢指标，胰岛素抵抗时血脂与血糖常伴随升高。因此四变量均纳入初始模型：
+\[
+\text{glucose}=\beta_0+\beta_1\,\text{tc}+\beta_2\,\text{tg}+\beta_3\,\text{insulin}+\beta_4\,\text{hba1c}+\varepsilon .
+\]
+全模型 $\mathrm{SSE}=88.841$（$\mathrm{df}=22$），$R^2=0.601$，调整 $R^2=0.528$，整体 $F(4,22)=8.28$，$P<0.001$。对模型中单个变量 $x_j$ 检验 $H_0:\beta_j=0$ 的偏 $F$ 统计量为 $F_j=(\mathrm{SSE}_{(-j)}-\mathrm{SSE})/\mathrm{MSE}\sim F(1,n-p-1)$，等价于 $t_j^2$。后退法每步只删 $F$ 最小且 $P\ge 0.05$ 的一个变量，直至全部留下变量的 $P<0.05$。
+
+\begin{RCode}[作业一第 1 题：drop1 偏 F 筛选]
+full <- lm(glucose ~ tc + tg + insulin + hba1c, data = d)
+drop1(full, test = "F")                          # 第 1 步：tc 最小，P = 0.701
+m3 <- update(full, . ~ . - tc)
+drop1(m3, test = "F")                            # 第 2 步：余下 3 个均 P < 0.05
+anova(m3, full)                                  # 与 drop1 中 tc 一行等价
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业一 drop1 后退法的偏 $F$ 检验过程（$\alpha=0.05$）}
+\begin{tabular}{@{}lrrrrrl@{}}
+\toprule
+检验变量 & 偏回归平方和 & 剔除后 SSE & $F$ & 自由度 & $P$ & 结论\\
+\midrule
+\multicolumn{7}{@{}l}{第 1 步：全模型，$\mathrm{SSE}=88.841$，$\mathrm{MSE}=4.038$}\\
+tc      & 0.613  & 89.454  & 0.152 & $(1,22)$ & 0.701 & 剔除\\
+tg      & 11.963 & 100.804 & 2.962 & $(1,22)$ & 0.099 & \\
+insulin & 20.064 & 108.905 & 4.968 & $(1,22)$ & 0.036 & \\
+hba1c   & 27.794 & 116.635 & 6.883 & $(1,22)$ & 0.016 & \\
+\midrule
+\multicolumn{7}{@{}l}{第 2 步：剔除 tc 后，$\mathrm{SSE}=89.454$，$\mathrm{MSE}=3.889$}\\
+tg      & 26.530 & 115.984 & 6.821 & $(1,23)$ & 0.016 & 保留\\
+insulin & 25.690 & 115.144 & 6.605 & $(1,23)$ & 0.017 & 保留\\
+hba1c   & 32.269 & 121.723 & 8.297 & $(1,23)$ & 0.008 & 保留\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-值得记住的几行写法：\Verb|coef(summary(full))[, "t value"]^2| 一次得到所有变量的偏 $F$；\Verb|reformulate(setdiff(names(b), v), v)| 构造“某个 x 对其余 x”的公式以手算 VIF；\Verb|backward()| 函数里的 \Verb|repeat {...; break}| 循环是写任何逐步过程的模板。
+\paragraph{2. 筛选结论。}第 1 步 tc 的 $F(1,22)=0.152,P=0.701$ 最小，剔除（此时 tg 虽为 $P=0.099$，按单步剔除规则留待下一步）。第 2 步删去 tc 后，tg 的 $F$ 值从 2.962 跃升至 6.821（因为 tc 与 tg 高度相关，此前分走了 tg 的部分解释力），余下三个变量均 $P<0.05$，停止。最终模型为 $\text{glucose}\sim\text{tg}+\text{insulin}+\text{hba1c}$。
 
+\subsubsection*{第 2 题\quad 最终模型的偏回归系数与拟合优度}
+\emph{题目要求：计算最终模型各变量的偏回归系数并解释统计学意义，给出 $R^2$ 与调整 $R^2$。}
+
+\begin{RCode}[作业一第 2 题：拟合与系数区间]
+fit <- m3
+summary(fit); confint(fit)
+c(R2 = summary(fit)$r.squared, adjR2 = summary(fit)$adj.r.squared, s = summary(fit)$sigma)
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业一最终模型的偏回归系数估计（$n=27$）}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+变量 & $b$ & SE & $t$ & $P$ & 95\% CI\\
+\midrule
+截距                  & 6.500  & 2.396 & 2.713  & 0.012 & $(1.543,\ 11.456)$\\
+tg（每 1 mmol/L）     & 0.402  & 0.154 & 2.612  & 0.016 & $(0.084,\ 0.721)$\\
+insulin（每 1 mU/L）  & $-0.287$ & 0.112 & $-2.570$ & 0.017 & $(-0.518,\ -0.056)$\\
+hba1c（每 1\%）       & 0.663  & 0.230 & 2.880  & 0.008 & $(0.187,\ 1.140)$\\
+\bottomrule
+\end{tabular}
+\TableNote{模型 $R^2=0.598$，调整 $R^2=0.546$，$s=1.972$ mmol/L，整体 $F(3,23)=11.41,P<0.001$。}
+\end{table}
+
+控制其余两个变量不变时：tg 每升 1 mmol/L，空腹血糖平均升 0.402 mmol/L；insulin 每升 1 mU/L，空腹血糖平均降 0.287 mmol/L；hba1c 每升 1 个百分点，空腹血糖平均升 0.663 mmol/L；三项 $t$ 检验均显著。截距 6.500 对应三变量全为 0（远在样本外），无实际意义。相比全模型，删去 tc 后 $R^2$ 几乎不变（$0.601\to 0.598$），调整 $R^2$ 反由 0.528 升至 0.546，$s$ 降至 1.972 mmol/L。需注意筛选后的 $P$ 值偏乐观，且 25 号点在最终模型中杠杆值达 0.476、Cook 距离 0.694（删去后 tg 系数降至 0.178，$P=0.362$）。
+
+\subsubsection*{第 3 题\quad 标准化偏回归系数}
+\emph{题目要求：计算标准化偏回归系数，比较相对贡献并说明与原始系数排序为何不同。}
+
+\begin{RCode}[作业一第 3 题：标准化偏回归系数]
+b <- coef(fit)[-1]; sx <- sapply(d[, names(b)], sd); sy <- sd(d$glucose)
+round(b * sx / sy, 3)                            # b* = b * SD(x) / SD(y)
+dz <- as.data.frame(scale(d[, -1]))              # 验证：全部标准化后再回归
+coef(lm(glucose ~ tg + insulin + hba1c, data = dz))
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业一原始与标准化偏回归系数对照}
+\begin{tabular}{@{}lrrrlcc@{}}
+\toprule
+变量 & $b$ & $S_x$ & $b^*$ & $b^*$ 的 95\% CI & $|b|$ 排序 & $|b^*|$ 排序\\
+\midrule
+tg      & 0.402  & 2.575 & 0.354  & $(0.074,\ 0.635)$   & 2 & 3\\
+insulin & $-0.287$ & 3.671 & $-0.360$ & $(-0.650,\ -0.070)$ & 3 & 2\\
+hba1c   & 0.663  & 1.823 & 0.413  & $(0.116,\ 0.710)$   & 1 & 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+按 $|b^*|$，hba1c 最大（0.413），insulin（$-0.360$）略高于 tg（0.354），与原始系数 $|b|$ 的排序（hba1c $>$ tg $>$ insulin）不同。原因是原始系数带量纲，insulin 的标准差（3.67）大于 tg（2.57），换算到“每变化 1 个标准差”的共同尺度后两者易位。但 insulin 与 tg 的 $|b^*|$ 仅差 0.006 且置信区间高度重叠，三者处于同一量级。
+
+\subsubsection*{第 4 题\quad 自变量取均值时的区间估计}
+\emph{题目要求：计算各自变量取样本均数时均数的 95\% CI 与新个体的 95\% 预测区间。}
+
+\begin{RCode}[作业一第 4 题：均值 CI 与个体 PI]
+new <- data.frame(tg = mean(d$tg), insulin = mean(d$insulin), hba1c = mean(d$hba1c))
+predict(fit, new, interval = "confidence")
+predict(fit, new, interval = "prediction")
+\end{RCode}
+
+回归面必过样本中心，故 $\hat y_0=\bar y=11.926$ mmol/L，此处 $\mathrm{SE}(\hat y_0)=s/\sqrt{n}=1.972/\sqrt{27}=0.380$（所有点中最小），$t_{0.975,23}=2.069$：
+\begin{itemize}
+\item \textbf{均数 95\% CI}：$11.926\pm 2.069\times 0.380=(11.14,\ 12.71)$ mmol/L（宽 1.57）；
+\item \textbf{个体 95\% PI}：$11.926\pm 2.069\times\sqrt{1.972^2+0.380^2}=(7.77,\ 16.08)$ mmol/L（宽 8.31，为 CI 的 5.3 倍，因为额外包含了个体随机变异 $s^2=3.889$）。
+\end{itemize}
+
+\subsubsection*{思考一与思考二\quad 总胆固醇为何不显著？逐步选择有何不足？}
+
+\begin{RCode}[作业一思考题：偏相关、25 号影响与 Bootstrap 稳定性]
+e.y  <- resid(lm(glucose ~ tg + insulin + hba1c, data = d))
+e.tc <- resid(lm(tc ~ tg + insulin + hba1c, data = d))
+cor(e.y, e.tc)                                   # 偏相关 = 0.083
+summary(lm(glucose ~ tc, data = d[-25, ]))$coefficients
+m0 <- lm(glucose ~ 1, data = d); sc <- ~ tc + tg + insulin + hba1c
+add1(m0, sc, test = "F")                         # 前进法：hba1c -> tc，止于 tc + hba1c
+step(m0, scope = sc, direction = "both")         # AIC 双向逐步：tg + insulin + hba1c
+\end{RCode}
+
+\begin{itemize}
+\item \textbf{tc 为何从 $P=0.002$ 变为 $P=0.701$？} 一是信息重叠：tc 对其余三变量回归的 $R^2=0.542$，扣除后偏相关仅 0.083，系数从 1.026 跌至 0.142（标准误仅由 0.305 增至 0.366，并非主要因 VIF 膨胀）；二是 25 号点杠杆高（单变量 $h=0.534$），删去 25 号后连 tc 的简单回归也不再显著（$b=0.616,P=0.166$）。不能据此说 tc“不重要”：其 95\% CI 宽至 $(-0.62,0.90)$，且临床血脂控制并不取决于对空腹血糖的额外预测力。
+\item \textbf{逐步选择的四点不足：} (1) 依赖方法与阈值——前进法（$\alpha_{\text{入}}=0.05$）停在 \texttt{tc + hba1c}（调整 $R^2=0.441$），与后退法完全不同；(2) 结果不稳定——1000 次 bootstrap 后退法中，\texttt{tg + insulin + hba1c} 仅占 27.4\%，各变量入选率依次为 hba1c 70.1\%、insulin 64.3\%、tg 53.5\%、tc 27.0\%；(3) 筛选后 $P$ 值偏乐观、区间偏窄；(4) 忽视专业混杂结构。改进办法：按专业知识预设混杂变量、小变量数用全子集与交叉验证、高相关时改用惩罚回归（岭回归/LASSO）并报告 bootstrap 入选率。
+\end{itemize}
+
+% ============================================================================
 \subsection{作业二：全模型的回归诊断与 datasetB 的岭回归}
-\paragraph{第一题（diabetes27 全模型）。}
-\begin{itemize}
-\item LINE：\Verb|plot(m, labels.id = d1$id)| 四张图；\Verb|shapiro.test|（$P=0.82$）、\Verb|ncvTest|（$P=0.98$）、\Verb|durbinWatsonTest|（行序无意义，仅作参考）。题目指定的三项检验都不针对线性，所以补了 \Verb|residualPlots(m, plot = FALSE)| 和 hba1c 二次项：\Verb|anova(m, update(m, . ~ . + I(hba1c^2)))|，$P=0.016$，线性存疑。
-\item 共线性：\Verb|vif(m)| 为 2.19、1.78、1.28、1.27，条件数由 \Verb|eigen(cor(...))| 计算，不严重；tc 不显著主要不是共线性，而是 25 号与 tg 的重叠。
-\item 强影响点：把 \Verb|hatvalues|、\Verb|rstudent|、\Verb|cooks.distance| 放进一个数据框后排序。25 号 $h=0.613$、$D=0.990$，学生化残差只有 1.86，是高杠杆而非离群；学生化残差最大的是 26 号（2.85）。\Verb|outlierTest(m)| 做 Bonferroni 校正。
-\item 删除 25 号：\Verb|update(m, data = d1[-k, ])|，tc 系数 0.142 → −0.243，符号翻转；\Verb|rlm(..., method = "MM")| 给出不删点的稳健估计。
-\end{itemize}
 
-\paragraph{第二题（datasetB 岭回归）。}
-\begin{itemize}
-\item 四种样本（全部、删 149、删 150、两人都删）用 \Verb|lapply(sets, function(i) lm.ridge(..., d2[i, ], lambda = lam))| 一次拟合。
-\item GCV 最优 λ 分别为 7.5、1.5、6.0、1.0；bmi 与 waist 同时为正的最小 λ 分别为 3、18.5、3、15.5；“λ 再增 10 系数变化不超过 0.01”的最小 λ 分别为 18.5、30、20、30.5。综合取 λ = 30。
-\item 最终方程 \Verb|coef(lm.ridge(glu ~ age + bmi + waist, d2, lambda = 30))|：$\hat y=2.4546+0.0260\,\text{age}+0.0283\,\text{bmi}+0.0083\,\text{waist}$，并用 $(Z^\top Z+\lambda I)^{-1}Z^\top y$ 手算核对（\Verb|stopifnot(all.equal(...))|）。
-\item \Verb|ridge.inf()| 函数计算岭回归下的杠杆值和类 Cook 距离：$\lambda=0$ 时与 \Verb|cooks.distance()| 完全相同（脚本用 \Verb|stopifnot| 检查），λ = 30 时 149 号的影响明显减小。
-\end{itemize}
+\subsubsection*{第 1 题\quad diabetes27 全模型的回归诊断}
+\emph{题目要求：对 \texttt{diabetes27\_hw.csv}（$n=27$）的全模型 $\widehat{\text{glucose}}=5.943+0.142\,\text{tc}+0.351\,\text{tg}-0.271\,\text{insulin}+0.638\,\text{hba1c}$ 逐项检查 LINE 四条件、共线性、强影响点及删除前后变化，并讨论真实高脂血症患者是否应删除。}
 
+\paragraph{1. LINE 四条件。}
+\begin{RCode}[作业二第 1 题：LINE 诊断与二次项检验]
+library(car); library(MASS)
+d1 <- read.csv("data/diabetes27_hw.csv")
+m <- lm(glucose ~ tc + tg + insulin + hba1c, data = d1)
+par(mfrow = c(2, 2)); plot(m)
+shapiro.test(resid(m)); ncvTest(m)
+set.seed(2026); durbinWatsonTest(m, reps = 5000)
+residualPlots(m, plot = FALSE)                   # Tukey 曲率检验
+anova(m, update(m, . ~ . + I(hba1c^2)))          # 补查 hba1c 二次项
+\end{RCode}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/hw2_diag.pdf}
+\caption{作业二第 1 题全模型的四张诊断图（蓝线为平滑线，橙色虚线为 Cook 距离等高线）}
+\end{figure}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业二第 1 题 LINE 四条件的检查结果}
+\begin{tabular}{@{}lp{6.4cm}p{4.8cm}@{}}
+\toprule
+条件 & 依据 & 结论\\
+\midrule
+L 线性 & 残差--拟合值图平滑线呈 U 形；Tukey 曲率检验统计量 $2.89,P=0.004$ & 存疑，加入 $\text{hba1c}^2$ 后 $F(1,21)=6.85,P=0.016$（删 25 号仍 $P=0.011$）\\
+I 独立 & $\mathrm{DW}=1.635,P=0.353$；但横断面数据行序无意义 & DW 不作依据；27 例为不同患者，无聚类/重复，按独立处理\\
+N 正态 & Q--Q 图点基本贴近对角线；Shapiro--Wilk $W=0.978,P=0.823$ & 满足\\
+E 等方差 & 尺度--位置图无喇叭形；ncvTest $\chi^2=0.0004,P=0.984$ & 未见异方差（$n=27$ 效能有限）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{2. 共线性。}四个变量的 VIF 依次为 tc 2.186、tg 1.780、insulin 1.278、hba1c 1.267，最大相关系数 0.632（tc 与 tg），条件数 $\kappa=2.67$，无严重共线性。tc 进入全模型后 $P$ 值从 0.002 升至 0.701，主要不是标准误膨胀（标准误仅放大 1.20 倍，若系数不变仍显著），而是调整其他变量后系数本身缩水 86\%（偏相关 0.083）以及 25 号点的高杠杆所致。
+
+\paragraph{3. 强影响点与删除对照。}
+\begin{RCode}[作业二第 1 题：杠杆值、删除学生化残差与 Cook 距离]
+inf <- data.frame(id = d1$id, h = hatvalues(m), r = rstudent(m), D = cooks.distance(m))
+inf[order(-inf$D)[1:4], ]; outlierTest(m)
+m.del <- update(m, data = d1[-25, ])             # 删除 25 号对比
+m.mm  <- rlm(glucose ~ tc + tg + insulin + hba1c, data = d1, method = "MM")
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业二第 1 题强影响点（上）与删除 25 号前后的系数对照（下）}
+\begin{tabular}{@{}ccccccccc@{}}
+\toprule
+id & tc & tg & insulin & hba1c & glucose & $h_i$ & $r_i^*$ & $D_i$\\
+\midrule
+25 & 11.54 & 10.89 & 1.20 & 10.5 & 20.0 & 0.613 & 1.864  & 0.990\\
+6  & 6.05  & 0.64  & 1.42 & 13.6 & 18.3 & 0.359 & 1.965  & 0.383\\
+13 & 7.97  & 1.93  & 7.57 & 9.9  & 8.4  & 0.274 & $-2.319$ & 0.338\\
+26 & 5.84  & 0.92  & 8.61 & 6.4  & 13.3 & 0.203 & 2.853  & 0.314\\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+变量 & 删除前 $b$ & 删除前 $P$ & 删除后 $b$ & 删除后 $P$ & 变化\\
+\midrule
+tc      & 0.142  & 0.701 & $-0.243$ & 0.554 & 符号翻转\\
+tg      & 0.351  & 0.099 & 0.220  & 0.298 & 减小 37\%\\
+insulin & $-0.271$ & 0.036 & $-0.234$ & 0.058 & 绝对值降 13\%，$P$ 越过 0.05\\
+hba1c   & 0.638  & 0.016 & 0.752  & 0.005 & 增大 18\%\\
+\midrule
+$R^2$   & 0.601  &       & 0.508  &       & 下降 0.093\\
+\bottomrule
+\end{tabular}
+\TableNote{界值：$h_i>0.370$，$|r_i^*|>2$，$D_i>0.182$。25 号是高杠杆点而非离群点；删除学生化残差最大的是 26 号（$r^*=2.853$，Bonferroni 校正 $P=0.257$）。}
+\end{table}
+
+\paragraph{4. 思考：真实高脂血症患者是否删除？}不删。25 号是真实存在的重度高脂血症患者，删除会人为缩小目标人群。规范做法是主分析保留该例、并排报告删除前后对照表，明确说明 hba1c 结论稳健而 tc 方向、tg 幅度与 insulin 显著性依赖 25 号，同时注明其余 26 人 tg 最高 8.50、高值区不可外推。MM 稳健回归给 25 号的权重高达 0.89（因残差不大），无法自动降权，仍须依赖敏感性分析。
+
+\subsubsection*{第 2 题\quad datasetB 的岭回归}
+\emph{题目要求：对 \texttt{datasetB.csv}（$n=150$）找出共线性变量，按“系数合理且岭迹平稳”选出岭参数并建方程，同时评估强影响点效应。}
+
+\paragraph{1. 共线性与强影响点。}OLS 拟合得 $\widehat{\text{glu}}=2.462+0.0314\,\text{age}+0.0671\,\text{bmi}-0.0063\,\text{waist}$（$R^2=0.459$）。bmi 与 waist 的相关系数高达 $r=0.968$，VIF 分别为 16.02 与 16.14（age 为 1.03），条件数 $\kappa=7.93$，导致二者在模型中均不显著且 waist 符号反常为负（单独与 age 配对时二者均 $P<0.001$）。诊断出两个强影响点：149 号（$h=0.297,r^*=2.938,D=0.864$）恰恰偏离了 bmi--waist 共线方向（比其余 149 人的 waist $\sim$ bmi 直线高出 10.4 cm）；150 号（$h=0.032,r^*=6.847,D=0.292$）则是纯 $y$ 方向离群点。
+
+\paragraph{2. 岭参数选择与敏感性分析。}
+\begin{RCode}[作业二第 2 题：四种样本岭迹与敏感性比较]
+d2 <- read.csv("data/datasetB.csv")
+lam <- seq(0, 100, 0.5)
+sets <- list(all = 1:150, del149 = -149, del150 = -150, del2 = -(149:150))
+rd <- lapply(sets, function(i) lm.ridge(glu ~ age + bmi + waist, d2[i, ], lambda = lam))
+sapply(rd, function(r) lam[which.min(r$GCV)])    # GCV 最优 lambda
+rid <- lm.ridge(glu ~ age + bmi + waist, d2, lambda = 30)
+coef(rid)                                        # 原始尺度最终方程
+\end{RCode}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/hw2_ridge.pdf}
+\caption{作业二第 2 题四种样本下的岭迹图（纵轴为自变量标准化后的系数，圆圈标示 waist 转正处）}
+\end{figure}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业二第 2 题岭参数下限（上）与 OLS / 岭回归敏感性对照（下）}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+样本 & GCV 最小 $\lambda$ & 系数合理（bmi、waist 均正） & 岭迹平稳（$\Delta\lambda=10$ 变化 $\le 0.01$）\\
+\midrule
+全部 150 人      & 7.5 & 3.0  & 18.5\\
+删 149 号        & 1.5 & 18.5 & 30.0\\
+删 150 号        & 6.0 & 3.0  & 20.0\\
+删 149、150 号   & 1.0 & 15.5 & 30.5\\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+模型与样本 & 截距 & age & bmi & waist & $R^2$ & bmi+waist（标化）\\
+\midrule
+OLS · 全部 150 人     & 2.4617 & 0.0314 & 0.0671 & $-0.0063$ & 0.4594 & 0.166\\
+OLS · 删 149 号       & 3.4314 & 0.0336 & 0.1241 & $-0.0369$ & 0.4791 & 0.110\\
+OLS · 删 149、150 号  & 3.3365 & 0.0307 & 0.1263 & $-0.0349$ & 0.5154 & 0.131\\
+\midrule
+岭（$\lambda=30$）· 全部 & 2.4546 & 0.0260 & 0.0283 & 0.0083 & 0.4469 & 0.158\\
+岭（$\lambda=30$）· 删 149 & 2.7785 & 0.0270 & 0.0297 & 0.0031 & 0.4575 & 0.113\\
+岭（$\lambda=30$）· 删两人 & 2.6961 & 0.0246 & 0.0329 & 0.0043 & 0.4914 & 0.132\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{3. 结论与局限。}综合四种样本取 $\lambda=30$（对应相关阵 $k=\lambda/n=0.20$；GCV 最小 7.5 处 waist 正号依赖 149 号，故不采纳），全样本原始尺度回归方程为
+\[
+\widehat{\text{glu}}=2.455+0.0260\,\text{age}+0.0283\,\text{bmi}+0.0083\,\text{waist}
+\]
+（$R^2=0.447$，留一交叉验证 MSE 0.311 略优于 OLS 的 0.315）。$\lambda=30$ 显著压制了 149 号的影响（杠杆值 $0.297\to 0.170$，类 Cook 距离 $0.864\to 0.272$），但管不了 $y$ 方向离群的 150 号（类 Cook 距离 $0.292\to 0.313$），且对 age 造成了 17.3\% 的收缩偏差；岭回归也不解决数据本身的异方差（ncvTest $P<0.001$）。
+
+% ============================================================================
 \subsection{作业三：3×3 析因设计方差分析}
+
+数据为 \texttt{sbp\_factorial3x3.csv}（$N=54$，两因素药物 A 剂量 10/20/30 mg $\times$ 药物 B 剂量 2.5/5/10 mg，共 9 组，每组 $n=6$，结局为 SBP 下降值，单位 mmHg）。
+
+\begin{RCode}[作业三：读入、效应编码与前提检查]
+library(car)
+options(contrasts = c("contr.sum", "contr.poly"))
+d <- read.csv("data/sbp_factorial3x3.csv", check.names = FALSE, fileEncoding = "UTF-8")
+names(d) <- c("id", "A", "B", "y")
+d$A <- factor(substr(d$A, 1, 2)); d$B <- factor(substr(d$B, 1, 2))
+m <- lm(y ~ A * B, data = d)
+leveneTest(y ~ A * B, data = d); shapiro.test(resid(m)); outlierTest(m)
+\end{RCode}
+
+\subsubsection*{第 1 题\quad 设计类型、统计模型与前提检查}
+\emph{题目要求：指出设计类型、因素水平与试验单元；写出固定效应模型、符号含义与基本假定，并检查假定。}
+
+本试验为完全随机设计的平衡 $3\times 3$ 析因设计（9 个处理组，每组 6 例，54 名患者即 54 个独立试验单元）。固定效应模型为
+\[
+y_{ijk}=\mu+\alpha_i+\beta_j+(\alpha\beta)_{ij}+\varepsilon_{ijk},\qquad i,j=1,2,3;\ k=1,\dots,6,
+\]
+约束 $\sum_i\alpha_i=\sum_j\beta_j=0$、$\sum_i(\alpha\beta)_{ij}=\sum_j(\alpha\beta)_{ij}=0$，共 9 个自由参数，假定 $\varepsilon_{ijk}\overset{\text{iid}}{\sim}N(0,\sigma^2)$。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/hw3_resid.pdf}
+\caption{作业三各处理组残差分布与学生化残差正态 Q--Q 图（橙色点为 28 号）}
+\end{figure}
+
+前提检查：方差齐性 Levene 检验 $F(8,45)=0.85,P=0.567$；正态性 Shapiro--Wilk $W=0.952,P=0.030$，问题仅出在 28 号（A2B2 组，$y=4.96$，组均 14.00，删除学生化残差 $-4.00$，Bonferroni $P=0.013$）。删去 28 号后用 II 型平方和重算，$W=0.958$（$P=0.057$），A、B 主效应仍 $P<0.001$，交互 $F(4,44)=4.85,P=0.002$，结论稳健，故主分析保留全部 54 例。
+
+\subsubsection*{第 2 题\quad 假设检验与方差分析表}
+\emph{题目要求：写出三个原假设并完成方差分析表。}
+
+原假设依次为 $H_0^A:\alpha_1=\alpha_2=\alpha_3=0$、$H_0^B:\beta_1=\beta_2=\beta_3=0$、$H_0^{AB}:\text{全部 }(\alpha\beta)_{ij}=0$。平衡设计下 I、II、III 型平方和一致。
+
+\begin{RCode}[作业三第 2 题：方差分析与手算核对]
+anova(m); Anova(m, type = 3)
+cm <- tapply(d$y, list(d$A, d$B), mean); cs <- tapply(d$y, list(d$A, d$B), sd)
+gm <- mean(cm); am <- rowMeans(cm); bm <- colMeans(cm)
+c(SSA = 18 * sum((am - gm)^2), SSB = 18 * sum((bm - gm)^2), SSE = 5 * sum(cs^2))
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业三 $3\times 3$ 析因方差分析表}
+\begin{tabular}{@{}lrrrrll@{}}
+\toprule
+变异来源 & SS & df & MS & $F$ & $P$ & 显著性\\
+\midrule
+因素 A          & 1225.57 & 2  & 612.78 & 74.92 & $<0.001$ & 显著\\
+因素 B          & 789.41  & 2  & 394.71 & 48.26 & $<0.001$ & 显著\\
+A$\times$B      & 106.78  & 4  & 26.70  & 3.26  & $0.020$  & 显著\\
+误差            & 368.06  & 45 & 8.18   &       &          & \\
+\midrule
+总计            & 2489.82 & 53 &        &       &          & \\
+\bottomrule
+\end{tabular}
+\TableNote{模型 $R^2=0.852$；A 占总变异 49.2\%，B 占 31.7\%，A$\times$B 占 4.3\%，交互作用显著但量级远小于两主效应。}
+\end{table}
+
+\subsubsection*{第 3 题与第 4 题\quad 主效应趋势、交互模式与单独效应}
+\emph{题目要求：结合边际均数解释主效应；结合 9 格均数剖析交互模式、专业含义及交互显著时如何解读主效应。}
+
+\begin{RCode}[作业三第 3–4 题：Tukey 比较、正交多项式趋势与单独效应]
+TukeyHSD(aov(y ~ A * B, data = d), c("A", "B"))
+mse <- deviance(m) / df.residual(m)
+contr1 <- function(w) {
+  L <- sum(w * cm); SS <- 6 * L^2 / sum(w^2)
+  c(L = L, SE = sqrt(mse * sum(w^2) / 6), SS = SS, F = SS / mse,
+    P = pf(SS / mse, 1, 45, lower.tail = FALSE))
+}
+lin <- c(-1, 0, 1); quad <- c(1, -2, 1); one <- rep(1, 3)
+contr1(outer(lin, lin))                          # 线性 x 线性交互对比
+\end{RCode}
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业三单元格均数（括号内为交互效应）、增量与单独效应（mmHg）}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & B 2.5 mg & B 5 mg & B 10 mg & B 10 $-$ 2.5 mg & B 的单独效应 $F$\\
+\midrule
+A 10 mg & 4.00 ($+1.56$)  & 8.00 ($+0.22$)  & 10.00 ($-1.78$) & 6.00  & 6.85\\
+A 20 mg & 9.00 ($+0.56$)  & 14.00 ($+0.22$) & 17.00 ($-0.78$) & 8.00  & 11.98\\
+A 30 mg & 12.00 ($-2.11$) & 19.00 ($-0.45$) & 26.00 ($+2.56$) & 14.00 & 35.96\\
+\midrule
+A 30 $-$ 10 mg   & 8.00  & 11.00 & 16.00 & & \\
+A 的单独效应 $F$ & 11.98 & 22.25 & 47.21 & & \\
+\bottomrule
+\end{tabular}
+\TableNote{边际均数：A 依次 7.33、13.33、19.00；B 依次 8.33、13.67、17.67（SE 均为 0.67）。单独效应 $F(2,45)$ 全部显著（$P\le 0.003$）。}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/hw3_inter.pdf}
+\caption{作业三 9 个处理组的均数轮廓图（误差线为 $\pm 1$ SE；左图横轴为对数剂量刻度）}
+\end{figure}
+
 \begin{itemize}
-\item 读入与整理：\Verb|check.names = FALSE| 保留中文列名后改名；\Verb|factor(substr(d$A, 1, 2))| 把“A1(10mg)”截成 A1；\Verb|table(d$A, d$B)| 确认每格 6 人；\Verb|tapply(d$y, list(d$A, d$B), mean)| 得到 3×3 均数表。
-\item 编码：开头 \Verb|options(contrasts = c("contr.sum", "contr.poly"))|，与模型 $\sum\alpha_i=0$ 的约束一致，也保证 III 型平方和正确（第 6.9 节）。
-\item 方差分析表：\Verb|anova(lm(y ~ A * B))|，A $F(2,45)=74.92$，B $F=48.26$，A×B $F(4,45)=3.26$，$P=0.020$。平衡设计 I、II、III 型相同。再由表 1 的均数和标准差手算 SS（\Verb|SSE <- (n - 1) * sum(cs^2)|），与软件一致。
-\item 前提：\Verb|leveneTest(y ~ A * B)|（$P=0.57$）、\Verb|shapiro.test(resid(m))|（$P=0.030$）、\Verb|outlierTest(m)| 找到 28 号（Bonferroni $P=0.013$）；删去 28 号后不平衡，改用 \Verb|Anova(m28, type = 2)|，结论不变。
-\item 主效应：\Verb|TukeyHSD(aov(y ~ A * B), c("A", "B"))|；自写 \Verb|contr1()| 函数做剂量的线性、二次趋势对比，$SS=nL^2/\sum w^2$。
-\item 交互：\Verb|outer(lin, lin)| 等生成 4 个交互对比，线性 × 线性 SS = 96.08，占交互 SS 的 90\%（$F=11.75$，$P=0.0013$），其余 3 个自由度 $P=0.73$；\Verb|simple()| 函数做单独效应（用全模型 MSE）。
+\item \textbf{主效应量效关系}：A 每增 10 mg 平均多降 5.8 mmHg（线性项占 $SS_A$ 的 99.97\%，二次项 $P=0.84$）；B 剂量每翻一倍平均多降 4.7 mmHg（$\log_2$ 线性项占 $SS_B$ 的 99.3\%，二次项 $P=0.42$）。因无单药组和安慰剂组，主效应仅代表联合用药下的加量效果。
+\item \textbf{有序协同交互}：三条折线同向单调上升、互不交叉，但向右逐渐张开——属于\textbf{有序（量的）交互作用}。交互 4 个自由度中，线性$\times$线性对比（$14.0-6.0=8.00$ mmHg，95\% CI 3.30--12.71，$F(1,45)=11.75,P=0.001$）独占 $SS_{AB}$ 的 90.0\%，其余 3 个自由度合并 $P=0.73$。临床上 A3B3 降压最大（26.0 mmHg，比可加预测高 2.6 mmHg），但需警惕低血压及剂量相关不良反应。
+\item \textbf{交互显著时如何理解主效应}：因为是有序交互且 6 个单独效应同向显著，主效应的方向依然可信（加量总能增强降压），但具体幅度必须按另一因素水平分列报告；若换作交叉的无序交互，则不能孤立解读主效应。
 \end{itemize}
 
-\subsection{作业四：三组协方差分析与两组重复测量}
-\paragraph{第 1 题（knee3.csv，三种康复方案）。}按第 7 章的三步：\Verb|anova(lm(post ~ pre * group))| 斜率同质 $P=0.758$（各组斜率 1.00、1.07、0.95）；\Verb|Anova(lm(post ~ pre + group), type = 2)| 组间 $F(2,86)=8.03$，$P=0.0006$，偏 $\eta^2=0.157$；\Verb|emmeans(fit, ~ group)| 校正均数 A 78.6、B 76.6、C 82.7；\Verb|pairs(emm, adjust = "bonferroni")|：C 比 A 高 4.04（$P=0.034$），比 B 高 6.07（$P=0.0005$），A、B 无差别（$P=0.62$）。脚本还特意对照了 \Verb|anova(lm(post ~ group + pre))|，演示顺序反了时组别一行是未校正的。
+% ============================================================================
+\subsection{作业四：三种康复方案的协方差分析与脑卒中重复测量}
 
-\paragraph{第 2 题（stroke.csv，60 例脑卒中，两组 × 三个时点）。}
-\begin{itemize}
-\item \Verb|pivot_longer()| 转长型后 \Verb|aov_ez(id = "id", dv = "y", data = L, within = "time", between = "group", type = 3)|。
-\item 球形：Mauchly $W=0.683$，$P=1.9\times10^{-5}$，拒绝；GG $\varepsilon=0.759$，按 GG 校正报告。脚本还用合并协方差阵和正交对比手算了 $W$ 与 $\varepsilon$，并写了 \Verb|boxM()| 函数检验两组协方差阵是否相同（$P=0.14$）。
-\item 三个 $F$：组别 $F(1,58)=3.51$，$P=0.066$；时间 $F=170.7$；交互 $F=13.70$，GG 校正 $P=4.2\times10^{-5}$。
-\item 简单效应：\Verb!emmeans(mod, ~ time | group)! 与 \Verb!emmeans(mod, ~ group | time)! 两个方向；交互对比 \Verb|contrast(..., interaction = c("consec", "pairwise"))|：两组差距在 0–4 周扩大 5.23（$P<0.0001$），4–8 周再扩大 3.10（$P=0.12$）。
-\end{itemize}
+\subsubsection*{第 1 题\quad 三种康复方案的协方差分析}
+\emph{题目要求：对 \texttt{knee3.csv}（$N=90$，A 常规、B 强化、C 机器人辅助各 30 例），以术前评分为协变量、术后 6 个月评分为结局，依次做斜率同质性检验、整体 $F$ 检验和 Bonferroni 两两比较。}
 
-\begin{notebox}[作业代码的共同写法]
-四份脚本都遵循同一个结构：开头读数据并 \Verb|str()| 核对 → 描述统计与题目给的表核对 → 主分析 → 前提检查 → 敏感性分析 → 画图（\Verb|pdf(..., useDingbats = FALSE)| 存矢量图）。复习时可以把它当作一份完整分析的模板。
+\paragraph{1. 数据描述与斜率同质性。}三组术前评分并不均衡（A 57.94、B 64.06、C 61.42，$F(2,87)=3.65,P=0.030$），且术前与术后高度相关（各组 $r=0.77,0.84,0.87$），直接比术后评分会把 B 组起点高的优势误算为疗效。拟合含交互项的完整模型检验斜率同质性：
+
+\begin{RCode}[作业四第 1 题：协方差分析完整流程]
+library(car); library(emmeans)
+k <- read.csv("data/knee3.csv", fileEncoding = "UTF-8")[, -1]
+k$group <- factor(k$group, labels = c("A", "B", "C"))
+anova(lm(post ~ pre * group, data = k))          # 1. 斜率同质性：P = 0.758
+fit <- lm(post ~ pre + group, data = k)          # 2. 平行模型
+Anova(fit, type = 2)                             #    II 型平方和，与顺序无关
+emm <- emmeans(fit, ~ group)                     # 3. 在 pre = 61.14 处的校正均数
+pairs(emm, adjust = "bonferroni"); confint(pairs(emm, adjust = "bonferroni"))
+\end{RCode}
+
+交互项 $F(2,84)=0.28,P=0.758$，三组各自斜率分别为 1.000、1.074、0.947，满足平行假定；其余前提亦通过（二次项 $P=0.385$，Shapiro--Wilk $P=0.656$，Levene $P=0.795$，最大 Cook 距离 0.078）。
+
+\paragraph{2. 整体检验与校正均数比较。}
+\begin{table}[htbp]
+\centering\small
+\caption{作业四第 1 题协方差分析表（上）及校正前后均数与两两比较（下）}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+变异来源（II 型 SS） & SS & df & MS & $F$ & $P$\\
+\midrule
+术前评分（协变量） & 6767.9 & 1  & 6767.9 & 190.59 & $<0.001$\\
+康复方案           & 570.4  & 2  & 285.2  & 8.03   & $0.0006$\\
+残差               & 3053.9 & 86 & 35.5   &        & \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+比较 & 未校正差值 & 未校正 $P$ & 校正后差值 & Bonferroni 95\% CI & 校正后 $P$\\
+\midrule
+C $-$ A & 7.53 & 0.022 & 4.04  & $(0.23,\ 7.85)$   & 0.034\\
+C $-$ B & 3.43 & 0.642 & 6.07  & $(2.29,\ 9.86)$   & 0.0005\\
+B $-$ A & 4.10 & 0.416 & $-2.03$ & $(-5.94,\ 1.88)$ & 0.625\\
+\bottomrule
+\end{tabular}
+\TableNote{共同斜率 $b=1.002$，$R^2=0.714$，方案偏 $\eta^2=0.157$。在 $\bar x=61.14$ 处的校正均数（SE）：A 78.64 (1.11)、B 76.61 (1.11)、C 82.68 (1.09)。误差均方较单因素方差分析（112.9）压缩了 69\%。}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/hw4_ancova.pdf}
+\caption{作业四第 1 题：(a) 三组术前--术后散点及回归直线；(b) 校正前后均数及 95\% CI}
+\end{figure}
+
+\paragraph{3. 结论与提示。}机器人辅助康复（C）效果最好，校正后分别比 A 高 4.0 分、比 B 高 6.1 分；B 组未校正时看似比 A 高 4.1 分，实为术前起点高 6.1 分所致，扣除后反而略低 2.0 分（无显著差异）。未校正分析漏掉了 C 优于 B 的差别。用 \texttt{anova()} 时务必把协变量 \texttt{pre} 放在 \texttt{group} 前面，或直接用 \texttt{car::Anova(..., type = 2)}。
+
+\subsubsection*{第 2 题\quad 脑卒中患者上肢功能评分的重复测量方差分析}
+\emph{题目要求：随机对照试验 \texttt{stroke.csv}（$N=60$，新型训练组与常规训练组各 30 例，在入组 T0、4 周 T4、8 周 T8 测上肢功能评分），按“画图 → 验球形 → 看交互 → 比两两”四步完成分析。}
+
+\begin{RCode}[作业四第 2 题：转长表、重复测量 ANOVA 与简单效应]
+library(afex); library(tidyr); library(emmeans)
+s <- read.csv("data/stroke.csv", fileEncoding = "UTF-8")
+s$group <- factor(s$group, levels = c("新型训练组", "常规训练组"))
+L <- pivot_longer(s, cols = c(baseline, y_wk4, y_wk8), names_to = "time", values_to = "y")
+L$time <- factor(L$time, levels = c("baseline", "y_wk4", "y_wk8"), labels = c("T0", "T4", "T8"))
+mod <- aov_ez(id = "id", dv = "y", data = L, within = "time", between = "group", type = 3)
+summary(mod)                                     # Mauchly 检验与 GG/HF 校正
+pairs(emmeans(mod, ~ time | group), adjust = "bonferroni")   # 组内
+pairs(emmeans(mod, ~ group | time))                          # 组间
+contrast(emmeans(mod, ~ time * group), interaction = c("consec", "pairwise"))
+\end{RCode}
+
+\paragraph{1. 描述与画图。}两组基线可比（入组评分 44.60 vs 46.20，$P=0.277$），8 周内新型组由 44.60 升至 56.10（4 周）、63.53（8 周），净增 18.93 分；常规组由 46.20 升至 52.47、56.80，净增 10.60 分。两折线越往后张得越开（提示交互），且 8 周时标准差明显大于入组（提示方差齐性/球形可能不成立）。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/hw4_profile.pdf}
+\caption{作业四第 2 题：(a) 两组各时点均数与 95\% CI；(b)(c) 60 名患者个体轨迹与组均数}
+\end{figure}
+
+\paragraph{2. 球形检验与三个 $F$ 检验。}两组合并协方差阵的 Box's $M$ 检验 $P=0.140$（可合并）。三个差值方差分别为 20.33（T0--T4）、37.98（T0--T8）与 58.21（T4--T8），相差近 3 倍；Mauchly 检验 $W=0.683,\chi^2(2)=21.77,P=1.9\times 10^{-5}$，拒绝球形假设，采用 Greenhouse--Geisser 校正（$\hat\varepsilon_{\mathrm{GG}}=0.759$，HF 为 0.775）。
+
+\begin{table}[htbp]
+\centering\small
+\caption{作业四第 2 题重复测量方差分析表（上）与简单效应及交互对比（下）}
+\begin{tabular}{@{}lrrrrll@{}}
+\toprule
+变异来源 & SS & df & MS & $F$ & 未校正 $P$ & GG 校正 $P$\\
+\midrule
+训练方案（个体间） & 384.27   & 1   & 384.27  & 3.51   & 0.066    & ---\\
+受试者间误差       & 6351.61  & 58  & 109.51  &        &          & \\
+时间（个体内）     & 6631.63  & 2   & 3315.82 & 170.74 & $<0.001$ & $<0.001$\\
+方案 $\times$ 时间 & 532.21   & 2   & 266.11  & 13.70  & $<0.001$ & $<0.001$\\
+受试者内误差       & 2252.82  & 116 & 19.42   &        &          & \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.8em}
+\begin{tabular}{@{}lllrl@{}}
+\toprule
+分析方向 & 比较 & 差值 & 95\% CI & $P$\\
+\midrule
+组内（新型组） & T4 $-$ T0 / T8 $-$ T0 / T8 $-$ T4 & 11.50 / 18.93 / 7.43 & 均不含 0 & 均 $<0.001$\\
+组内（常规组） & T4 $-$ T0 / T8 $-$ T0 / T8 $-$ T4 & 6.27 / 10.60 / 4.33  & 均不含 0 & $<0.001$ / $<0.001$ / $0.009$\\
+组间（新$-$常）& T0 / T4 / T8                      & $-1.60$ / $3.63$ / $6.73$ & $(-4.52,1.32)$ / $(0.28,6.99)$ / $(2.28,11.19)$ & $0.277$ / $0.034$ / $0.004$\\
+交互对比       & 0--4 周 / 4--8 周 / 0--8 周       & 5.23 / 3.10 / 8.33   & $(2.90,7.56)$ / $(-0.84,7.04)$ / $(5.15,11.52)$ & $<0.001$ / $0.121$ / $<0.001$\\
+\bottomrule
+\end{tabular}
+\TableNote{GG 校正后时间与交互自由度均为 $(1.52,88.05)$，交互精确 $P=4.2\times 10^{-5}$（多元 Pillai 迹 $P<0.001$，结论一致）。若对三个时点的组间比较合并做 Bonferroni 校正，T4 为 $P=0.103$、T8 仍 $P=0.011$。}
+\end{table}
+
+\paragraph{3. 结论与解读。}方案 $\times$ 时间交互显著（偏 $\eta^2=0.19$），说明新型训练组恢复明显快于常规组：8 周净改善多出 8.3 分（95\% CI 5.2--11.5），8 周时组间高出 6.7 分（95\% CI 2.3--11.2），差距主要在前 4 周形成（多改善 5.2 分，$P<0.001$）。方案主效应不显著（$P=0.066$）只是因为把入组无差别的基线也平均进了三个时点，切不可据此误判两方案疗效相同。
+
+\begin{notebox}[四份作业代码的共同写作模板]
+回头看四份完整脚本，其实遵循同一套可复用的分析流水线：读数据并用 \Verb|str()| 核对 $\to$ 描述统计与题目表核对 $\to$ 主模型拟合与假设检验 $\to$ 前提条件检查 $\to$ 强影响点/异常值敏感性分析 $\to$ 矢量图输出。把这套模板记熟，做任何线性模型实战都不会漏步。
 \end{notebox}

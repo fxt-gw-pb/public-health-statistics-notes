@@ -1,37 +1,40 @@
 \chapter{多重线性回归：模型构建}
-本章内容按回归分析的一般步骤展开：建立模型（对数据产生机制的假定），估计参数，对估计的抽样误差作推断（检验与区间估计），评价模型并筛选变量。各步骤的任务与主要工具见下表。
+做多重线性回归，思路其实很规整，顺着五个问题一步步往下走就行：先想清楚$Y$和$x$之间假定是什么关系（建模），再用样本把未知参数算出来（估计），接着衡量这些估计值有多大抽样误差（推断），再看看模型拟合得好不好（评价），最后在多个候选变量里做取舍（筛选）。全章的骨架见下表：
 \begin{center}\small
 \begin{tabular}{lll}
-\toprule 步骤&任务&主要工具\\\midrule
-建模&描述$Y$的条件均数与$x$的关系&$E(Y\mid x)=x^\top\beta$及LINE假设\\
-估计&求参数$\beta$的估计值&最小二乘$=$正态下的最大似然\\
-推断&度量估计值的抽样误差&$\Cov(\widehat\beta)=\sigma^2(X^\top X)^{-1}$，$t$、$F$检验，区间\\
-评价&评价模型的拟合程度&$R^2$、$R^2_{\mathrm{adj}}$、$s$、AIC、$C_p$\\
-筛选&确定模型中保留的自变量&最优子集、逐步法\\\bottomrule
+\toprule 步骤&要解决的问题&核心工具\\\midrule
+建模&如何刻画$Y$的条件均数与随机变异&$E(Y\mid x)=x^\top\beta$与LINE假设\\
+估计&如何从样本算出参数$\beta$与$\sigma^2$&最小二乘法$=$正态下的最大似然法\\
+推断&估计值离真值有多远、效应是否为0&$\Cov(\widehat\beta)=\sigma^2(X^\top X)^{-1}$，$t$、$F$检验与区间估计\\
+评价&模型解释了多少变异、是否存在过拟合&$R^2$、$R^2_{\mathrm{adj}}$、$s$、AIC、$C_p$与PRESS\\
+筛选&保留哪些自变量进入最终模型&最优子集法、逐步回归法\\\bottomrule
 \end{tabular}
 \end{center}
-回归系数、$R^2$与$P$值均由一份样本计算得到，随样本不同而变化。统计推断的任务，是依据一份样本估计这些统计量在重复抽样中的变异程度。
-\section{线性回归模型概述}
-回归是研究因变量与自变量间在数量上共变关系的方法。线性回归中的“线性”指模型对参数$\beta$线性，不要求对自变量线性：设计矩阵的列可以是变量变换（如$\ln x$、$x^2$）、分类变量的哑变量编码，也可以是交互项$x_1x_2$。例如$\mu=\beta_0+\beta_1x+\beta_2x^2$仍是线性回归，而$\mu=\beta_0e^{\beta_1x}$不是。
+读这一章时要牢记一个基本事实：我们手里算出来的回归系数、$R^2$和$P$值，都只来自眼前这一份样本；换一批人重抽，每个数字都会跳动。统计推断的全部意义，就是借着一份样本去摸清这种抽样波动的幅度，从而判断观察到的关系究竟是真实规律，还是随机涨落。
 
-线性回归要求$Y$为数值变量；自变量可以是数值变量，也可以是经编码的分类变量，在实验研究中还可以是人为设定的取值。理论模型以给定自变量时$Y$的条件分布表述：
+\section{线性回归模型概述}
+回归分析用来研究因变量$Y$与一个或多个自变量$x_1,\ldots,x_m$在数量上的相依关系。容易误解的是“线性”二字——线性回归要求的只是\textbf{对参数$\beta$线性}，并不要求对自变量$x$线性。设计矩阵的列完全可以是变量变换（如$\ln x$、$x^2$）、分类变量的哑变量，或者交互项$x_1x_2$。比如$\mu=\beta_0+\beta_1x+\beta_2x^2$虽然画出来是抛物线，但对$(\beta_0,\beta_1,\beta_2)$是线性的，依然属于线性回归；而$\mu=\beta_0e^{\beta_1x}$对$\beta_1$非线性，就不是线性回归。
+
+在线性回归中，$Y$应为连续数值变量；自变量既可以是连续变量，也可以是编码后的分类变量，在实验研究里还可以是人为设定的水平。理论模型写成给定自变量时$Y$的条件均数加上随机误差：
 \[
 \mu_{y\mid x}=E(Y\mid x)=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\qquad
 Y=\mu_{y\mid x}+\varepsilon .
 \]
-写成矩阵形式为
+把$n$个观察对象竖着拼在一起，就得到简洁的矩阵形式：
 \[
 Y=X\beta+\varepsilon,\qquad Y,\varepsilon\in\mathbb R^{n},\quad X\in\mathbb R^{n\times p},\quad \beta\in\mathbb R^{p},\quad p=m+1,
 \]
-其中$X$为设计矩阵（第1列全为1，对应截距）。\textbf{本书回归部分约定：$m$为自变量个数，$p=m+1$为含截距的回归参数个数，残差自由度为$n-p=n-m-1$；并要求$\rank(X)=p$。$x_{ij}$表示第$i$个观察对象的第$j$个自变量（$i=1,\ldots,n$；$j=1,\ldots,m$），$x_i=(1,x_{i1},\ldots,x_{im})^\top$为第$i$个观察对象的设计向量，即$X$第$i$行的转置。}
+其中$X$称为\textbf{设计矩阵}（第1列全为1，对应截距$\beta_0$）。\textbf{本书回归部分统一约定：$m$为自变量个数，$p=m+1$为含截距的参数总数，残差自由度为$n-p=n-m-1$，并假定$X$列满秩（$\rank(X)=p$）。$x_{ij}$表示第$i$个观察对象的第$j$个自变量（$i=1,\ldots,n$；$j=1,\ldots,m$），$x_i=(1,x_{i1},\ldots,x_{im})^\top$是第$i$个对象的设计向量（$X$第$i$行的转置）。}
 
-记号约定：$\beta_j$、$\sigma^2$为总体参数；$\widehat\beta_j$为估计量（随样本变化的随机变量），由某一具体样本算得的数值$b_j$为估计值；$\varepsilon_i=y_i-x_i^\top\beta$为不可观测的随机误差，$e_i=y_i-\widehat y_i$为可计算的残差。模型假设及其作用如下：
+此外，全书严格区分三组容易混淆的记号：$\beta_j,\sigma^2$是未知的\textbf{总体参数}；$\widehat\beta_j$是\textbf{估计量}（随样本变化的随机变量），具体样本算出的数记为$b_j$；$\varepsilon_i=y_i-x_i^\top\beta$是不可观测的\textbf{随机误差}，而$e_i=y_i-\widehat y_i$是可计算的\textbf{残差}。
+
+模型的统计性质分层依赖以下三条假设（与“线性、独立、正态、等方差”即LINE假设一一对应，第3章逐项诊断）：
 \begin{enumerate}
-\item 零条件均值：$E(\varepsilon\mid X)=0$，即均值结构$E(Y\mid X)=X\beta$设定正确。它保证最小二乘估计无偏；若遗漏了与$x$相关的重要变量或函数形式错误，则估计有偏。
-\item 同方差且不相关：$\Cov(\varepsilon\mid X)=\sigma^2I_n$。它用于推出$\Cov(\widehat\beta\mid X)=\sigma^2(X^\top X)^{-1}$、$s^2$的无偏性及Gauss--Markov最优性；若不成立，$\widehat\beta$仍无偏，但常规标准误、检验与区间不再可靠。
-\item 正态性：$\varepsilon\mid X\sim N(0,\sigma^2I_n)$。它使$t$、$F$统计量在有限样本下有精确分布，置信区间与预测区间严格成立；样本量较大时，系数的推断可依中心极限定理近似成立，但个体预测区间仍依赖误差分布形状。
+\item \textbf{零条件均值}：$E(\varepsilon\mid X)=0$，即均值结构$E(Y\mid X)=X\beta$设定正确。它是最小二乘估计\textbf{无偏}的根本保证；若漏掉了与$x$相关的重要变量或把曲线硬拟合为直线，系数估计就会有偏。
+\item \textbf{同方差且不相关}：$\Cov(\varepsilon\mid X)=\sigma^2I_n$。有了它，才能推出$\Cov(\widehat\beta\mid X)=\sigma^2(X^\top X)^{-1}$、$s^2$的无偏性以及Gauss--Markov最优性。若违背这一条，$\widehat\beta$本身依然无偏，但常规标准误、$t/F$检验和置信区间都会失准。
+\item \textbf{正态性}：$\varepsilon\mid X\sim N(0,\sigma^2I_n)$。它让$t$、$F$统计量在有限样本下服从精确分布，也让置信区间与个体预测区间严格成立。大样本下，依据中心极限定理，系数的检验与置信区间对正态性并不敏感；但个体预测区间始终依赖误差的实际分布形态。
 \end{enumerate}
-三条合称LINE假设（Linear、Independent、Normal、Equal variance），第3章逐项诊断。
+
 \par\noindent\begin{minipage}{\linewidth}
 \tbltitle{表3.1\quad 某地29名13岁男童身高、体重、肺活量的实测数据}
 \begin{center}\small\begin{tabular}{rrrr@{\qquad}rrrr}
@@ -54,9 +57,10 @@ Y=X\beta+\varepsilon,\qquad Y,\varepsilon\in\mathbb R^{n},\quad X\in\mathbb R^{n
 29&156.5&32.0&1.75&&&&\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
-
 {\small 资料来源：陈峰主编，《现代医学统计方法与Stata应用》，中国统计出版社，2000，109页。}
+
 \subsection{模型的几何意义（例3.1）}
+一元回归在二维平面上拟合一条直线；到了两个自变量（如身高$x_1$和体重$x_2$预测肺活量$y$），回归方程在三维空间里就是一张倾斜的平面（响应曲面），而每个实测点到这张平面的\textbf{竖直距离}就是残差$e_i=y_i-\widehat y_i$。最小二乘法干的事，就是调整平面的高度和倾斜角度，让所有竖直线段的平方和降到最小。
 \begin{center}
 \begin{tikzpicture}
 \begin{axis}[width=13.6cm,height=8.7cm,view={42}{24},xlabel={$x_1$},ylabel={$x_2$},zlabel={$Y_{\mathrm{pred}}$},xmin=135,xmax=168,ymin=27.6,ymax=49.5,zmin=1.2,zmax=3.2]
@@ -93,50 +97,42 @@ Y=X\beta+\varepsilon,\qquad Y,\varepsilon\in\mathbb R^{n},\quad X\in\mathbb R^{n
 \addplot3[only marks,draw=ChartBrick,fill=ChartBrick,mark=*,mark size=2pt] coordinates {(135.1,32,1.75) (139.9,30.4,2) (163.6,46.2,2.75) (146.5,33.5,2.5) (156.2,37.1,2.75) (156.4,35.5,2) (167.8,41.5,2.75) (149.7,31,1.5) (145,33,2.5) (148.5,37.2,2.25) (165.5,49.5,3) (135,27.6,1.25) (153.3,41,2.75) (152,32,1.75) (160.5,47.2,2.25) (153,32,1.75) (147.6,40.5,2) (157.5,43.3,2.25) (155.1,44.7,2.75) (160.5,37.5,2) (143,31.5,1.75) (149.4,33.9,2.25) (160.8,40.4,2.75) (159,38.5,2.5) (158.2,37.5,2) (150,36,1.75) (144.5,34.7,2.25) (154.6,39.5,2.5) (156.5,32,1.75)};
 \node[font=\small,fill=white,inner sep=2pt] at (axis cs:166,48,2.35) {响应曲面};
 \node[font=\small,fill=white,inner sep=2pt] at (axis cs:144,31,2.8) {残差};
-
 \end{axis}
 \end{tikzpicture}
 \end{center}
-\figtitle{响应曲面（response surface）与残差（error）\quad $x=135,\ y=27.6,\ z=1.603655$}
+\figtitle{例3.1的响应曲面与残差（当$x_1=135,\ x_2=27.6$时，拟合值$\widehat y=1.6037$）}
+
 \subsection{样本回归方程}
-从总体中随机抽取$n$个观察对象，利用样本数据估计出以下方程：
+从总体中抽取$n$个观察对象，用样本估计出的回归方程记为
 \[
 \widehat\mu_{y\mid x}=\widehat Y=b_0+b_1x_1+b_2x_2+\cdots+b_mx_m,\qquad
 Y=\widehat Y+e.
 \]
-式中$b_i$称为$x_i$的样本偏回归系数，意义是其他自变量取值固定时，$x_i$每增加一个单位，$Y$的条件均数平均改变量的估计。它描述的是模型内的条件关联；能否解释为因果效应取决于研究设计与混杂控制。$e$为残差。
-\begin{sikao}[“控制其他变量”的含义]
-观察性研究中，其他变量的取值并未被实际固定。“控制其他变量”指统计上的扣除：先从$x_1$和$Y$中分别扣除可由$x_2$线性解释的部分，再考察二者剩余部分之间的关系。以下用例3.1（下一节）的数据验证：
-\par\noindent\begin{rcode}
-coef(lm(v~h))                      # 只用身高：简单回归
-rv <- resid(lm(v~w))               # 肺活量中去掉体重能解释的部分
-rh <- resid(lm(h~w))               # 身高中去掉体重能解释的部分
-coef(lm(rv~rh))                    # 两组残差之间的斜率
-\end{rcode}
-\begin{routput}
-(Intercept)           h 
--2.60854008  0.03156093 
- (Intercept)           rh 
-1.331210e-17 5.016538e-03 
-\end{routput}
-两组残差之间的回归斜率为$0.005017$，与多重回归中身高的偏回归系数$b_1$相等，这一结论称为Frisch--Waugh定理。仅以身高为自变量时，斜率为$0.0316$，约为前者的6倍。二者的含义不同：$0.0316$描述身高不同的儿童肺活量平均相差多少，其中包含了身高较高者体重通常也较大的作用；$0.0050$描述体重相同的儿童中，身高每增加1\,cm，肺活量平均增加多少。
+其中$b_i$是$x_i$的\textbf{样本偏回归系数}，含义是：在模型中其余自变量取值不变时，$x_i$每增加1个单位，$Y$的条件均数平均改变$b_i$个单位。它描述的是模型内的条件关联；能不能进一步说成“因果效应”，取决于研究设计（如是否随机分组）与混杂因素的控制，而不是回归方程本身能决定的。
 
-因此，偏回归系数的含义取决于模型中同时纳入的其他变量。增加或删除一个与$x_1$相关的变量，$b_1$的大小乃至符号都可能改变。
+\begin{sikao}[“控制其他变量”在数学上到底做了什么？]
+在观察性研究里，我们并没有真的找来一群“体重一模一样”的孩子再看身高对肺活量的影响。那多重回归说的“控制体重”到底是怎么做到的？
+
+答案非常直观——\textbf{先各自扣除，再看剩下来的部分}：
+\begin{enumerate}
+\item 先用体重$x_2$对肺活量$y$做简单回归，留下残差$e_{y\mid x_2}$（肺活量里无法由体重线性解释的那部分）；
+\item 再用体重$x_2$对身高$x_1$做简单回归，留下残差$e_{x_1\mid x_2}$（身高里无法由体重线性解释的那部分）；
+\item 最后用$e_{y\mid x_2}$对$e_{x_1\mid x_2}$做简单线性回归，算出来的斜率竟然和多重回归里的$b_1$分毫不差！
+\end{enumerate}
+在例3.1中，只放身高做简单回归，斜率是$0.0316$\,L/cm；可一旦把体重扣除，两组残差之间的回归斜率骤降到$0.0050$\,L/cm——与后面多重回归算出的$b_1=0.005017$完全一致（这就是第3章要证明的Frisch--Waugh--Lovell定理）。
+
+这两个斜率回答的本来就是不同的问题：$0.0316$说的是“高个孩子比矮个孩子肺活量平均大多少”，这里面掺杂了高个孩子往往更重的影响；$0.0050$说的是“体重相同的孩子中，高1\,cm肺活量平均多多少”。因此，偏回归系数的含义永远绑定在“模型里同时放了哪些其他变量”上。增删一个与$x_1$相关的变量，$b_1$的大小甚至正负号都可能翻转。
 \end{sikao}
+
 \section{理论偏回归系数的估计}
 \subsection{最小二乘法}\label{sec:ls}
-最小二乘（least squares，LS）法要求残差平方和$Q$达到最小：
+\textbf{最小二乘法}（least squares，LS）的准则很朴素：挑一组系数$b_0,b_1,\ldots,b_m$，让残差平方和$Q$达到最小。
 \begin{align*}
 \widehat Y_i&=b_0+b_1x_{i1}+b_2x_{i2}+\cdots+b_mx_{im},\\
-Q&=\sum_{i=1}^{n}e_i^2=\sum_{i=1}^{n}(y_i-\widehat y_i)^2\\
-&=\sum_{i=1}^{n}\left[y_i-(b_0+b_1x_{i1}+b_2x_{i2}+\cdots+b_mx_{im})\right]^2.
+Q&=\sum_{i=1}^{n}e_i^2=\sum_{i=1}^{n}(y_i-\widehat y_i)^2
+=\sum_{i=1}^{n}\left[y_i-(b_0+b_1x_{i1}+b_2x_{i2}+\cdots+b_mx_{im})\right]^2.
 \end{align*}
-分别对各$b_j$求偏导并联立方程组：
-\[
-\frac{\partial Q}{\partial b_0}=0,\quad
-\frac{\partial Q}{\partial b_1}=0,\quad\ldots,\quad
-\frac{\partial Q}{\partial b_m}=0.
-\]
+分别对各$b_j$求偏导并令其为0（$\partial Q/\partial b_j=0$），得到关于$b_0,\ldots,b_m$的$p$元线性方程组，称为\textbf{正规方程组}：
 \[
 \left\{\begin{aligned}
 nb_0+\sum x_{i1}b_1+\sum x_{i2}b_2+\cdots+\sum x_{im}b_m&=\sum y_i,\\
@@ -146,7 +142,7 @@ nb_0+\sum x_{i1}b_1+\sum x_{i2}b_2+\cdots+\sum x_{im}b_m&=\sum y_i,\\
 \sum x_{im}b_0+\sum x_{i1}x_{im}b_1+\sum x_{i2}x_{im}b_2+\cdots+\sum x_{im}^2b_m&=\sum x_{im}y_i.
 \end{aligned}\right.
 \]
-求解得：
+写成矩阵形式就是$X^\top Xb=X^\top Y$；只要$X$列满秩，解唯一：
 \[
 b=\widehat\beta=(X^\top X)^{-1}X^\top Y.
 \]
@@ -158,13 +154,14 @@ b=\widehat\beta=(X^\top X)^{-1}X^\top Y.
 \frac{\partial Q}{\partial b}=-2X^\top Y+2X^\top Xb=0
 \quad\Longrightarrow\quad X^\top Xb=X^\top Y .
 \]
-上面按分量写出的$p$个方程组正是$X^\top Xb=X^\top Y$的展开。列满秩时$X^\top X$可逆（第\ref{sec:rank}节），解唯一。再说明它是最小值点：对任意$b$，
+按分量展开正是上面的$p$个正规方程。列满秩时$X^\top X$可逆（第\ref{sec:rank}节），解唯一。为什么它一定是最小值点而不是极大或鞍点？对任意$b$配方即可看出：
 \[
 Q(b)=Q(\widehat\beta)+(b-\widehat\beta)^\top X^\top X(b-\widehat\beta)\ge Q(\widehat\beta),
 \]
-交叉项为$-2(b-\widehat\beta)^\top X^\top(Y-X\widehat\beta)=0$；等号仅当$X(b-\widehat\beta)=0$即$b=\widehat\beta$时成立。若$X$不满秩，正规方程有无穷多解，但拟合值$X\widehat\beta$仍唯一（见第3、4章）。
-\dpart{统计解释}最小二乘只用到“使$Q$最小”，不需要正态假设；正态假设只在推断（检验、区间）时用到。
+其中交叉项$-2(b-\widehat\beta)^\top X^\top(Y-X\widehat\beta)=0$；等号仅在$X(b-\widehat\beta)=0$即$b=\widehat\beta$时取到。若$X$不满秩，正规方程有无穷多解，但拟合值$X\widehat\beta$仍唯一（见第3、4章）。
+\dpart{统计解释}最小二乘法纯属几何意义上的“距离最近”，完全不需要正态假设；正态假设只在后面做小样本检验和区间估计时才派上用场。
 \end{derivation}
+
 \begin{derivation}{$\widehat\beta$的无偏性与协方差阵}
 \dpart{条件}$E(\varepsilon\mid X)=0$，$\Cov(\varepsilon\mid X)=\sigma^2I$，$\rank(X)=p$。
 \dpart{结论}$E(\widehat\beta\mid X)=\beta$，$\Cov(\widehat\beta\mid X)=\sigma^2(X^\top X)^{-1}$。
@@ -172,132 +169,116 @@ Q(b)=Q(\widehat\beta)+(b-\widehat\beta)^\top X^\top X(b-\widehat\beta)\ge Q(\wid
 \[
 \widehat\beta=(X^\top X)^{-1}X^\top(X\beta+\varepsilon)=\beta+(X^\top X)^{-1}X^\top\varepsilon .
 \]
-由第一个条件得$E(\widehat\beta\mid X)=\beta$。令$A=(X^\top X)^{-1}X^\top$，由$\Cov(A\varepsilon)=A\Cov(\varepsilon)A^\top$（第\ref{sec:lincomb}节），
+由零条件均值立得$E(\widehat\beta\mid X)=\beta$。再记$A=(X^\top X)^{-1}X^\top$，直接套用第\ref{sec:lincomb}节的$\Cov(A\varepsilon)=A\Cov(\varepsilon)A^\top$：
 \[
 \Cov(\widehat\beta\mid X)=(X^\top X)^{-1}X^\top(\sigma^2I)X(X^\top X)^{-1}=\sigma^2(X^\top X)^{-1}.
 \]
-\dpart{统计解释}记$c_{jj}$为$(X^\top X)^{-1}$的第$j$个对角元，则$\Var(\widehat\beta_j\mid X)=\sigma^2c_{jj}$。无偏性只需第一个条件；方差公式还需要同方差、不相关。
+\dpart{统计解释}记$c_{jj}$为$(X^\top X)^{-1}$的第$j$个主对角元，则$\Var(\widehat\beta_j\mid X)=\sigma^2c_{jj}$。无偏性只用到第一条假设；方差公式则依赖同方差与不相关。
 \end{derivation}
+
 \begin{derivation}{Gauss--Markov定理}
 \dpart{条件}$E(\varepsilon\mid X)=0$，$\Cov(\varepsilon\mid X)=\sigma^2I$，$\rank(X)=p$；不要求正态。
-\dpart{结论}在所有关于$Y$线性、且对一切$\beta$都无偏的估计量$\widetilde\beta=CY$中，最小二乘估计的协方差阵最小：$\Cov(\widetilde\beta)-\Cov(\widehat\beta)$半正定。因而对任意$c$，$\Var(c^\top\widetilde\beta)\ge\Var(c^\top\widehat\beta)$。称$\widehat\beta$为最优线性无偏估计（BLUE）。
-\dpart{推导}$E(CY)=CX\beta=\beta$对一切$\beta$成立$\iff CX=I$。记$C=(X^\top X)^{-1}X^\top+D$，则$DX=0$。于是
+\dpart{结论}在所有关于$Y$线性、且对一切$\beta$都无偏的估计量$\widetilde\beta=CY$中，最小二乘估计的协方差阵最小：$\Cov(\widetilde\beta)-\Cov(\widehat\beta)$半正定。因而对任意常数向量$c$，$\Var(c^\top\widetilde\beta)\ge\Var(c^\top\widehat\beta)$。称$\widehat\beta$为最优线性无偏估计（BLUE）。
+\dpart{推导}$E(CY)=CX\beta=\beta$对一切$\beta$成立$\iff CX=I$。令$C=(X^\top X)^{-1}X^\top+D$，则$DX=0$。于是
 \begin{align*}
 \Cov(\widetilde\beta)=\sigma^2CC^\top
 &=\sigma^2\bigl[(X^\top X)^{-1}+(X^\top X)^{-1}X^\top D^\top+DX(X^\top X)^{-1}+DD^\top\bigr]\\
 &=\sigma^2(X^\top X)^{-1}+\sigma^2DD^\top ,
 \end{align*}
 而$DD^\top$半正定。
-\dpart{统计解释}“最优”只在“线性且无偏”的范围内比较。允许偏倚的估计（如第3章的岭回归）或非线性估计可能有更小的均方误差；误差异方差或相关时，最小二乘不再最优，应考虑加权或广义最小二乘。
+\dpart{统计解释}这里的“最优”限定在\textbf{线性且无偏}的圈子里。一旦放宽无偏性（如第3章的岭回归），允许引入一点偏倚，完全可能换来更小的均方误差；若误差存在异方差或自相关，最小二乘也不再最优，应考虑加权或广义最小二乘。
 \end{derivation}
+
 \subsection{最大似然法}
-最大似然（maximum likelihood，ML）法把正态假设施加于误差：$\varepsilon\mid X\sim N(0,\sigma^2I)$，则
+如果再往前走一步，给误差加上正态独立同方差假定$\varepsilon\mid X\sim N(0,\sigma^2I)$，也就是
 \[
 Y_i\mid x_i\sim N(\mu_{y\mid x_i},\sigma^2)\ \text{且相互独立},\qquad
-\mu_{y\mid x}=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m.
+\mu_{y\mid x}=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,
 \]
-将$y_1,y_2,\ldots,y_n$的概率密度$f(y_i)$连乘得到似然函数$L(\beta,\sigma^2)$，对数似然为
+就可以用\textbf{最大似然法}（maximum likelihood，ML）来估计参数。把$n$个观测的密度函数连乘再取对数，得到对数似然函数：
 \[
 \ln L(\beta,\sigma^2)=-\frac n2\ln(2\pi)-\frac n2\ln\sigma^2-\frac{1}{2\sigma^2}(Y-X\beta)^\top(Y-X\beta)
 =-\frac n2\ln(2\pi)-\frac n2\ln\sigma^2-\frac{Q(\beta)}{2\sigma^2}.
 \]
-对任意固定的$\sigma^2$，$\ln L$只通过$-Q(\beta)/(2\sigma^2)$依赖$\beta$，故使$\ln L$最大等价于使残差平方和$Q(\beta)$最小，$\widehat\beta_{\mathrm{ML}}=\widehat\beta_{\mathrm{LS}}$。再对$\sigma^2$求导：
+对任意固定的$\sigma^2$，$\ln L$里含$\beta$的只有最后一项$-Q(\beta)/(2\sigma^2)$。因此让对数似然最大，等价于让残差平方和$Q(\beta)$最小——正态假定下$\widehat\beta_{\mathrm{ML}}$与$\widehat\beta_{\mathrm{LS}}$完全重合。
+
+但对$\sigma^2$求导时，两种思路出现了分歧：
 \[
 \frac{\partial\ln L}{\partial\sigma^2}=-\frac{n}{2\sigma^2}+\frac{Q}{2\sigma^4}=0
 \quad\Longrightarrow\quad
 \widehat\sigma^2_{\mathrm{ML}}=\frac Qn,
 \]
-这里$Q=Q(\widehat\beta)$。其中$\widehat\sigma^2_{\mathrm{ML}}=Q/n$是最大似然估计，常用的无偏估计为
+其中$Q=Q(\widehat\beta)$。$\widehat\sigma^2_{\mathrm{ML}}=Q/n$是最大似然估计，而回归分析中常用的无偏估计（残差均方）是
 \[
-s^2=Q/(n-p).
+s^2=\frac{Q}{n-p}.
 \]
-分母不同的原因：残差满足$X^\top e=0$这$p$个线性约束，只有$n-p$个自由度，$E(Q)=(n-p)\sigma^2$（见第\ref{sec:resid}节），故$E(Q/n)=\frac{n-p}{n}\sigma^2$偏小，$s^2$无偏。对例3.1，$Q=2.5579$，$n=29$，$p=3$：$\widehat\sigma^2_{\mathrm{ML}}=0.0882$，$s^2=0.0984$。将$\widehat\sigma^2_{\mathrm{ML}}$代回得最大对数似然
+为什么分母差了$p$？因为残差向量必须满足$X^\top e=0$这$p$个约束，能自由变动的维度只有$n-p$个（见第\ref{sec:resid}节），$E(Q)=(n-p)\sigma^2$。除以$n$会系统性低估$\sigma^2$，尤其在$p$相对$n$不小时偏差更明显。对例3.1，$Q=2.5579$，$n=29$，$p=3$，有$\widehat\sigma^2_{\mathrm{ML}}=0.0882$，$s^2=0.0984$。
+
+把$\widehat\sigma^2_{\mathrm{ML}}$代回对数似然，得到最大对数似然：
 \[
 \ln L_{\max}=-\frac n2\Bigl[\ln(2\pi)+\ln\frac Qn+1\Bigr],
 \]
-第\ref{sec:modeleval}节的AIC由它构造。
-\subsection{例3.1的矩阵计算}
+第\ref{sec:modeleval}节的AIC正是从这里出发构造的。
+
+\subsection{例3.1的矩阵计算与结果解读}
+把表3.1中29名男童的数据排成设计矩阵$X$（$29\times 3$）与响应向量$Y$（$29\times 1$）：
 \[
 X=\begin{bmatrix}1&135.1&32.0\\1&139.9&30.4\\1&163.6&46.2\\\vdots&\vdots&\vdots\\1&156.5&32.0\end{bmatrix},
 \quad Y=\begin{bmatrix}1.75\\2.00\\2.75\\\vdots\\1.75\end{bmatrix},
-\quad X^\top=\begin{bmatrix}1&1&1&\cdots&1\\135.1&139.9&163.6&\cdots&156.5\\32.0&30.4&46.2&\cdots&32.0\end{bmatrix}.
 \]
+依次算得
 \[
 X^\top X=\begin{bmatrix}
 29.00&4424.70&1076.70\\
 4424.70&677060.37&165239.80\\
 1076.70&165239.80&40832.39
 \end{bmatrix},\quad
-X^\top Y=\begin{bmatrix}64.000\\9826.650\\2427.325\end{bmatrix}.
+X^\top Y=\begin{bmatrix}64.000\\9826.650\\2427.325\end{bmatrix},
 \]
 \[
 (X^\top X)^{-1}=\begin{bmatrix}
 15.63235900&-0.12610946&0.09813142\\
 -0.12610946&0.00113681&-0.00127508\\
 0.09813142&-0.00127508&0.00259687
-\end{bmatrix}.
+\end{bmatrix},
 \]
 \[
-b=\begin{bmatrix}-0.565664\\0.005017\\0.054061\end{bmatrix},\qquad
-\widehat y=-0.5657+0.005017x_1+0.05406x_2.
+b=(X^\top X)^{-1}X^\top Y=\begin{bmatrix}-0.565664\\0.005017\\0.054061\end{bmatrix},
+\qquad \widehat y=-0.5657+0.005017x_1+0.05406x_2.
 \]
-\par\noindent\begin{rcode}
-h <- c(135.1,139.9,163.6,146.5,156.2,156.4,167.8,149.7,145.0,148.5,165.5,135.0,
-       153.3,152.0,160.5,153.0,147.6,157.5,155.1,160.5,143.0,149.4,160.8,159.0,
-       158.2,150.0,144.5,154.6,156.5)                         # 身高x1
-w <- c(32.0,30.4,46.2,33.5,37.1,35.5,41.5,31.0,33.0,37.2,49.5,27.6,41.0,32.0,
-       47.2,32.0,40.5,43.3,44.7,37.5,31.5,33.9,40.4,38.5,37.5,36.0,34.7,39.5,32.0)
-v <- c(1.75,2.00,2.75,2.50,2.75,2.00,2.75,1.50,2.50,2.25,3.00,1.25,2.75,1.75,
-       2.25,1.75,2.00,2.25,2.75,2.00,1.75,2.25,2.75,2.50,2.00,1.75,2.25,2.50,1.75)
-X <- cbind(1,h,w); Y <- v
-b <- solve(t(X)%*%X)%*%t(X)%*%Y    # 与coef(lm(v~h+w))相同
-\end{rcode}\par\smallskip
-上述矩阵计算用于说明公式的含义，实际分析使用\code{lm()}。例3.1的完整输出如下，后续各节的数值均可在其中找到。
-\par\noindent\begin{rcode}
-fit <- lm(v~h+w)
-summary(fit)
-\end{rcode}
-\begin{routput}
-Residuals:
-     Min       1Q   Median       3Q      Max 
--0.54117 -0.25524 -0.00266  0.22039  0.55425 
-
-Coefficients:
-             Estimate Std. Error t value Pr(>|t|)   
-(Intercept) -0.565664   1.240127  -0.456  0.65208   
-h            0.005017   0.010575   0.474  0.63920   
-w            0.054061   0.015984   3.382  0.00228 **
----
-Residual standard error: 0.3137 on 26 degrees of freedom
-Multiple R-squared:  0.546,	Adjusted R-squared:  0.511 
-F-statistic: 15.63 on 2 and 26 DF,  p-value: 3.485e-05
-\end{routput}
-输出各部分与前述公式的对应关系如下：
+将完整的回归拟合结果整理如下，后面各节的检验与模型评价指标都可以在这张表里直接核对：
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule 参数&估计值$b_j$&标准误$s_{b_j}$&$t$值&$P$值\\\midrule
+截距（$\beta_0$）&$-0.5657$&1.2401&$-0.456$&0.6521\\
+身高$x_1$（$\beta_1$）&0.0050&0.0106&0.474&0.6392\\
+体重$x_2$（$\beta_2$）&0.0541&0.0160&3.382&0.0023\\\bottomrule
+\end{tabular}\\[4pt]
+{\footnotesize 剩余标准差$s=0.3137$（$\nu=26$）；$R^2=0.5460$，$R^2_{\mathrm{adj}}=0.5110$；整体$F=15.63$（$\nu_1=2,\nu_2=26$），$P=3.49\times10^{-5}$。}
+\end{center}
+表格里每一项都和前面的矩阵公式严丝合缝：
 \begin{itemize}
-\item \code{Estimate}：$b_j$，即$(X^\top X)^{-1}X^\top Y$。
-\item \code{Std. Error}：$s_{b_j}=s\sqrt{c_{jj}}$。例如身高$0.31366\times\sqrt{0.00113681}=0.010575$。
-\item \code{t value}：$b_j/s_{b_j}$，检验$H_0:\beta_j=0$（其他变量保留在模型中）；\code{Pr(>|t|)}为双侧$P$值，自由度$n-p=26$。
-\item \code{Residual standard error}：剩余标准差$s=\sqrt{Q/(n-p)}=\sqrt{2.5579/26}=0.3137$，即$\widehat\sigma$。
-\item \code{Multiple R-squared}与\code{Adjusted R-squared}：见第\ref{sec:modeleval}节。
-\item 最后一行为整体$F$检验（表3.3），$H_0$为全部斜率等于0。
+\item 标准误$s_{b_j}=s\sqrt{c_{jj}}$，比如身高系数的标准误就是$0.31366\times\sqrt{0.00113681}=0.010575$；
+\item $t$值为$b_j/s_{b_j}$，检验的是“其余变量留在模型中时$\beta_j=0$”，自由度$n-p=26$；
+\item 剩余标准差$s=\sqrt{Q/(n-p)}=\sqrt{2.5579/26}=0.3137$\,L，直接告诉我们个体肺活量围绕回归平面波动的典型幅度；
+\item 截距$-0.566$按字面意思是“身高0\,cm、体重0\,kg时的肺活量”，远在样本范围（身高135--168\,cm）之外，没有生物学意义，它只负责把回归平面定在合适的高度上，一般也不必过度解读截距的$P$值。
 \end{itemize}
-截距$-0.566$按字面为身高、体重均为0时的肺活量，该取值远在数据范围（身高135--168\,cm）之外，没有实际意义，其作用在于确定回归面的位置。截距的$t$检验通常不作解释。
-\subsection{残差的估计和性质}\label{sec:resid}
-\begin{align*}
-\widehat Y&=Xb=X(X^\top X)^{-1}X^\top Y=HY,\\
-e&=Y-\widehat Y=(I-H)Y,\qquad H=X(X^\top X)^{-1}X^\top.
-\end{align*}
-\[
-Y=\begin{bmatrix}y_1\\y_2\\\vdots\\y_n\end{bmatrix}_{n\times1},\quad
-X=\begin{bmatrix}1&x_{11}&\cdots&x_{1m}\\1&x_{21}&\cdots&x_{2m}\\
-\vdots&\vdots&\ddots&\vdots\\1&x_{n1}&\cdots&x_{nm}\end{bmatrix}_{n\times p},
-\quad e=\begin{bmatrix}e_1\\e_2\\\vdots\\e_n\end{bmatrix},\quad
-b=\begin{bmatrix}b_0\\b_1\\\vdots\\b_m\end{bmatrix}.
-\]
-（有的资料以$E$、$B$表示残差向量与系数向量，为避免与期望$E(\cdot)$混淆，这里改记为$e$、$b$。）
 
-残差的性质：$Q=\sum e_i^2=\sum(y_i-\widehat y_i)^2$在所有可能的系数中最小；模型含截距时各残差之和为0。
-\ann{$H$是$n\times n$的帽子矩阵，将观测值$y$转换为拟合值。\code{diag(H)}提取主对角线元素$h_{ii}$，称为杠杆值。}
+\subsection{残差的估计和性质}\label{sec:resid}
+把$\widehat\beta=(X^\top X)^{-1}X^\top Y$代回拟合值$\widehat Y=X\widehat\beta$，得到一个贯穿整个回归诊断的核心矩阵——\textbf{帽子矩阵}（hat matrix）$H$：
+\[
+\widehat Y=Xb=X(X^\top X)^{-1}X^\top Y=HY,\qquad
+e=Y-\widehat Y=(I-H)Y,\qquad
+H=X(X^\top X)^{-1}X^\top.
+\]
+（有的资料以$E,B$表示残差向量与系数向量，为避免与期望$E(\cdot)$混淆，本书统一记为$e,b$。）之所以叫“帽子矩阵”，是因为它把观测值$Y$戴上帽子变成了拟合值$\widehat Y$。它的主对角元$h_{ii}$称为第$i$个观测的\textbf{杠杆值}（leverage），在第3章诊断高杠杆点时会大派用场。
+
+从几何上看，$H$是把向量$Y$向$X$列空间$\mathcal C(X)$做正交投影的投影阵，而$I-H$则把$Y$投影到与$\mathcal C(X)$垂直的正交补空间上。想象一根从原点指向$Y$的箭头，向一块平面（$\mathcal C(X)$）打下一束垂直的光：平面上的影子就是$\widehat Y$，连接影子尖端与$Y$尖端的垂直线段就是残差$e$。这一幅画面立刻解释了最小二乘法的全部代数性质：
+\begin{itemize}
+\item 残差$e$与设计矩阵的每一列都垂直（$X^\top e=0$），也与拟合值垂直（$\widehat Y^\top e=0$）；
+\item 只要模型含截距（$X$含全1列$\mathbf 1$），$\mathbf 1^\top e=0$就保证\textbf{残差之和恒为0}，且$\bar{\widehat y}=\bar y$（不含截距时这一条不成立）；
+\item 由勾股定理，总变异直接正交分解为回归平方和与残差平方和之和：$l_{yy}=U+Q$。
+\end{itemize}
 \begin{derivation}{帽子矩阵与残差的性质}
 \dpart{条件}$\rank(X)=p$，$H=X(X^\top X)^{-1}X^\top$；后两条结论另需$E(\varepsilon\mid X)=0$，$\Cov(\varepsilon\mid X)=\sigma^2I$。
 \dpart{结论}
@@ -306,30 +287,33 @@ b=\begin{bmatrix}b_0\\b_1\\\vdots\\b_m\end{bmatrix}.
 (3) $E(e\mid X)=0$，$\Cov(e\mid X)=\sigma^2(I-H)$。
 (4) $E(Q\mid X)=(n-p)\sigma^2$，故$s^2=Q/(n-p)$无偏。
 \dpart{推导}
-(1) $(X^\top X)^{-1}$对称，故$H^\top=H$；$H^2=X(X^\top X)^{-1}X^\top X(X^\top X)^{-1}X^\top=H$；由$\tr(AB)=\tr(BA)$，$\tr(H)=\tr\bigl((X^\top X)^{-1}X^\top X\bigr)=\tr(I_p)=p$。$H$是向$X$列空间的正交投影：$HX=X$，$(I-H)X=0$。
+(1) $(X^\top X)^{-1}$对称故$H^\top=H$；$H^2=X(X^\top X)^{-1}(X^\top X)(X^\top X)^{-1}X^\top=H$；利用$\tr(AB)=\tr(BA)$，得$\tr(H)=\tr\bigl((X^\top X)^{-1}X^\top X\bigr)=\tr(I_p)=p$。同时$HX=X$，$(I-H)X=0$。
 
-(2) $X^\top e=X^\top(I-H)Y=(X^\top-X^\top H)Y=0$，这就是正规方程。于是$\widehat Y^\top e=b^\top X^\top e=0$，拟合值与残差正交，且$Y^\top Y=\widehat Y^\top\widehat Y+e^\top e$。若$X$第1列为$\mathbf 1$，$X^\top e=0$的第1个分量即$\mathbf 1^\top e=\sum e_i=0$。不含截距的模型没有这条约束，残差和一般不为0。
+(2) $X^\top e=X^\top(I-H)Y=(X^\top-X^\top H)Y=0$，正是正规方程。于是$\widehat Y^\top e=b^\top X^\top e=0$。若$X$第1列为$\mathbf 1$，其第1个分量即$\mathbf 1^\top e=\sum e_i=0$。
 
-(3) $e=(I-H)(X\beta+\varepsilon)=(I-H)\varepsilon$，故$E(e\mid X)=0$，
+(3) 由$(I-H)X=0$得$e=(I-H)(X\beta+\varepsilon)=(I-H)\varepsilon$，故$E(e\mid X)=0$，
 \[
 \Cov(e\mid X)=(I-H)\,\sigma^2I\,(I-H)^\top=\sigma^2(I-H).
 \]
 
 (4) $E(Q)=E(e^\top e)=\tr\bigl(\Cov(e)\bigr)=\sigma^2\tr(I-H)=(n-p)\sigma^2$。
-\dpart{统计解释}即使误差独立同方差，残差也不再独立同方差：$\Var(e_i)=\sigma^2(1-h_{ii})$，$\Cov(e_i,e_j)=-\sigma^2h_{ij}$。杠杆值$h_{ii}$满足$0\le h_{ii}\le1$、$\sum h_{ii}=p$，平均为$p/n$。$h_{ii}$大的点把拟合值拉向自己，其残差方差反而小，所以第3章用$e_i/(s\sqrt{1-h_{ii}})$（学生化残差）统一尺度，并用$h_{ii}$度量$x$方向的异常程度。
+\dpart{统计解释}这是一条非常反直觉却至关重要的结论：\textbf{即使理论误差$\varepsilon_i$独立同方差，算出来的残差$e_i$既不独立也不等方差}——$\Var(e_i)=\sigma^2(1-h_{ii})$，$\Cov(e_i,e_j)=-\sigma^2h_{ij}$。杠杆值$h_{ii}$满足$0\le h_{ii}\le 1$且均值为$p/n$；$h_{ii}$越大的点越把回归平面往自己身边拉，它自己的残差方差反而越小。所以第3章做残差诊断时，必须除以$\sqrt{1-h_{ii}}$变成学生化残差，才能把所有点放到同一把尺子上比较。
 \end{derivation}
+
 \section{方程的假设检验}
+算出回归系数之后，紧接着要回答两类统计推断问题：第一，模型里所有自变量合起来对$Y$到底有没有用（整体$F$检验）？第二，在控制了其他变量以后，某一个（或某一组）自变量还有没有额外贡献（单个$t$检验与增量$F$检验）？
+
 \subsection{方差分析法}
-方差分析法检验全部斜率是否同时为0，即全部自变量合起来与$Y$的条件均数有无线性关联（截距不在检验之内）：
+整体方差分析检验的是全部斜率是否同时为0（截距不参与检验）：
 \[
 H_0:\beta_1=\beta_2=\cdots=\beta_m=0;\qquad
 H_1:\text{至少一个}\beta_j\ne0\ (j=1,\ldots,m),\qquad\alpha=0.05.
 \]
-全部$y$值的总变异被分解为$U$和$Q$两部分（含截距时由$\widehat Y-\bar y\mathbf 1$与$e$正交得到），总自由度被分解为$m$和$n-p=n-m-1$两部分，进而得出回归均方和残差均方。无论$H_0$是否成立都有$E(\ms{剩余})=\sigma^2$；而
+含截距时，$\widehat Y-\bar y\mathbf 1$与残差$e$正交，因此$Y$的总离差平方和$l_{yy}$正好拆成回归平方和$U$与剩余（残差）平方和$Q$两块，自由度也对应拆成$m$与$n-m-1$。无论$H_0$是否成立，都有$E(\ms{剩余})=\sigma^2$；而回归均方的期望为
 \[
 E(\ms{回归})=\sigma^2+\frac{\beta_{(1)}^\top X_c^\top X_c\beta_{(1)}}{m},
 \]
-其中$\beta_{(1)}=(\beta_1,\ldots,\beta_m)^\top$，$X_c$为中心化的自变量矩阵。$H_0$成立时两者期望都等于$\sigma^2$，否则回归均方的期望更大，所以用右侧检验：
+其中$\beta_{(1)}=(\beta_1,\ldots,\beta_m)^\top$，$X_c$为中心化的自变量矩阵。$H_0$成立时，第二项消失，分子分母的期望都是$\sigma^2$，$F$值在1附近波动；只要有真实斜率不为0，第二项严格为正，分子就被抬高。因此整体检验一定是右侧检验：
 \[
 F=\frac{\ms{回归}}{\ms{剩余}}\overset{H_0}{\sim}F(m,n-m-1).
 \]
@@ -342,251 +326,221 @@ F=\frac{\ms{回归}}{\ms{剩余}}\overset{H_0}{\sim}F(m,n-m-1).
 剩余&$Q=\sum(y-\widehat y)^2$&$n-m-1$&$Q/(n-m-1)$&\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
+\ann{本书约定$m$为自变量个数，$p=m+1$。部分教材用$p$表示自变量个数、用$N$表示总例数，套公式时留意核对自由度。}
 
-\ann{$m$为自变量个数，$p=m+1$。部分资料以$p$表示自变量个数，以$N$表示总例数，与本书的约定不同。}
-对例3.1，$U=3.0757$，$Q=2.5579$，$F=(3.0757/2)/(2.5579/26)=15.63$，$\nu=(2,26)$，$P=3.5\times10^{-5}$。
+对例3.1，$U=3.0757$，$Q=2.5579$，$F=(3.0757/2)/(2.5579/26)=15.63$，$\nu=(2,26)$，$P=3.5\times10^{-5}$，拒绝$H_0$，说明身高和体重合起来与肺活量存在线性关联。
+
 \subsection{$t$检验法}
-$t$检验法推断单个自变量$x_i$对应的$\beta_i$是否为0（其他自变量保留在模型中）：
+整体$F$检验通过，只说明“至少有一个自变量有用”，却不告诉你是哪一个。要考察单个自变量$x_i$在\textbf{其他自变量都留在模型中时}的额外贡献，用$t$检验：
 \[
 H_0:\beta_i=0,\qquad H_1:\beta_i\ne0,\qquad \alpha=0.05,\quad i=1,\ldots,m.
 \]
-若模型假设（含正态性）成立，无论$H_0$是否成立，估计量$\widehat\beta$都服从均数为$\beta$、协方差阵为$\sigma^2(X^\top X)^{-1}$的正态分布。用$s$估计$\sigma$并构造$t$统计量：
+在正态线性模型下，无论$H_0$是否成立，$\widehat\beta$都服从$N\bigl(\beta,\sigma^2(X^\top X)^{-1}\bigr)$。用$s$代替未知的$\sigma$，得到标准误估计$s_{b_i}=s\sqrt{c_{ii}}$（$c_{ii}$为$(X^\top X)^{-1}$中对应$x_i$的对角元），构造枢轴量
 \[
-t_i=\frac{\widehat\beta_i-\beta_i}{s_{b_i}}\sim t(n-m-1),\qquad
-s_{b_i}=s_{y\cdot12\cdots m}\sqrt{c_{ii}}.
+t_i=\frac{\widehat\beta_i-\beta_i}{s_{b_i}}\sim t(n-m-1).
 \]
-$H_0$只在计算统计量时用于代入$\beta_i=0$，即$t_i=b_i/s_{b_i}\overset{H_0}{\sim}t(n-m-1)$。$s_{b_i}$是$b_i$的标准误的估计值，$c_{ii}$是矩阵$(X^\top X)^{-1}$的对角线上对应于$x_i$的元素。
+$H_0$只用来在计算检验统计量时把$\beta_i=0$代入，即$t_i=b_i/s_{b_i}\overset{H_0}{\sim}t(n-m-1)$。
+
 \begin{derivation}{正态模型下$t$与$F$分布的来源}
 \dpart{条件}$\varepsilon\mid X\sim N(0,\sigma^2I_n)$，$\rank(X)=p$。
 \dpart{结论}(1) $\widehat\beta\sim N\bigl(\beta,\sigma^2(X^\top X)^{-1}\bigr)$；(2) $Q/\sigma^2\sim\chi^2_{n-p}$；(3) $\widehat\beta$与$Q$相互独立；(4) 由此$t_i\sim t(n-p)$，下文的$F$统计量服从$F$分布。
 \dpart{推导}
-(1) $\widehat\beta=\beta+(X^\top X)^{-1}X^\top\varepsilon$是正态向量的线性变换，均数与协方差阵见第\ref{sec:ls}节。
+(1) $\widehat\beta=\beta+(X^\top X)^{-1}X^\top\varepsilon$是正态随机向量的线性变换，均数与协方差阵见第\ref{sec:ls}节。
 
-(2) $I-H$对称幂等、秩为$n-p$，其特征值只有$n-p$个1和$p$个0，可写成$I-H=\sum_{k=1}^{n-p}u_ku_k^\top$，$u_k$为两两正交的单位向量。于是
+(2) $I-H$对称幂等、秩为$n-p$，其特征值恰有$n-p$个1和$p$个0，由谱分解可写为$I-H=\sum_{k=1}^{n-p}u_ku_k^\top$（$u_k$两两正交且为单位向量）。于是
 \[
-Q=e^\top e=\varepsilon^\top(I-H)\varepsilon=\sum_{k=1}^{n-p}(u_k^\top\varepsilon)^2,
+Q=e^\top e=\varepsilon^\top(I-H)\varepsilon=\sum_{k=1}^{n-p}(u_k^\top\varepsilon)^2.
 \]
-而$u_k^\top\varepsilon$（$k=1,\ldots,n-p$）独立同分布于$N(0,\sigma^2)$（其协方差为$\sigma^2u_k^\top u_l$），故$Q/\sigma^2\sim\chi^2_{n-p}$。
+各$u_k^\top\varepsilon$独立同分布于$N(0,\sigma^2)$，故$Q/\sigma^2\sim\chi^2_{n-p}$。
 
-(3) $\Cov(\widehat\beta,e)=(X^\top X)^{-1}X^\top\,\sigma^2I\,(I-H)=\sigma^2(X^\top X)^{-1}(X^\top-X^\top H)=0$。$\widehat\beta$与$e$联合正态且不相关，因而独立；$Q=e^\top e$是$e$的函数，故与$\widehat\beta$独立。
+(3) $\Cov(\widehat\beta,e)=(X^\top X)^{-1}X^\top\,\sigma^2I\,(I-H)=\sigma^2(X^\top X)^{-1}(X^\top-X^\top H)=0$。联合正态下不相关等价于独立，故$\widehat\beta$与$e$独立，从而与$Q=e^\top e$独立。
 
-(4) $Z=(\widehat\beta_i-\beta_i)/(\sigma\sqrt{c_{ii}})\sim N(0,1)$，与$Q/\sigma^2\sim\chi^2_{n-p}$独立，按$t$分布的定义
+(4) 令$Z=(\widehat\beta_i-\beta_i)/(\sigma\sqrt{c_{ii}})\sim N(0,1)$，与$Q/\sigma^2\sim\chi^2_{n-p}$独立，按$t$分布定义
 \[
 t_i=\frac{Z}{\sqrt{Q/[\sigma^2(n-p)]}}=\frac{\widehat\beta_i-\beta_i}{s\sqrt{c_{ii}}}\sim t(n-p).
 \]
-\dpart{统计解释}未知的$\sigma$在比值中约去，所以$t$、$F$统计量可直接计算。$t_i$检验的是“在其他自变量都在模型中时”$x_i$的系数，结论依赖模型中还放了哪些变量。
+\dpart{统计解释}未知的$\sigma$在分子分母中正好约去，这是$t$检验和$F$检验能直接算出来的根本原因。
 \end{derivation}
 
-对例3.1有：
+对例3.1，取$(X^\top X)^{-1}$中对应$x_1,x_2$的$2\times 2$子块
 \[
 C=\begin{bmatrix}c_{11}&c_{12}\\c_{21}&c_{22}\end{bmatrix}
-=\begin{bmatrix}0.00113681&-0.00127508\\-0.00127508&0.00259686\end{bmatrix}.
+=\begin{bmatrix}0.00113681&-0.00127508\\-0.00127508&0.00259686\end{bmatrix},
 \]
+代入$s=0.31366$，得
 \begin{align*}
-t_1&=\frac{0.00501684}{0.313655722\sqrt{0.00113681}}
-=0.4744,\quad \nu=29-2-1=26,\quad P=0.6392,\\
-t_2&=\frac{0.05406059}{0.313655722\sqrt{0.00259686}}
-=3.3822,\quad \nu=26,\quad P=0.0023.
+t_1&=\frac{0.005017}{0.31366\sqrt{0.00113681}}=0.4744,\quad \nu=26,\quad P=0.6392,\\
+t_2&=\frac{0.054061}{0.31366\sqrt{0.00259686}}=3.3822,\quad \nu=26,\quad P=0.0023.
 \end{align*}
-\begin{sikao}[$P=0.639$的含义]
-该$P$值对应的假设是：在体重已纳入模型的条件下，身高与肺活量之间不存在额外的线性关联。检验结果不拒绝这一假设，并不意味着身高与肺活量无关。身高与肺活量的简单相关系数为0.588，简单回归的检验结果有统计学意义；身高与体重的相关系数为0.742，身高所含的信息大部分已由体重反映，因此其在模型中的额外贡献很小。
+\begin{sikao}[如何正确读懂身高的$P=0.639$？]
+不少初学者看到身高$P=0.639$，脱口而出“身高和肺活量没关系”——这其实踩了两个坑。
 
-此外，应区分“未发现关联的证据”与“存在无关联的证据”。$\beta_1$的95\%置信区间为$(-0.0167,\ 0.0268)$\,L/cm，按身高相差10\,cm折算，$-0.17$至$+0.27$\,L之间的效应均与数据相容，其上限对13岁男童而言并不小。样本仅29例，检验无统计学意义首先反映信息量不足，不能作为效应为0的证据。解释$P$值时应同时报告置信区间，这一原则同样适用于广义线性模型和生存分析。
+第一，$t_1$检验的是\textbf{条件假设}：把体重留在模型里之后，身高还能不能提供额外的线性解释力。单看身高与肺活量，二者的简单相关系数高达$0.588$（简单回归高度显著）；但身高和体重的相关系数也有$0.742$，身高携带的信息大部分已经被体重“代劳”了，留给身高的独有贡献所剩无几。
 
-另一种常见情形是整体$F$检验有统计学意义，而各个$t$检验均无统计学意义。这通常是由于自变量间高度相关（共线性），各变量的额外贡献均较小，而合并后的作用明显，详见第3章。
+第二，\textbf{“没有发现关联的证据”不等于“证明了没有关联”}。本例$\beta_1$的95\%置信区间是$(-0.0167,\ 0.0268)$\,L/cm，换算成身高差10\,cm，肺活量变化在$-0.17$\,L到$+0.27$\,L之间的数据都与样本相容——上限对13岁男童来说并不算小。只有29例样本时，$P>0.05$首先提示信息量不够，报告结果时务必同时给出置信区间。
+
+更极端的情形是\textbf{整体$F$检验高度显著，却没有一个单变量的$t$检验显著}。这几乎总是严重共线性的信号：自变量彼此高度重叠，合在一起威力很大，拆开单看谁都显得“可有可无”（第3章详述）。
 \end{sikao}
+
 \subsection{一般线性假设与嵌套模型的增量$F$检验}\label{sec:glh}
-整体$F$检验、单个系数的$t$检验以及第\ref{sec:select}节的偏$F$检验，都是一般线性假设的特例：
+整体$F$检验、单个系数的$t$检验、第\ref{sec:select}节的偏$F$检验，乃至第4章方差分析里的各种对比检验，其实都是同一个框架的特例——\textbf{一般线性假设}：
 \[
 H_0:L\beta=c,\qquad L\ \text{为}\ q\times p\ \text{常数矩阵},\ \rank(L)=q .
 \]
-例如$L=(0\ I_m)$、$c=0$即全部斜率为0（$q=m$）；$L=(0,\ldots,0,1,0,\ldots,0)$即单个系数为0（$q=1$）；$L=(0,1,-1)$即$\beta_1=\beta_2$。检验统计量为
+想检验全部斜率为0，取$L=(0\ I_m),c=0$（$q=m$）；想检验单个系数为0，取对应位置为1的单位行向量（$q=1$）；想检验两个系数相等（$\beta_1=\beta_2$），取$L=(0,1,-1),c=0$。通用检验统计量为
 \[
 F=\frac{(L\widehat\beta-c)^\top\bigl[L(X^\top X)^{-1}L^\top\bigr]^{-1}(L\widehat\beta-c)/q}{s^2}
 \overset{H_0}{\sim}F(q,n-p).
 \]
-它的来源与上面的推导相同：$L\widehat\beta-c\sim N\bigl(L\beta-c,\ \sigma^2L(X^\top X)^{-1}L^\top\bigr)$，$H_0$下分子的二次型除以$\sigma^2$服从$\chi^2_q$，且与$Q$独立。
-
-等价的模型比较形式：把$H_0$代入得到简化模型（reduced），其残差平方和为$Q_R$；不加约束的完整模型（full）残差平方和为$Q_F$，残差自由度$n-p$。则
+实际分析中更常用它等价的\textbf{嵌套模型比较形式}：把$H_0$的约束代回模型，得到参数更少的\textbf{简化模型}（reduced，残差平方和$Q_R$）；不加约束的是\textbf{完整模型}（full，残差平方和$Q_F$，残差自由度$n-p$）。约束一共省下了$q$个参数，代价是残差平方和增加了$Q_R-Q_F$。如果每多花1个自由度换来的残差缩减远大于背景噪声$s^2=Q_F/(n-p)$，就说明被去掉的那组约束不成立：
 \[
 F=\frac{(Q_R-Q_F)/q}{Q_F/(n-p)}\overset{H_0}{\sim}F(q,n-p).
 \]
-整体检验中简化模型只含截距，$Q_R=l_{yy}$，$Q_R-Q_F=U$，即表3.3的$F$。R中\allowbreak\code{anova(}\allowbreak\code{fit_reduced,}\allowbreak\code{ fit_full)}给出这一检验；两模型必须用同一批观测拟合，且简化模型须嵌套于完整模型之中。
+整体$F$检验就是简化模型只留截距（$Q_R=l_{yy}$，$Q_R-Q_F=U$）的特例。注意，使用增量$F$检验时，两个模型必须基于\textbf{完全相同的观测}拟合，且简化模型必须\textbf{嵌套}在完整模型之中。
 
-\textbf{\code{anova(fit)}的输出。}对单个模型调用\code{anova()}时，R给出序贯平方和（Type I），即按公式中变量的顺序，依次计算每个变量进入模型时残差平方和的减少量。变量顺序不同，结果也不同：
-\par\noindent\begin{rcode}
-anova(lm(v~h+w))     # 先身高后体重
-anova(lm(v~w+h))     # 先体重后身高
-\end{rcode}
-\begin{routput}
-          Df Sum Sq Mean Sq F value    Pr(>F)    
-h          1 1.9503 1.95030  19.824 0.0001426 ***
-w          1 1.1254 1.12543  11.440 0.0022847 ** 
-Residuals 26 2.5579 0.09838                      
+\textbf{警惕序贯平方和（Type I SS）的顺序陷阱。}许多软件（如R默认的\code{anova(fit)}）对单个模型输出方差分析表时，按变量写入公式的先后顺序逐一计算残差平方和的减少量。只要自变量之间存在相关，换一下顺序，结果就会大变。以例3.1为例：
+\begin{center}\small
+\begin{tabular}{llrrrr}
+\toprule 进入顺序&变异来源&自由度&$SS$&$F$&$P$\\\midrule
+\multirow{3}{*}{先身高、后体重}&身高$x_1$&1&1.9503&19.824&0.00014\\
+&体重$x_2$（在$x_1$后）&1&1.1254&11.440&0.00228\\
+&残差&26&2.5579&&\\\midrule
+\multirow{3}{*}{先体重、后身高}&体重$x_2$&1&3.0536&31.039&$7.5\times10^{-6}$\\
+&身高$x_1$（在$x_2$后）&1&0.0221&0.225&0.63920\\
+&残差&26&2.5579&&\\\bottomrule
+\end{tabular}
+\end{center}
+两张表的回归平方和合计都是$3.0757=U$，残差行完全相同；但身高先进入时$P=0.00014$，后进入时$P=0.639$。原因很清楚：先进入的变量把与后续变量\textbf{共有}的那块解释力全算到了自己头上，后进入的变量只能拿到自己\textbf{独有}的那一块。因此，每张表最后一行的$F$值恰好等于该变量在完整模型中$t$值的平方（$11.44=3.382^2$，$0.225=0.474^2$），而前面各行的$F$值与回归系数表的$t$检验并不对应。遇到方差分析表和回归系数表打架时，第一反应就是检查是不是序贯平方和。
 
-          Df  Sum Sq Mean Sq F value    Pr(>F)    
-w          1 3.05360 3.05360  31.039 7.493e-06 ***
-h          1 0.02214 0.02214   0.225    0.6392    
-Residuals 26 2.55789 0.09838                      
-\end{routput}
-两张表的回归平方和合计均为$3.0757=U$，残差行完全相同；而身高在第一张表中有统计学意义，在第二张表中无统计学意义。原因在于：第一张表中身高先进入模型，其平方和$1.9503$包含了与体重共有的信息；第二张表中身高后进入，平方和仅为其独有部分$0.0221$。每张表最后一行的$F$值等于该变量$t$值的平方（$11.44=3.382^2$，$0.225=0.474^2$），与\code{summary()}一致；前一行的$F$值与\code{summary()}中的任何检验均不对应。
-
-因此，若方差分析表与回归系数表对同一变量给出不同结论，应首先确认方差分析表是否为序贯平方和。
 \begin{derivation}{单自由度时$F=t^2$}
 \dpart{条件}正态线性模型，$H_0:\beta_i=0$，即$q=1$、$L=\ell_i^\top$（第$i$个分量为1的单位行向量）。
-\dpart{结论}增量$F$统计量等于$t_i^2$，且$F(1,\nu)$分布与$t(\nu)$平方的分布相同，两检验的$P$值相同。
+\dpart{结论}增量$F$统计量等于$t_i^2$，且$F(1,\nu)$与$t(\nu)^2$分布相同，两检验给出完全一致的$P$值。
 \dpart{推导}$L(X^\top X)^{-1}L^\top=c_{ii}$，$L\widehat\beta=\widehat\beta_i$，代入一般公式：
 \[
 F=\frac{\widehat\beta_i\,c_{ii}^{-1}\,\widehat\beta_i}{s^2}=\Bigl(\frac{\widehat\beta_i}{s\sqrt{c_{ii}}}\Bigr)^2=t_i^2 .
 \]
-又若$T\sim t(\nu)$，$T=Z/\sqrt{V/\nu}$，则$T^2=(Z^2/1)/(V/\nu)$，$Z^2\sim\chi^2_1$，故$T^2\sim F(1,\nu)$，$P(|T|>|t_i|)=P(F>t_i^2)$。
-\dpart{统计解释}例3.1中$t_1=0.4744$，$t_1^2=0.225$，正是第\ref{sec:forward}节前进法表中引入$x_1$的偏$F$值；$t_2^2=3.3822^2=11.44$。
+又若$T\sim t(\nu)$，写作$T=Z/\sqrt{V/\nu}$，则$T^2=(Z^2/1)/(V/\nu)\sim F(1,\nu)$，故$P(|T|>|t_i|)=P(F>t_i^2)$。
+\dpart{统计解释}例3.1中$t_1=0.4744$，$t_1^2=0.225$，正是第\ref{sec:forward}节前进法中引入$x_1$的偏$F$值；$t_2^2=3.3822^2=11.44$。
 \end{derivation}
+
 \subsection{区间估计：回归系数、均值响应与个体预测}\label{sec:interval}
 \textbf{回归系数的置信区间。}由$t_i\sim t(n-p)$，$\beta_i$的$1-\alpha$置信区间为
 \[
 b_i\pm t_{\alpha/2}(n-p)\,s\sqrt{c_{ii}} .
 \]
-例3.1中$t_{0.025}(26)=2.0555$，$\beta_1$（身高）的95\%置信区间为$(-0.0167,\ 0.0268)$，$\beta_2$（体重）为$(0.0212,\ 0.0869)$。R：\code{confint(fit)}。
+例3.1中$t_{0.025}(26)=2.0555$，$\beta_1$（身高）的95\%置信区间为$(-0.0167,\ 0.0268)$，$\beta_2$（体重）为$(0.0212,\ 0.0869)$。
 
-\textbf{给定$x_0$时均值响应与新个体的区间。}记$x_0=(1,x_{01},\ldots,x_{0m})^\top$，
-\[
-h_0=x_0^\top(X^\top X)^{-1}x_0 ,\qquad \widehat\mu_0=\widehat y_0=x_0^\top b .
-\]
+\textbf{给定$x_0$时的均值响应区间与新个体预测区间。}对某组自变量取值$x_0=(1,x_{01},\ldots,x_{0m})^\top$，点估计都是$\widehat y_0=x_0^\top b$，记$h_0=x_0^\top(X^\top X)^{-1}x_0$。但两类问题的区间宽度相差很大：
 \begin{derivation}{$s\sqrt{h_0}$与$s\sqrt{1+h_0}$的来源}
-\dpart{条件}正态线性模型；新个体$Y_0=x_0^\top\beta+\varepsilon_0$，$\varepsilon_0\sim N(0,\sigma^2)$且与建模样本独立；$x_0$所处的范围内模型形式仍成立。
+\dpart{条件}正态线性模型；新个体$Y_0=x_0^\top\beta+\varepsilon_0$，$\varepsilon_0\sim N(0,\sigma^2)$且与建模样本独立；模型在$x_0$处仍成立。
 \dpart{结论}
 \[
 \text{均值响应}\ \mu_0=x_0^\top\beta:\ \ \widehat y_0\pm t_{\alpha/2}(n-p)\,s\sqrt{h_0};\qquad
 \text{新个体}\ Y_0:\ \ \widehat y_0\pm t_{\alpha/2}(n-p)\,s\sqrt{1+h_0}.
 \]
-\dpart{推导}$\widehat y_0-\mu_0=x_0^\top(\widehat\beta-\beta)$，由第\ref{sec:lincomb}节公式$\Var(\widehat y_0)=x_0^\top\,\sigma^2(X^\top X)^{-1}x_0=\sigma^2h_0$。预测新个体时
+\dpart{推导}$\widehat y_0-\mu_0=x_0^\top(\widehat\beta-\beta)$，由第\ref{sec:lincomb}节公式$\Var(\widehat y_0)=x_0^\top\,\sigma^2(X^\top X)^{-1}x_0=\sigma^2h_0$。预测新个体时，预测误差来自两处：
 \[
-Y_0-\widehat y_0=\varepsilon_0-x_0^\top(\widehat\beta-\beta),
+Y_0-\widehat y_0=\varepsilon_0-x_0^\top(\widehat\beta-\beta).
 \]
-$\varepsilon_0$与$\widehat\beta$独立，两项方差相加得$\sigma^2(1+h_0)$。两种情形均以$s$代替$\sigma$，并利用$\widehat\beta$、$\varepsilon_0$与$Q$的独立性得到$t(n-p)$分布。
-\dpart{统计解释}均值响应的区间只反映参数估计误差，随$n$增大趋于0；预测区间还包含新个体自身的随机误差$\sigma^2$，即使$n\to\infty$宽度也不小于$2t\sigma$。$h_0$在自变量均数附近最小，离数据中心越远越大。外推到数据范围以外时，不仅$h_0$变大，更重要的是线性形式未必成立，而区间公式并不反映这种模型设定误差。
+新个体的随机误差$\varepsilon_0$与样本算出的$\widehat\beta$独立，方差直接相加得$\sigma^2(1+h_0)$。以$s$代$\sigma$，均服从$t(n-p)$分布。
+\dpart{统计解释}均值响应的置信区间只承受\textbf{参数估计误差}，样本量$n$越大，区间越窄直至缩成一点；个体预测区间还必须扛住\textbf{新个体自身的随机波动}$\sigma^2$，哪怕样本量趋于无穷，宽度也绝不会窄于$2t\sigma$。此外，$h_0$在自变量均数中心最小，离样本中心越远越大；如果强行外推到样本覆盖范围之外，不仅$h_0$暴增，更危险的是线性关系本身可能已经失效，而公式对此一无所知。
 \end{derivation}
-例3.1中取身高150\,cm、体重36\,kg：$\widehat y_0=2.1330$，$h_0=0.03792$，$s=0.31366$，
-\[
-s\sqrt{h_0}=0.0611,\qquad s\sqrt{1+h_0}=0.3195 .
-\]
+
+以例3.1中身高150\,cm、体重36\,kg为例：$\widehat y_0=2.1330$\,L，$h_0=0.03792$，$s=0.31366$，算得$s\sqrt{h_0}=0.0611$，$s\sqrt{1+h_0}=0.3195$：
 \begin{itemize}
-\item 均值响应的95\%置信区间：$2.1330\pm2.0555\times0.0611=(2.0075,\ 2.2586)$；
-\item 新个体的95\%预测区间：$2.1330\pm2.0555\times0.3195=(1.4762,\ 2.7899)$。
+\item 均值响应的95\%置信区间：$2.1330\pm2.0555\times0.0611=(2.008,\ 2.259)$\,L；
+\item 新个体的95\%预测区间：$2.1330\pm2.0555\times0.3195=(1.476,\ 2.790)$\,L。
 \end{itemize}
-\par\noindent\begin{rcode}
-fit <- lm(v~h+w)             # v：肺活量，h：身高，w：体重
-new <- data.frame(h=150,w=36)
-predict(fit,new,interval="confidence")   # 均值响应
-predict(fit,new,interval="prediction")   # 新个体
-\end{rcode}
-\begin{routput}
-       fit      lwr      upr
-1 2.133016 2.007467 2.258565
-       fit      lwr      upr
-1 2.133016 1.476176 2.789856
-\end{routput}
-\begin{sikao}[置信区间与预测区间的选用]
-两种区间的选用取决于推断对象是总体均数还是个体。估计身高150\,cm、体重36\,kg的13岁男童的平均肺活量，应使用置信区间$(2.01,2.26)$；估计该条件下某一男童肺活量的可能范围，应使用预测区间$(1.48,2.79)$。后者明显较宽，因为个体围绕均数存在约$\sigma\approx0.31$\,L的变异，这部分变异不随样本量增大而减小。制定个体参考值范围时，应采用预测区间。
+\begin{sikao}[置信区间还是预测区间？先问清楚你想推断谁]
+两者一字之差，宽窄悬殊。如果你想估计“所有身高150\,cm、体重36\,kg的13岁男童的\textbf{平均}肺活量”，用置信区间$(2.01,\ 2.26)$\,L；如果你面对的是诊室里\textbf{某一个}身高150\,cm、体重36\,kg的男孩，想知道他的肺活量正常大概落在什么范围（例如制定个体参考值范围），就必须用预测区间$(1.48,\ 2.79)$\,L。因为即便把总体回归平面摸得一清二楚，人与人之间围绕均数仍有约$\sigma\approx 0.31$\,L的个体差异，这是增大样本量消不掉的。
 \end{sikao}
+
 \section{自变量的相对重要性}
-在多重回归方程中，偏回归系数间不能直接比较大小，因为偏回归系数有单位。例3.1中$b_1$的单位为L/cm，$b_2$的单位为L/kg。将它们按标准差换算为无单位的标准化偏回归系数$\widetilde b_i$（也常记为$b_i'$，此处为避免与转置混淆改记）：
+普通偏回归系数带着单位，没法直接比大小——例3.1里身高系数$b_1=0.0050$\,L/cm，体重系数$b_2=0.0541$\,L/kg，如果把身高改用米来记，$b_1$立刻变成$0.50$\,L/m，看上去反倒比$b_2$大了。为了消除量纲，常把各自变量和因变量都按样本标准差标准化，得到无单位的\textbf{标准化偏回归系数}$\widetilde b_i$（部分教材记作$b_i'$，本书改记为$\widetilde b_i$以避免与转置混淆）：
 \[
 \widetilde b_i=b_i\sqrt{\frac{l_{ii}}{l_{yy}}}=b_i\frac{s_{x_i}}{s_y},\qquad i=1,2,\ldots,m.
 \]
-$l_{ii}$是变量$x_i$的离差平方和。$\widetilde b_i$的含义是：其他自变量固定时，$x_i$增加1个样本标准差，$Y$的条件均数平均改变$\widetilde b_i$个样本标准差。对例3.1：
-\begin{align*}
-\widetilde b_1&=0.005017\sqrt{\frac{1957.9532}{5.6336}}=0.0935215,\\
-\widetilde b_2&=0.0540611\sqrt{\frac{857.1192}{5.6336}}=0.6668242.
-\end{align*}
-在这一样本和这一模型中，按标准差换算后，体重与肺活量的条件关联明显强于身高。解释时须注意：
+矩阵形式为$\widetilde b=R_{XX}^{-1}r_y$，其中$R_{XX}$是自变量的相关阵，$r_y$是各自变量与$y$的相关系数向量。$\widetilde b_i$表示：控制模型中其他自变量后，$x_i$每增加1个样本标准差，$Y$的条件均数平均变化$\widetilde b_i$个样本标准差。
+
+对例3.1算得
+\[
+\widetilde b_1=0.005017\sqrt{\frac{1957.9532}{5.6336}}=0.0935,\qquad
+\widetilde b_2=0.054061\sqrt{\frac{857.1192}{5.6336}}=0.6668.
+\]
+在这个样本和模型里，按标准差换算后，体重与肺活量的条件关联明显强于身高。但使用标准化系数做比较时，有三条边界一定要守住：
 \begin{itemize}
-\item $\widetilde b_i$依赖样本中$x_i$的标准差。样本取值范围窄（如只纳入同龄儿童）时$s_{x_i}$小，$\widetilde b_i$随之变小，换一个人群结论可能不同。
-\item 它是“控制模型中其他变量后”的系数。本例身高与体重的相关系数为0.742，身高的单变量相关为0.588，但在体重固定时其系数很小；这说明身高的信息大部分已被体重包含，不说明身高与肺活量无关。
-\item 自变量相关时，“相对重要性”没有唯一的定义；$\widetilde b_i$的大小也不能直接解释为因果作用的大小。
+\item \textbf{依赖样本离散程度}：$\widetilde b_i$里乘着$s_{x_i}$。若某研究只抽了身高非常接近的人群（$s_{x_1}$很小），$\widetilde b_1$就会被压得很小，换一个年龄跨度大的人群，排序可能完全不同。
+\item \textbf{依赖模型里还有谁}：它仍是“控制其他变量后”的偏系数。身高$\widetilde b_1$小，是因为身高与体重高度相关（$r=0.742$），而不是身高本身与肺活量无关。
+\item \textbf{不等于因果重要性}：自变量彼此相关时，“相对重要性”本来就没有唯一定义；$\widetilde b_i$再大，也只说明本样本中的条件关联强，不能直接写成“主要病因”。
 \end{itemize}
 
-标准化偏回归系数的矩阵计算（$R_{XX}$为自变量的相关阵，$r_y$为各自变量与$y$的相关系数向量）：
-\[
-\widetilde b=R_{XX}^{-1}r_y=\begin{bmatrix}\widetilde b_1\\\vdots\\\widetilde b_m\end{bmatrix}.
-\]
 \section{模型评价}\label{sec:modeleval}
-评价所估计的样本回归方程能否很好地拟合数据，常用指标有决定系数$R^2$、调整决定系数、剩余标准差$s$、AIC、$C_p$等。
+拟合出一个回归方程后，怎么衡量它“好不好”？常用指标有五个，它们背后的共同主线是\textbf{拟合优度与模型复杂度之间的权衡}：
 \begin{enumerate}
-\item 决定系数：
+\item \textbf{决定系数$R^2$}：
 \[
 R^2=\frac{\SSq{回归}}{\SSq{总}}=1-\frac{\SSq{残}}{\SSq{总}},\qquad0\le R^2\le1.
 \]
-$x_1,x_2,\ldots,x_m$的线性组合解释了部分$y$的变异，$R^2$为其在$y$的总变异中所占比重（含截距时$R^2=[\operatorname{cor}(y,\widehat y)]^2$）。同一份数据、同一因变量下，$R^2$越大表示样本内拟合越好，但它随自变量增多而不会下降，不宜单独用于比较不同大小的模型。
+它表示全部自变量的线性组合解释了$y$总变异的比例（含截距时等于$[\operatorname{cor}(y,\widehat y)]^2$）。$R^2$很直观，却有一个致命短板：往模型里随便塞新变量，哪怕全是毫无关系的随机数，样本内$R^2$也绝不会下降。因此$R^2$不能用来比较含不同个数自变量的模型。
 \begin{derivation}{增加自变量时训练集$R^2$不下降}
 \dpart{条件}两个含截距的模型用同一批观测拟合，模型1的自变量是模型2的子集。
 \dpart{结论}$Q_2\le Q_1$，从而$R_2^2\ge R_1^2$。
-\dpart{推导}模型2的最小二乘在更大的参数集合上最小化$Q$：把模型1的系数补上“新增变量的系数为0”，就是模型2的一个可行解，其残差平方和为$Q_1$。最小值不超过任一可行值，故$Q_2\le Q_1$。两模型的$\SSq{总}=l_{yy}$相同，$R^2=1-Q/l_{yy}$随之不减。
-\dpart{统计解释}即使新增的是纯噪声变量，$R^2$也几乎总会略增。这是样本内拟合的性质，不代表对新样本的预测更好。
+\dpart{推导}把模型1的系数补上“新增变量系数为0”，就是模型2的一个可行解，对应的残差平方和为$Q_1$。模型2的最小二乘在更大的参数空间里找最小值，自然不会比这个可行解差，故$Q_2\le Q_1$。两模型共用同一个$\SSq{总}=l_{yy}$，因此$R^2=1-Q/l_{yy}$必然不减。
+\dpart{统计解释}$R^2$单调不减是样本内拟合的纯代数性质，不代表模型对新数据的预测变好了。另外，高$R^2$不证明模型设定正确（曲线也可以有很高的线性$R^2$），低$R^2$也不代表模型没用——医学研究中个体变异本来就大，有时$R^2$只有0.1--0.2，照样能揭示有临床意义的危险因素。
 \end{derivation}
-\item 调整$R^2$：用自由度对残差平方和和总平方和分别校正，对增加参数加以“惩罚”。
+
+\item \textbf{调整决定系数$R_{\mathrm{adj}}^2$}：为了克服$R^2$盲目偏爱大模型的毛病，用自由度分别校正残差平方和与总平方和，把分子分母换成均方：
 \[
 R_{\mathrm{adj}}^2
 =1-\frac{n-1}{n-p}(1-R^2)
 =1-\frac{n-1}{n-p}\frac{\SSq{残}}{\SSq{总}}
 =1-\frac{\ms{残}}{\ms{总}},\qquad p=m+1.
 \]
-新增变量的偏$F$值大于1时$R_{\mathrm{adj}}^2$才上升。
+每多放一个变量，$Q$会略微变小，但分母$n-p$也少了1。容易验证，只有当新增变量的偏$F$值大于1时，$R_{\mathrm{adj}}^2$才会上升。例如，在例3.1的原模型（$R^2=0.546,\ R_{\mathrm{adj}}^2=0.511$）里硬塞进5列随机生成的纯噪声变量后，$R^2$虚增到了$0.587$，而$R_{\mathrm{adj}}^2$立刻掉到了$0.449$，一眼识破虚假改善。当模型拟合极差、$\ms{残}>\ms{总}$（即$R^2<(p-1)/(n-1)$）时，$R_{\mathrm{adj}}^2$甚至可以为负。
 
-以下示例在例3.1的模型中加入5个与肺活量无关的随机变量：
-\par\noindent\begin{rcode}
-set.seed(2026)
-Z <- matrix(rnorm(29*5),29,5)          # 5列纯噪声
-f0 <- summary(lm(v~h+w)); f5 <- summary(lm(v~h+w+Z))
-c(f0$r.squared, f0$adj.r.squared)
-c(f5$r.squared, f5$adj.r.squared)
-\end{rcode}
-\begin{routput}
-[1] 0.5459604 0.5110343
-[1] 0.5869857 0.4493142
-\end{routput}
-$R^2$由0.546增至0.587，调整$R^2$则由0.511降至0.449，后者扣除了由无关变量带来的虚假改善。$R_{\mathrm{adj}}^2$可以为负：当$R^2<(p-1)/(n-1)$时，$\ms{残}>\ms{总}$。例如$n=29$、$p=3$时，$R^2<0.0714$即得负值。
-\item 剩余标准差：
+\item \textbf{剩余标准差$s$}：
 \[
-s=\widehat\sigma=\sqrt{\ms{残}}
-=\sqrt{\frac{\sum(y-\widehat y)^2}{n-p}}.
+s=\widehat\sigma=\sqrt{\ms{残}}=\sqrt{\frac{\sum(y-\widehat y)^2}{n-p}}.
 \]
-其值越小越好。它与$y$同单位，可直接说明个体围绕回归面的典型离散程度。
-\item 赤池信息准则（AIC）：一般定义为
+越小越好。相比无量纲的$R^2$，$s$和$y$单位相同，能直接评估预测误差有多大（比如例3.1的$s=0.314$\,L）。
+
+\item \textbf{赤池信息准则（AIC）}：在似然与参数个数之间做权衡，一般定义为
 \[
 \mathrm{AIC}=-2\ln L_{\max}+2K,
 \]
-$K$为估计的参数个数，值越小越好。正态线性模型代入$\ln L_{\max}$（第\ref{sec:ls}节）并计入$\sigma^2$（$K=p+1$）：
+其中$K$为模型中估计的参数个数，越小越好。代入正态线性模型的$\ln L_{\max}$并把$\sigma^2$计入参数（$K=p+1$），得到完整形式
 \[
 \mathrm{AIC}=n\ln\frac Qn+n\bigl[\ln(2\pi)+1\bigr]+2(p+1).
 \]
-R的\code{AIC(model)}按此式计算。手算公式及\code{step()}、\code{extractAIC()}使用的是去掉常数后的形式
+手算及许多逐步回归程序会省略对同一数据集恒定的常数项$n[\ln(2\pi)+1]+2$，简写为
 \[
-\mathrm{AIC}=n\ln\left(\frac{n-p}{n}s^2\right)+2p=n\ln\frac Qn+2p,
+\mathrm{AIC}=n\ln\left(\frac{n-p}{n}s^2\right)+2p=n\ln\frac Qn+2p.
 \]
-两者只差$n[\ln(2\pi)+1]+2$，对同一份数据的所有模型都相同，因此模型排序不变。例15-1全模型中$n=27$，二者之差为$27\times2.8379+2=78.62$，即$120.78-42.16$（见第\ref{sec:select}节）。
-\item $C_p$统计量：
+两种写法只差一个常数平移（例如后面例15-1全模型$n=27$时，完整值$120.78$与简写值$42.16$恰好相差$27\times 2.8379+2=78.62$），不改变模型排序。只要在同一次比较中坚持用同一种写法即可。
+
+\item \textbf{Mallows' $C_p$统计量}：
 \[
 C_p=\frac{\mathrm{SSE}_p}{\mathrm{MSE}_{\text{全}}}-(n-2p).
 \]
-$\mathrm{MSE}_{\text{全}}$（也记为$\mathrm{MSE}_m$）是全部候选变量都在方程中时的均方误差，$\mathrm{SSE}_p$是含$p$个参数（含截距）的子模型的残差平方和。若子模型的均值结构正确，$E(\mathrm{SSE}_p)=(n-p)\sigma^2$，于是$C_p\approx p$；若遗漏了重要变量，$\mathrm{SSE}_p$含偏倚平方项，$C_p$明显大于$p$。
+其中$\mathrm{MSE}_{\text{全}}$是全部候选变量都纳入时的残差均方，$\mathrm{SSE}_p$是含$p$个参数（含截距）的子模型的残差平方和。$C_p$的直觉很巧妙：如果这个子模型没有漏掉重要变量，那么$E(\mathrm{SSE}_p)\approx (n-p)\sigma^2$，代入后正好得到$C_p\approx p$；如果漏掉了重要变量，$\mathrm{SSE}_p$里会混进偏倚平方项，$C_p$就会明显高出$p$。
 \end{enumerate}
-使用这些准则时须注意：
-\begin{itemize}
-\item 参数计数与自由度要统一：本书$p$含截距，残差自由度为$n-p$；软件中AIC是否计入$\sigma^2$会使数值整体平移，但不改变比较结果。
-\item 模型比较须基于相同的观测和相同的响应变量。不同变量的缺失会使各模型实际使用的$n$不同；$y$与$\ln y$的模型，其似然不在同一尺度上，AIC不能直接比较。
-\item $C_p$以全模型的$\mathrm{MSE}$作为$\sigma^2$的无偏估计，前提是全模型已包含正确的均值结构且自由度充足；候选变量很多而$n$不大时，这一估计本身不稳定。全模型的$C_p$恒等于其$p$，不提供信息。
-\item 不应机械地选“$C_p$最接近$p$”的模型。表3.7中$\{X_1,X_4\}$的$C_p=3.82$（$p=3$），$\{X_1,X_2,X_4\}$的$C_p=3.93$（$p=4$）：按“最接近$p$”会选后者，但前者$C_p$更小、参数更少，两者差异也在随机波动范围内。一般在$C_p\le p$左右的模型中，结合简洁性与专业意义选择。
-\item $R^2$、$R_{\mathrm{adj}}^2$、$s$、AIC、$C_p$都在建模数据上计算，衡量样本内拟合或其校正。评价预测能力应使用样本外的数据，例如交叉验证。留一交叉验证的预测残差平方和为$\mathrm{PRESS}=\sum_i\bigl[e_i/(1-h_{ii})\bigr]^2$：例15-1模型\code{y~x2+x3+x4}的$R^2=0.598$，而由PRESS换算的预测$R^2$只有$1-141.42/222.55=0.365$。
-\end{itemize}
-\section{自变量筛选}\label{sec:select}
-\question{软件认为的“最优”方程是怎样的？}
-最优子集（best subset）法：$m$较小时，遍历所有可能的自变量组合（共$2^m-1$个），基于模型评价指标，如$R_{\mathrm{adj}}^2$进行筛选。
 
-逐步回归法：$m$较大时采用，包括前进法、后退法和逐步法。应选择对$y$贡献大（如偏回归平方和大）的自变量。
+使用这些准则比较模型时，四条实操原则值得记牢：
+\begin{itemize}
+\item \textbf{同一批数据、同一个$Y$}：若有变量含缺失值，不同模型实际用到的$n$不同，指标不可比；对$y$和$\ln y$分别建模，似然不在同一尺度上，AIC也不能直接比。
+\item \textbf{$C_p$的前提与误区}：$C_p$依赖全模型的$\mathrm{MSE}$作为$\sigma^2$的无偏估计，若候选变量太多而$n$不大，这个基准本身就不稳；全模型的$C_p$恒等于其$p$，不提供筛选信息。此外，不要机械追求“$C_p$最接近$p$”——下节表3.7中$\{X_1,X_4\}$的$C_p=3.82$（$p=3$），$\{X_1,X_2,X_4\}$的$C_p=3.93$（$p=4$），前者$C_p$更小、变量更少，完全不必为了“贴近$p$”硬选更复杂的模型。通常在$C_p\lesssim p$的模型里挑$C_p$小且简洁、合乎专业意义的即可。
+\item \textbf{样本内不等于样本外}：$R^2$、$R_{\mathrm{adj}}^2$、$s$、AIC、$C_p$全都在建模数据上算出。真正评价预测能力要看样本外表现，例如交叉验证。留一交叉验证的预测残差平方和有个漂亮的快捷公式：$\mathrm{PRESS}=\sum_i\bigl[e_i/(1-h_{ii})\bigr]^2$（即第3章删除残差的平方和）。后面例15-1选出的模型$y\sim x_2+x_3+x_4$，样本内$R^2=0.598$，但由PRESS折算的样本外预测$R^2$降到了$1-141.42/222.55=0.365$——样本内表现往往偏乐观。
+\end{itemize}
+
+\section{自变量筛选}\label{sec:select}
+候选自变量一多，把它们一股脑全塞进方程，既会拉大回归系数的方差（共线性、自由度消耗），又会让模型难以解释；但漏掉关键变量又会产生偏倚。变量筛选就是在“精简”和“不漏信息”之间找平衡。
+\begin{itemize}
+\item \textbf{最优子集法}（best subset）：候选变量个数$m$不大时，干脆穷举全部$2^m-1$个非空组合，按$R_{\mathrm{adj}}^2$、AIC或$C_p$挑出表现最好的子集。
+\item \textbf{逐步回归法}：$m$较大、穷举算不动时采用贪心策略，包括前进法、后退法和双向逐步法，每一步按偏回归平方和（偏$F$检验）或AIC决定增删变量。
+\end{itemize}
+
 \subsection{最优子集法}
-例3.2资料选自史乘章、杨琦《医用多重分析》102--103页。试进行所有可能回归分析。
+例3.2资料选自史乘章、杨琦《医用多重分析》102--103页（$n=32,m=4$），试作一切可能回归分析。
 \par\noindent\begin{minipage}{\linewidth}
 \tbltitle{表3.6\quad 模拟数据}
 \begin{center}\small\begin{tabular}{rrrrr@{\qquad}rrrrr}
@@ -614,7 +568,7 @@ $\mathrm{MSE}_{\text{全}}$（也记为$\mathrm{MSE}_m$）是全部候选变量�
 \tbltitle{表3.7\quad 例3.2资料的一切可能回归（$2^4-1=15$个）}
 \begin{center}\small\setlength{\tabcolsep}{5pt}
 \begin{tabular}{clrrrrr}
-\toprule 参数个数&方程中变量&$R^2$&$R_{\mathrm{adj}}^2$&$s^2_{y\cdot x_1\cdots x_p}$&$C_p$&AIC\\\midrule
+\toprule 参数个数$p$&方程中变量&$R^2$&$R_{\mathrm{adj}}^2$&$s^2$&$C_p$&AIC\\\midrule
 2&$X_1$&.36529&.34413&19.78741&2834.00&97.45623\\
  &$X_2$&.91512&.91229&2.64619&354.74&33.07465\\
  &$X_3$&.05189&.02029&29.55757&4247.00&110.29764\\
@@ -633,263 +587,110 @@ $\mathrm{MSE}_{\text{全}}$（也记为$\mathrm{MSE}_m$）是全部候选变量�
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
 
-\ann{调整$R^2$越大越好；AIC越小越好。}
+表3.7里藏着一个很有意思的现象：单看一个变量时，$X_2$一枝独秀（$R^2=0.915$），$X_1$和$X_4$单独都不算强（$0.365$和$0.586$）；可一旦把$X_1$和$X_4$联手放进模型，$R^2$瞬间飙到$0.9934$，AIC猛降到$-46.59$，远胜含$X_2$的任何两变量组合！这正是\textbf{最优子集法优于单向逐步法}的地方：前进法第一步一定会把单变量最强的$X_2$拉进门，之后就可能被它“粘住”，未必能顺利走到最精简的$\{X_1,X_4\}$。同时对比$\{X_1,X_4\}$和$\{X_1,X_2,X_4\}$，后者$R_{\mathrm{adj}}^2$仅多了$0.0002$、AIC仅降了$0.10$，从简洁性看$\{X_1,X_4\}$几乎一样好。
+
 \subsection{前进法和后退法}\label{sec:forward}
-前进法最初方程仅含截距项，$\SSq{回归}=0$。将$x_i$选入方程后引起的$\SSq{回归}$的增加量称为$x_i$的偏回归平方和，用$\SSq{回}(X_i)$表示。
-
-后退法最初方程含$m$个自变量。将贡献最小的$x_i$删除后所引起的$\SSq{回归}$的减少量称为$x_i$的偏回归平方和。
-
-做偏$F$检验以推断$\beta_i$是否为0，如前进法时：
+\begin{itemize}
+\item \textbf{前进法}：从只含截距的空模型起步（$\SSq{回归}=0$），每次把让$\SSq{回归}$增加最多（即偏回归平方和$\SSq{回}(X_i)$最大）的变量尝试纳入，直到再无候选变量达到入选标准。
+\item \textbf{后退法}：从全部$m$个自变量都在的全模型起步，每次把删掉后让$\SSq{回归}$减少最少的变量尝试剔除，直到留下的变量全都达标。
+\end{itemize}
+检验单个变量去留的\textbf{偏$F$统计量}就是第\ref{sec:glh}节增量$F$检验在$q=1$时的特例（等于该变量$t$值的平方）：
 \[
-F^*=\frac{\SSq{回}(X_i)/1}{\SSq{残}/(n-m-1)}
-\sim F(1,n-m-1),
+F^*=\frac{\SSq{回}(X_i)/1}{\SSq{残}/(n-m-1)}\sim F(1,n-m-1),
 \]
-式中$m$为引入$x_i$后方程中的自变量个数。$F^*$就是第\ref{sec:glh}节增量$F$检验在$q=1$时的形式，等于该变量$t$统计量的平方。
+其中$m$是引入（或保留）$x_i$时方程中的自变量个数。例3.1用前进法和后退法走一遍，路径互为镜像：
 \par\noindent\begin{minipage}{\linewidth}
 \tbltitle{例3.1前进法的过程}
 \begin{center}\small\begin{tabular}{cccrrrr}
 \toprule 步骤&引入变量&变量个数&偏回归平方和&残差平方和&$F$&$P(>F)$\\\midrule
 1&$x_2$&1&3.05360&2.5800&31.956&$5.3\times10^{-6}$\\
-2&$x_2,x_1$&2&.02214&\textbf{2.558}&.225&.6392\\\bottomrule
+2&$x_2,x_1$&2&.02214&2.5579&.225&.6392\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
 
 \par\noindent\begin{minipage}{\linewidth}
 \tbltitle{例3.1后退法的过程}
 \begin{center}\small\begin{tabular}{cccrrrr}
-\toprule 步骤$(i)$&去除变量&变量个数&偏回归平方和&残差平方和$(i-1)$&$F$&$P(>F)$\\\midrule
-0& &2&3.07573&&&\\
+\toprule 步骤&去除变量&变量个数&偏回归平方和&去除前残差平方和&$F$&$P(>F)$\\\midrule
+0&（全模型）&2&3.07573&&&\\
 1&$x_1$&1&.02214&2.5579&.225&.6392\\
 2&$x_2$&0&3.05360&2.5800&31.956&$5.3\times10^{-6}$\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
 
 \subsection{逐步前进法}
-前进法、后退法都是单向筛选。逐步前进法按$\alpha_{\text{入}}=0.05$水准引入自变量后，对方程中每一个自变量按$\alpha_{\text{出}}=0.10$水准作偏$F$检验，看是否需要去除退化为“不显著的自变量”，反复地双向筛选。
+前进法“只进不出”、后退法“只出不进”，都容易留下遗憾：比如前面先选进来的变量，在后来几个更合适的变量加入后，可能变得多余了。\textbf{逐步前进法}（stepwise）改为双向筛选：每按$\alpha_{\text{入}}$（常取0.05）引入一个新变量后，立刻回头对已在方程里的所有变量逐个做偏$F$检验，把退化为$P>\alpha_{\text{出}}$（常取0.10）的变量踢出去，反复循环直到再无可进可出。小样本时$\alpha_{\text{入}},\alpha_{\text{出}}$可放宽到$0.10,0.15$，但必须保证$\alpha_{\text{入}}\le\alpha_{\text{出}}$，否则同一个变量可能反复进出形成死循环。
 
-小样本时，$\alpha_{\text{入}}$和$\alpha_{\text{出}}$可设为0.10和0.15，被选入的自变量个数会相对较多。但要注意$\alpha_{\text{入}}\le\alpha_{\text{出}}$。
-
-《医学统计学》例15-1：27名糖尿病患者的血清总胆固醇$x_1$、甘油三脂$x_2$、空腹胰岛素$x_3$、糖化血红蛋白$x_4$和空腹血糖$y$的测量值，试用最优子集法或逐步前进法（$\alpha_{\text{入}}=0.10,\alpha_{\text{出}}=0.15$）筛选自变量并评价最终模型。
+以孙振球《医学统计学》例15-1为例：27名糖尿病患者的血清总胆固醇$x_1$、甘油三酯$x_2$、空腹胰岛素$x_3$、糖化血红蛋白$x_4$与空腹血糖$y$，取$\alpha_{\text{入}}=0.10,\ \alpha_{\text{出}}=0.15$作逐步前进法：
 \par\noindent\begin{minipage}{\linewidth}
-\tbltitle{表15-7\quad 例15-1的逐步回归过程}
+\tbltitle{表15-7\quad 例15-1的逐步回归过程（$\alpha_{\text{入}}=0.10,\ \alpha_{\text{出}}=0.15$）}
 \begin{center}\small\begin{tabular}{ccccrrrrr}
 \toprule 步骤&引入&剔除&变量数$m$&$R^2$&$\SSq{偏}(X_j)$&$\SSq{残}$&$F$&$P$\\\midrule
 1&$X_4$&&1&.372&82.714&139.837&14.79&.0007\\
 2&$X_1$&&2&.484&25.076&114.762&5.24&.0311\\
 3&$X_3$&&3&.547&13.958&100.804&3.19&.0875\\
 4&$X_2$&&4&.601&11.963&88.841&2.96&.0993\\
-5&&$X_1$&3&.598&.613&88.841&.15&.7006\\\bottomrule
+5&&$X_1$&3&.598&.613&89.454&.15&.7006\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
+注意第5步的戏剧性反转：$X_1$在第2步以$P=0.0311$入选，但等第4步$X_2$（甘油三酯，与总胆固醇$X_1$高度相关，$r=0.632$）进来之后，$X_1$的偏回归平方和骤降到$0.613$（$P=0.7006$），最终被剔除。这就是双向筛选的价值所在。
 
-\question{如果设定$\alpha_{\text{入}}=0.05,\alpha_{\text{出}}=0.10$，会得到什么分析结果？}
-\answer{前两步与上表相同：第1步引入$X_4$（$P=0.0007$）；第2步引入$X_1$（$P=0.0311<0.05$），此时方程中$X_4$的$P=0.0092<0.10$，不剔除。第3步候选变量中$P$最小的是$X_3$（$P=0.0875$），已大于$\alpha_{\text{入}}=0.05$，筛选停止。最终模型为\code{y~x1+x4}（$R^2=0.484$），与$\alpha_{\text{入}}=0.10,\alpha_{\text{出}}=0.15$时的\code{y~x2+x3+x4}（$R^2=0.598$）完全不同。可见阈值的小幅改变即可改变入选变量，逐步法的结果应视为探索性的。}
-最优子集法（基于adjr2）、基于AIC的逐步前进/后退法、基于偏回归平方和的逐步前进法（$\alpha_{\text{入}}=0.10,\alpha_{\text{出}}=0.15$），最终模型均为：
-\[
-\code{lm(y~x2+x3+x4)}.
-\]
-\ann{偏回归平方和的筛选和$P$值有关。}
-\subsection{最优子集法的R输出}
-以下R输出均针对例15-1。数据（$n=27$）及对象定义如下：
-\par\noindent\begin{rcode}
-x1 <- c(5.68,3.79,6.02,4.85,4.60,6.05,4.90,7.08,3.85,4.65,4.59,4.29,7.97,6.19,
-        6.13,5.71,6.40,6.06,5.09,6.13,5.78,5.43,6.50,7.98,11.54,5.84,3.84)
-x2 <- c(1.90,1.64,3.56,1.07,2.32,0.64,8.50,3.00,2.11,0.63,1.97,1.97,1.93,1.18,
-        2.06,1.78,2.40,3.67,1.03,1.71,3.36,1.13,6.21,7.92,10.89,0.92,1.20)
-x3 <- c(4.53,7.32,6.95,5.88,4.05,1.42,12.60,6.75,16.28,6.59,3.61,6.61,7.57,1.42,
-        10.35,8.53,4.53,12.79,2.53,5.28,2.96,4.31,3.47,3.37,1.20,8.61,6.45)
-x4 <- c(8.2,6.9,10.8,8.3,7.5,13.6,8.5,11.5,7.9,7.1,8.7,7.8,9.9,6.9,
-        10.5,8.0,10.3,7.1,8.9,9.9,8.0,11.3,12.3,9.8,10.5,6.4,9.6)
-y  <- c(11.2,8.8,12.3,11.6,13.4,18.3,11.1,12.1,9.6,8.4,9.3,10.6,8.4,9.6,
-        10.9,10.1,14.8,9.1,10.8,10.2,13.6,14.9,16.0,13.2,20.0,13.3,10.4)
-da <- data.frame(x1,x2,x3,x4,y)
-\end{rcode}\par\smallskip
-{\small 数据来源：孙振球主编《医学统计学》例15-1（$x_1$总胆固醇，$x_2$甘油三酯，$x_3$空腹胰岛素，$x_4$糖化血红蛋白，$y$空腹血糖）。用此数据可复现本节全部输出，如全模型$\mathrm{RSS}=88.841$。}
-\par\noindent\begin{rcode}
-library(leaps)
-fit <- regsubsets(y~.,data=da,nbest=6)
-summary(fit)
-which.max(summary(fit)$adjr2)
-# [1] 11
-\end{rcode}\par\smallskip
-4个变量及截距；选择算法为exhaustive；每种大小保留6个子集，最大为4。第11行（大小3、次序1）即\code{x2+x3+x4}，其$R^2_{\mathrm{adj}}=0.546$为全部15个子集中最大。
-\begin{center}\small\begin{tabular}{lcc}
-\toprule &Forced in&Forced out\\\midrule
-x1&FALSE&FALSE\\x2&FALSE&FALSE\\x3&FALSE&FALSE\\x4&FALSE&FALSE\\\bottomrule
-\end{tabular}\qquad
-\begin{tabular}{cccccc}
-\toprule 大小&次序&x1&x2&x3&x4\\\midrule
-1&1&&&&*\\1&2&*&&&\\1&3&&&*&\\1&4&&*&&\\
-2&1&*&&&*\\2&2&&&*&*\\2&3&&*&&*\\2&4&*&&*&\\2&5&*&*&&\\2&6&&*&*&\\
-3&1&&*&*&*\\3&2&*&&*&*\\3&3&*&*&&*\\3&4&*&*&*&\\
-4&1&*&*&*&*\\\bottomrule
-\end{tabular}\end{center}
-\subsection{基于AIC的后退法}
-\par\noindent\begin{rcode}
-model <- lm(y~x1+x2+x3+x4,data=da)
-AIC(model)          # -2logL+2K，K=6（5个回归参数+sigma^2）
-# [1] 120.78
-extractAIC(model)   # step()所用：n*log(RSS/n)+2p，p=5
-# [1]  5.00000 42.15736
-step(model)
-\end{rcode}\par\smallskip
-\code{AIC(model)=120.78}与下面\code{Start: AIC=42.16}不矛盾：前者含常数$n[\ln(2\pi)+1]$并把$\sigma^2$计为参数，后者不含，二者之差$78.62$对所有模型相同（第\ref{sec:modeleval}节）。
-\par\noindent\begin{minipage}{\linewidth}
-Start：AIC=42.16，\code{y~x1+x2+x3+x4}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$-x1$&1&.6129&89.454&40.343\\
-none&&&88.841&42.157\\
-$-x2$&1&11.9627&100.804&43.568\\
-$-x3$&1&20.0635&108.905&45.655\\
-$-x4$&1&27.7939&116.635&47.507\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
+\question{对同一批数据，如果把阈值收紧为$\alpha_{\text{入}}=0.05,\ \alpha_{\text{出}}=0.10$，最终模型会变吗？}
+\answer{会完全不同。前两步一样，依次引入$X_4$（$P=0.0007$）和$X_1$（$P=0.0311<0.05$），此时$X_4$的$P=0.0092<0.10$保留。但第3步候选中$P$最小的$X_3$为$0.0875>0.05$，筛选直接停止，最终得到$y\sim x_1+x_4$（$R^2=0.484$），与上面的$y\sim x_2+x_3+x_4$（$R^2=0.598$）截然不同。仅仅微调阈值就换了一套变量，足以说明逐步回归的结果高度敏感，应视为探索性参考。}
 
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=40.34，\code{y~x2+x3+x4}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-none&&&89.454&40.343\\
-$-x3$&1&25.690&115.144&45.159\\
-$-x2$&1&26.530&115.984&45.356\\
-$-x4$&1&32.269&121.723&46.660\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\[
-(\mathrm{Intercept},x2,x3,x4)=(6.4996,.4023,-.2870,.6632).
-\]
-\subsection{基于AIC的逐步前进法}
-\par\noindent\begin{rcode}
-model_initial <- lm(y~1,data=da)
-model_full <- lm(y~x1+x2+x3+x4,data=da)
-step(model_initial,scope=list(lower=~1,upper=model_full),
-     direction="both")
-\end{rcode}\par\smallskip
-\par\noindent\begin{minipage}{\linewidth}
-Start：AIC=58.95，\code{y~1}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$+x4$&1&82.714&139.84&48.405\\
-$+x1$&1&69.425&153.13&50.857\\
-$+x3$&1&57.913&164.64&52.814\\
-$+x2$&1&46.787&175.76&54.579\\
-none&&&222.55&58.952\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=48.41，\code{y~x4}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$+x1$&1&25.076&114.76&45.070\\
-$+x2$&1&24.693&115.14&45.159\\
-$+x3$&1&23.854&115.98&45.356\\
-none&&&139.84&48.405\\
-$-x4$&1&82.714&222.55&58.952\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=45.07，\code{y~x4+x1}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$+x3$&1&13.958&100.80&43.568\\
-none&&&114.76&45.070\\
-$+x2$&1&5.857&108.91&45.655\\
-$-x1$&1&25.076&139.84&48.405\\
-$-x4$&1&38.365&153.13&50.857\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=43.57，\code{y~x4+x1+x3}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$+x2$&1&11.963&88.841&42.157\\
-none&&&100.804&43.568\\
-$-x3$&1&13.958&114.762&45.070\\
-$-x1$&1&15.180&115.984&45.356\\
-$-x4$&1&27.546&128.349&48.091\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=42.16，\code{y~x4+x1+x3+x2}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-$-x1$&1&.6129&89.454&40.343\\
-none&&&88.841&42.157\\
-$-x2$&1&11.9627&100.804&43.568\\
-$-x3$&1&20.0635&108.905&45.655\\
-$-x4$&1&27.7939&116.635&47.507\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-Step：AIC=40.34，\code{y~x4+x3+x2}。
-\begin{center}\small\begin{tabular}{lrrrr}
-\toprule 操作&Df&Sum of Sq&RSS&AIC\\\midrule
-none&&&89.454&40.343\\
-$+x1$&1&.613&88.841&42.157\\
-$-x3$&1&25.690&115.144&45.159\\
-$-x2$&1&26.530&115.984&45.356\\
-$-x4$&1&32.269&121.723&46.660\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\[
-(\mathrm{Intercept},x4,x3,x2)=(6.4996,.6632,-.2870,.4023).
-\]
-\subsection{筛选方法的局限}
+\subsection{例15-1：最优子集法与基于AIC的筛选比较}
+除了按$P$值阈值做逐步回归，也可以按$R_{\mathrm{adj}}^2$做最优子集筛选，或按AIC做后退/双向逐步筛选。对例15-1（$n=27$，全模型$\mathrm{RSS}=88.841$，简写$\mathrm{AIC}=42.16$）：
 \begin{itemize}
-\item 不稳定：入选变量对阈值、准则和个别观测都敏感。上面的问答中，阈值由0.10/0.15改为0.05/0.10，最终模型由\code{x2+x3+x4}变为\code{x1+x4}。自变量相关时尤其明显：$x_1$与$x_2$可相互替代。可用自助法（bootstrap）重复筛选，观察各变量的入选频率。
-\item 筛选后的常规推断偏乐观：最终模型的$t$检验、$P$值和置信区间是按“模型事先给定”计算的，没有计入“用同一批数据挑选变量”这一步。入选变量的系数倾向于被高估，$P$值偏小，区间偏窄，$R^2$偏高。逐步法中各步的$P$值也不是严格意义上的检验。
-\item 以预测为目的时，应把整个筛选过程放进交叉验证：在每个训练折内重新执行筛选与拟合，再在对应的验证折上计算预测误差。只对最终模型做交叉验证，会低估预测误差。
-\item 以解释或因果推断为目的时，协变量应根据专业知识（如混杂结构）事先确定，不宜交由逐步法决定。
+\item \textbf{最优子集法}：穷举全部15个非空子集，最大$R_{\mathrm{adj}}^2=0.546$出现在3变量模型$y\sim x_2+x_3+x_4$。
+\item \textbf{基于AIC的后退法}：从全模型$y\sim x_1+x_2+x_3+x_4$（$\mathrm{AIC}=42.16$）出发，尝试单删各变量，发现只有删去$x_1$能让AIC下降（降至$40.34$，$\mathrm{RSS}=89.454$）；此后删去$x_2,x_3,x_4$中任一个都会使AIC回升至$45$以上，于是停止。
+\item \textbf{基于AIC的双向逐步前进法}：从空模型$y\sim 1$（$\mathrm{AIC}=58.95$）出发，路径恰好与表15-7一模一样——依次加入$x_4$（AIC降为$48.41$）、$x_1$（$45.07$）、$x_3$（$43.57$）、$x_2$（$42.16$），最后一步剔除$x_1$停在$\mathrm{AIC}=40.34$。
 \end{itemize}
-第一条所述的不稳定性可通过自助法考察。对例15-1有放回地抽取27例，重复500次，每次用基于AIC的后退法筛选，并记录各变量的入选比例：
-\par\noindent\begin{rcode}
-set.seed(1)
-sel <- t(replicate(500, {
-  db <- da[sample(nrow(da), replace=TRUE), ]
-  m  <- step(lm(y~x1+x2+x3+x4, data=db), trace=0)
-  c("x1","x2","x3","x4") %in% attr(terms(m),"term.labels")
-}))
-colnames(sel) <- c("x1","x2","x3","x4")
-colMeans(sel)                                  # 各变量入选比例
-mods <- apply(sel,1,function(r) paste(colnames(sel)[r],collapse="+"))
-head(sort(table(mods),decreasing=TRUE)/500,5)  # 最常见的几个模型
-\end{rcode}
-\begin{routput}
-   x1    x2    x3    x4 
-0.410 0.674 0.856 0.822 
-mods
-   x2+x3+x4 x1+x2+x3+x4       x3+x4       x2+x3    x1+x3+x4 
-      0.340       0.188       0.110       0.086       0.072
-\end{routput}
-原数据上选出的\code{x2+x3+x4}，在重抽样中仅约三分之一被再次选中。$x_1$在原数据中被剔除，但在41\%的重抽样中入选，这与$x_1$和$x_2$相关（$r=0.632$）、二者可相互替代有关。逐步法得到的最终模型，应视为若干拟合程度相近的模型之一。
+三种方法在此例中殊途同归，最终模型均为
+\[
+\widehat y=6.4996+0.4023x_2-0.2870x_3+0.6632x_4.
+\]
+这里顺便能看出AIC准则与偏$F$检验的内在联系：大样本下，AIC每多1个参数罚$2$，大约相当于要求新增变量的偏$F$值超过$2$（双侧$P$值约$0.157$），比传统的$\alpha=0.05$宽松，因此基于AIC的筛选往往保留更多变量，与上文取$\alpha_{\text{入}}=0.10,\alpha_{\text{出}}=0.15$的结果接近。
+
+\subsection{筛选方法的局限}
+自动筛选省事，却藏着四个很容易被忽略的统计陷阱：
+\begin{enumerate}
+\item \textbf{结果极不稳定}：换一个阈值、换一个准则，甚至删改一两个样本点，入选变量就可能大洗牌。自变量彼此相关时（比如例15-1中的$x_1$与$x_2$可相互替代），这种摆动更剧烈。把例15-1的27名患者有放回地自助重抽（bootstrap）500次，每次用基于AIC的后退法重新筛选，结果令人警醒：
+\begin{center}\small
+\begin{tabular}{cccc@{\qquad}lc}
+\toprule \multicolumn{4}{c}{各变量入选比例}&\multicolumn{2}{c}{最常被选中的模型（前5名）}\\\cmidrule(lr){1-4}\cmidrule(lr){5-6}
+$x_1$&$x_2$&$x_3$&$x_4$&模型&选中比例\\\midrule
+41.0\%&67.4\%&85.6\%&82.2\%&$x_2+x_3+x_4$&34.0\%\\
+&&&&$x_1+x_2+x_3+x_4$&18.8\%\\
+&&&&$x_3+x_4$&11.0\%\\
+&&&&$x_2+x_3$&8.6\%\\
+&&&&$x_1+x_3+x_4$&7.2\%\\\bottomrule
+\end{tabular}
+\end{center}
+原数据里“一致胜出”的$x_2+x_3+x_4$，在重抽样中只有约三分之一的机会再次夺冠；而被原模型剔除的$x_1$，在41\%的重抽样里都入选了。所以逐步法选出来的，充其量是“若干拟合差不多的候选模型之一”，绝非唯一真理。
+\item \textbf{筛选后的常规推断偏乐观}：最终模型输出的$t$检验、$P$值和置信区间，全都默认“这套变量是事先定好的”，完全没把“刚才用同一份数据挑挑拣拣”这一步算进抽样误差里。好比先偷看答案再给自己打分：入选变量的系数倾向于被高估，$P$值偏小，置信区间偏窄，$R^2$偏高。
+\item \textbf{预测评估必须嵌套交叉验证}：如果建模目的是预测，交叉验证时必须在每一折的训练集里\textbf{重新执行筛选再拟合}，再到验证折上算误差。先用全数据筛出模型再做交叉验证，仍然会低估预测误差。
+\item \textbf{解释与因果研究不宜交给逐步法}：若研究目的是估计某个暴露因素的效应，哪些协变量该控制（如混杂因素）、哪些绝不能控制（如中间变量、碰撞变量），必须依据专业知识和因果结构事先确定，不能让$P$值大小代做决定。
+\end{enumerate}
 
 \begin{fuxi}
 \begin{enumerate}
-\item 记号：$m$个自变量，$p=m+1$个参数，残差自由度为$n-p$。$\beta$为参数，$b$为估计值；$\varepsilon$不可观测，$e$可由数据计算。
-\item LINE假设的作用：零条件均值保证无偏性；同方差与独立性保证标准误正确；正态性保证小样本下$t$、$F$分布精确成立。最小二乘估计本身不要求正态。
-\item 三个基本公式：$b=(X^\top X)^{-1}X^\top Y$；$\Cov(b)=\sigma^2(X^\top X)^{-1}$；$s^2=Q/(n-p)$为无偏估计，ML估计$Q/n$偏小。
-\item 帽子矩阵$H$对称幂等，$\tr(H)=p$；$\Var(e_i)=\sigma^2(1-h_{ii})$，各残差的方差不等。
-\item 偏回归系数是控制模型中其他变量后的系数，其含义随模型中纳入的变量而变化。比较相对作用大小可用标准化系数，但其数值依赖于样本中变量的离散程度。
-\item 整体$F$检验与单个$t$检验的假设不同；$q=1$时增量$F=t^2$。\code{anova(fit)}给出序贯平方和，结果依赖变量顺序。
-\item 置信区间针对均值响应，预测区间针对新个体，后者的方差多一项$\sigma^2$。两种区间均随远离数据中心而变宽；外推时模型形式本身也不再可靠。
-\item $R^2$随自变量增加而不减；$R^2_{\mathrm{adj}}$、AIC、$C_p$对参数个数施加惩罚。这些均为样本内指标，预测能力应以样本外数据评价。
-\item 逐步法的结果不稳定，筛选后的$P$值与置信区间偏于乐观；以解释为目的的研究，协变量应依据专业知识事先确定。
+\item 记号与自由度：$m$个自变量，$p=m+1$个参数，残差自由度$n-p$；严格区分总体参数$\beta$与样本估计$b$、不可观测误差$\varepsilon$与残差$e$。
+\item LINE假设分层起作用：零条件均值保无偏；同方差与独立保标准误和Gauss--Markov最优；正态性保小样本$t,F$精确分布与个体预测区间。最小二乘估计本身不依赖正态假设。
+\item 三个基本公式：$b=(X^\top X)^{-1}X^\top Y$；$\Cov(b)=\sigma^2(X^\top X)^{-1}$；无偏方差估计$s^2=Q/(n-p)$，而最大似然估计$Q/n$偏小。
+\item 帽子矩阵$H$是向$X$列空间的正交投影阵，$\tr(H)=p$；残差满足$\Cov(e)=\sigma^2(I-H)$，各点残差方差$\sigma^2(1-h_{ii})$并不相等。
+\item 偏回归系数是控制模型中其他变量后的条件斜率（扣除线性影响后的残差之斜率），随模型中纳入的变量而变；标准化系数消除量纲，但仍受样本标准差与变量相关结构影响。
+\item 整体$F$检验、单变量$t$检验与偏$F$检验统一于一般线性假设与嵌套模型增量$F$检验，$q=1$时$F=t^2$。序贯平方和（Type I）依赖变量顺序。
+\item 置信区间针对均值响应（标准误$s\sqrt{h_0}$），预测区间针对新个体（标准误$s\sqrt{1+h_0}$），后者永远多出个体随机误差$\sigma^2$。远离样本中心或外推时两者都迅速变宽且模型形式不再可靠。
+\item $R^2$随变量增加永不下降；$R^2_{\mathrm{adj}}$、AIC、$C_p$均通过惩罚参数个数来平衡拟合与复杂度；真正评估预测能力应看样本外指标（如PRESS或交叉验证）。
+\item 逐步筛选对阈值与样本波动敏感，筛选后的常规$P$值偏乐观；解释性研究应依据专业知识预先确定协变量。
 \end{enumerate}
 \end{fuxi}
 
 \begin{fuxi}[常见错误表述]
 \begin{itemize}
-\item “$P>0.05$，故身高与肺活量无关。”应表述为：控制体重后，未发现身高与肺活量之间有统计学意义的线性关联。
-\item “$R^2=0.546$，说明模型有54.6\%的把握是正确的。”应表述为：两个自变量的线性组合解释了样本中肺活量总变异的54.6\%。
-\item “标准化系数大的变量对$Y$的影响大，是主要病因。”标准化系数仅描述本样本、本模型下的条件关联强度，不构成因果结论。
-\item “逐步回归选入的变量是重要变量，未选入的变量不重要。”未选入的变量可能是被与其相关的变量所替代。
+\item “$P>0.05$，故身高与肺活量无关。”$\longrightarrow$ 应表述为：控制体重后，未发现身高与肺活量之间存在有统计学意义的线性关联（并报告置信区间）。
+\item “$R^2=0.546$，说明模型有54.6\%的概率是正确的。”$\longrightarrow$ 应表述为：模型中自变量的线性组合解释了样本中肺活量总变异的54.6\%。
+\item “标准化系数大的变量对$Y$的作用最大，是主要病因。”$\longrightarrow$ 标准化系数只刻画本样本、本模型中的条件关联强度，不直接代表因果重要性。
+\item “逐步回归选入的变量重要，未选入的变量不重要。”$\longrightarrow$ 未选入的变量很可能是被与其高度相关的变量所替代，并非本身无作用。
 \end{itemize}
 \end{fuxi}

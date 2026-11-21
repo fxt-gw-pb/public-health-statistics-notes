@@ -2,8 +2,8 @@
   "linear-lec1": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 12698,
-    "webChars": 7622
+    "sourceChars": 13974,
+    "webChars": 12085
   },
   "linear-sup1": {
     "sourceQuestions": 10,
@@ -14,8 +14,8 @@
   "linear-lec2": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 42962,
-    "webChars": 15321
+    "sourceChars": 38361,
+    "webChars": 27454
   },
   "linear-ex1": {
     "sourceQuestions": 38,
@@ -26,8 +26,8 @@
   "linear-lec3": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 44406,
-    "webChars": 3533
+    "sourceChars": 43930,
+    "webChars": 9650
   },
   "linear-ex2": {
     "sourceQuestions": 60,
@@ -38,8 +38,8 @@
   "linear-lec4": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 41611,
-    "webChars": 7728
+    "sourceChars": 37052,
+    "webChars": 8545
   },
   "linear-ex3": {
     "sourceQuestions": 61,
@@ -50,26 +50,14 @@
   "linear-lec5": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 35421,
-    "webChars": 9807
+    "sourceChars": 29248,
+    "webChars": 13546
   },
   "linear-ex4": {
     "sourceQuestions": 41,
     "webQuestions": 41,
     "sourceChars": 32920,
     "webChars": 12304
-  },
-  "linear-appendix": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 3796,
-    "webChars": 2231
-  },
-  "linear-sources": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 16927,
-    "webChars": 10165
   },
   "multivariate-lec1": {
     "sourceQuestions": 0,
@@ -118,12 +106,6 @@
     "webQuestions": 40,
     "sourceChars": 33904,
     "webChars": 22707
-  },
-  "multivariate-sources": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 16678,
-    "webChars": 10105
   },
   "glm-lec1": {
     "sourceQuestions": 0,
@@ -203,18 +185,6 @@
     "sourceChars": 10584,
     "webChars": 7565
   },
-  "glm-appendix": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 6737,
-    "webChars": 3657
-  },
-  "glm-sources": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 34017,
-    "webChars": 19842
-  },
   "rcode-lec0": {
     "sourceQuestions": 0,
     "webQuestions": 0,
@@ -272,13 +242,7 @@
   "rcode-lec9": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 5179,
-    "webChars": 4358
-  },
-  "rcode-appendix": {
-    "sourceQuestions": 0,
-    "webQuestions": 0,
-    "sourceChars": 7853,
-    "webChars": 2458
+    "sourceChars": 23278,
+    "webChars": 12029
   }
 }

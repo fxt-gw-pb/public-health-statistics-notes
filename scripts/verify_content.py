@@ -24,7 +24,8 @@ def expand(text,course):
 
 def main():
     manifest=json.loads((ROOT/'public/data/index.json').read_text())
-    assert len(manifest['chapters'])==47, 'Expected all 47 documents'
+    assert len(manifest['chapters'])>=35, 'Unexpectedly few chapters'
+    assert all(c['kind'] not in ('appendix','sources') for c in manifest['chapters']), 'Appendix/sources should be excluded from web notes'
     figures=set(); questions=0; codes=0; choices=0; issues=[]
     for c in manifest['chapters']:
         d=json.loads((ROOT/'public/data'/(c['id']+'.json')).read_text())

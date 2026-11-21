@@ -1,77 +1,62 @@
 \chapter{重复测量资料的方差分析}
-前几章的方法均假定各观测相互独立。重复测量资料不满足这一条件：同一个体的多次测量值彼此高度相关，例如体重较大者各次测量值均较大。本章讨论此类相关资料的分析方法。
+前四章无论模型怎么变，始终站在一条共同的基石上：不同观测值彼此独立。一旦走进纵向随访研究——同一个受试者在不同时间点被反复测量——这条基石就不再成立。原本就胖的人，第1周、第2周、第4周的体重多半都排在前面，同一个体的多次测量值高度相关。本章专门处理这类相关资料。
 
-重复测量资料的分析单位是个体而非测量值。10人各测5次，独立的信息来源为10个，而非50个。另一方面，重复测量使每个个体可作为自身对照，个体间的差异可从时间效应的比较中扣除，因而其检验效能通常高于各时点分别抽取不同个体的设计。方差分析表区分个体间与个体内两部分，以及需要考察球形性，均源于以上两点。
-\section{重复测量资料}
-重复测量资料（repeated measured data）是同一受试对象的同一观察指标在不同时间点上进行多次测量所得的数据。这类数据常用于分析观察指标随时间变化的趋势。
+理解重复测量方差分析，死死抓住两个核心直觉就够了：
 \begin{itemize}
-\item 患者用药物减肥，记录服药前和服药后1--4周的体重，分析效果。
-\item 将患者随机分为3组，采用不同麻醉诱导方法，在手术前$T_0$及诱导后多个时间点$T_1$--$T_4$测量收缩压，分析麻醉方法的差异及时间效应。
+\item \textbf{独立的信息单位是“人”，不是“测量次数”}：10个人每人测5次，手里有50个数字，但独立的抽样单位依然只有10个。如果把50个数字硬当独立样本去比组间差异，相当于凭空虚增样本量，假阳性会严重膨胀。
+\item \textbf{每个人自己给自己当对照}：比较不同时间点的变化（个体内比较）时，个体之间原本的基线高低会在前后差值里自动抵消，误差瞬间缩小一大截，检验效能远高于各时点分别抽不同人的横断面设计。
 \end{itemize}
-\ann{边际均数图展示各组随时间的变化趋势。}
-重复测量资料除时间上的重复外，还包括空间或条件上的重复。
-\begin{description}
-\item[空间重复] 对同一研究对象的不同部位或不同空间位置进行测量，如同一肿瘤患者的不同肿块、同一患者两只眼睛。
-\item[条件重复] 在视觉研究中，让同一受试者戴上不同效率的镜片，观察大脑皮质的电反应延迟。
-\end{description}
+后面看到的“两层误差项（个体间与个体内）”以及“为什么必须检验球形性”，全都从这两点长出来。
+
+\section{重复测量资料}
+\textbf{重复测量资料}（repeated measures data）指对同一受试对象的同一观察指标在不同时间点、不同部位或不同条件下进行多次测量得到的数据，常用于刻画指标随时间变化的轨迹。例如：
+\begin{itemize}
+\item \textbf{时间重复}：肥胖患者服药前及服药后1--4周的体重；不同麻醉诱导方案下，患者在术前$T_0$及诱导后$T_1$--$T_4$五个时相的收缩压。
+\item \textbf{空间重复}：同一肿瘤患者体内多个病灶的测量值，或同一患者左、右眼眼压。
+\item \textbf{条件重复}：同一受试者依次佩戴不同镜片时测得的脑电反应延迟。
+\end{itemize}
+
 \subsection{资料类型的辨别}
-\question{不同留置时间对静脉炎发生率的影响研究，是重复测量资料吗？}
-\begin{description}
-\item[研究目标] 比较不同留置时间对静脉炎发生率的影响。
-\item[区组因素] 不同科室，如内科、外科、儿科。
-\item[处理因素] 不同留置时间，如72小时、96小时、120小时。
-\item[实验设计] 将不同科室患者设为区组，条件如年龄、病情相近；在每个科室内，将患者随机分配到不同留置时间组。
-\item[结果分析] 比较不同留置时间的静脉炎发生率，同时控制科室的影响。
-\end{description}
-\ann{不属于重复测量资料，属于随机区组资料。}
-\answer{判断资料类型要分两步。(1) 看实验单位与相关结构：每位患者只分到一个留置时间组、结局只观察一次，不同患者之间相互独立，没有“同一个体的多次测量”，故不是重复测量资料；科室是区组因素。(2) 看结局类型：结局是“是否发生静脉炎”的二分类变量，比较的是发生率，不能直接套用以正态连续变量为前提的方差分析，应采用按科室分层的$\chi^2$检验（Cochran--Mantel--Haenszel检验），或以留置时间、科室为自变量的logistic回归。}
+\question{比较不同留置时间（72、96、120小时）对静脉炎发生率的影响，按科室（内科、外科、儿科）分层并在科室内将患者随机分到三个留置时间组。这是重复测量资料吗？}
+\answer{不是。辨别资料类型分两步看：(1) \textbf{看实验单位与相关结构}：每位患者只被分到一个留置时间组、结局只观察一次，不存在“同一个体的多次测量”，科室是区组因素，属于随机区组设计而非重复测量；(2) \textbf{看结局变量类型}：“是否发生静脉炎”是二分类变量，比较的是发生率，不能套用正态连续变量的方差分析，应采用按科室分层的Cochran--Mantel--Haenszel（CMH）$\chi^2$检验，或以留置时间与科室为自变量的logistic回归。}
+
 \subsection{经常误用的统计分析方法}
 \begin{enumerate}
-\item 将重复测量时间点作为独立组处理：忽略同一受试者不同时间点数据的相关性，违反独立性假设。
-\item 多次进行两两比较的$t$检验：对每个时间点进行多次两两比较，会增加I类错误的概率。
-\item 作一般线性模型分析，如使用随机区组方差分析处理数据；该法只有在满足广义球形假设时可采用。
+\item \textbf{把多个时间点当成独立组做单因素方差分析}：无视同一个体各次测量的相关性，既违反独立性假设，又把巨大的个体间基线差异全混进了误差项。
+\item \textbf{对各时间点反复做未经校正的两两$t$检验}：若按独立两样本$t$检验，漏掉了配对关系；即便做了配对$t$检验，如果不预先界定比较范围、不控制多重比较，多次检验也会推高第一类错误。
+\item \textbf{直接套用随机区组方差分析}：单组重复测量在平方和分解上与随机区组完全同形，但常规$F$分布只在满足\textbf{球形假设}（HF结构）时才严格成立，否则必须校正自由度。
 \end{enumerate}
-\begin{sikao}[将重复测量资料按独立资料分析的后果]
-以下一节的减肥资料（10人$\times$5次）为例。错误的做法是将5个时点视为5个独立的组作单因素方差分析；正确的做法是将个体作为一层误差：
-\par\noindent\begin{rcode}
-# 矩阵d（10人 x 5次）的录入见下一节
-da <- data.frame(id=factor(rep(1:10,5)), t=factor(rep(1:5,each=10)), y=c(d))
-anova(lm(y~t,data=da))                    # 错误：当作5个独立组
-summary(aov(y~t+Error(id/t),data=da))     # 正确：重复测量
-\end{rcode}
-\begin{routput}
-          Df  Sum Sq Mean Sq F value Pr(>F)
-t          4   403.8  100.96  0.3816 0.8206
-Residuals 45 11906.5  264.59               
 
-Error: id
-          Df Sum Sq Mean Sq F value Pr(>F)
-Residuals  9  11871    1319               
+\begin{sikao}[把重复测量当成独立组分析，错得有多离谱？]
+以下一节10名减肥患者5个时点的数据为例，对比“当作5个独立组（错误）”与“按重复测量拆分两层误差（正确）”的结果：
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule 分析方式&时间$SS$&误差$SS$&误差自由度&误差$MS$&时间$F$（$P$值）\\\midrule
+当作5个独立组（错误）&403.8&11906.5&45&264.59&0.38（$P=0.82$）\\
+重复测量（正确，个体内误差）&403.8&35.8&36&1.00&101.40（$P<10^{-16}$）\\\bottomrule
+\end{tabular}
+\end{center}
+时间平方和分毫不差都是$403.8$，结论却天壤之别：错误分析得出“减肥完全无效”（$P=0.82$），正确分析却是极强显著（$F=101.4$）。差别全在误差项——10位患者本身的体重从112\,kg到163\,kg不等（个体间平方和高达$11871$），错误分析把人与人的基线差距全当成了随机噪声；正确分析让每人跟自己比，个体间基线差被剥离到单独一层，真正用来检验时间变化的个体内误差只剩$35.8$！
 
-Error: id:t
-          Df Sum Sq Mean Sq F value Pr(>F)    
-t          4  403.8     101   101.4 <2e-16 ***
-Residuals 36   35.8       1                   
-\end{routput}
-两种分析的时间平方和均为403.8。错误分析得$P=0.82$，结论为服药前后体重无差异；正确分析得$F=101.4$，$P<10^{-16}$。差别在于误差项：患者之间体重相差数十公斤（个体间平方和11871），错误分析将这部分全部计入误差；正确分析中每个个体与自身比较，个体间差异被单独分离，个体内误差仅为35.8。
-
-本例中错误分析导致遗漏了真实效应。另一类错误的方向相反：组间比较时将每人的多次测量视为独立样本，相当于虚增样本量，标准误偏小，易得出假阳性结论。两类错误的根源相同，即未按数据的相关结构进行分析。
+这里是错误分析导致严重\textbf{假阴性}；而如果是多组比较时把同一个人的多次测量当成独立样本，方向正好反过来——虚增样本量、低估标准误，酿成\textbf{假阳性}。两类错法的病根相同：没有尊重数据的相关结构。
 \end{sikao}
-\ann{$t_0-t_1,t_0-t_2,\ldots$这样比较是错的。}
-更准确地说，与基线逐次比较本身可以是合理的研究问题，问题在于做法：(1) 应保留同一个体的配对关系，用配对差值（或在重复测量模型中设定对比）比较，而不是把各时点当作独立的两组作两样本$t$检验；(2) 应预先规定比较范围（如$k-1$个时点分别与基线比较），并对这一组比较控制多重性（如Bonferroni、Holm法或Dunnett型校正），而不是事后不加控制地作大量两两比较。
+
+如果要做“各随访时点分别与基线$t_0$比较”，本身完全是合理的研究问题，关键在于两点：(1) 保留同一个体的配对关系（用配对差值或在重复测量模型内构造对比），绝不能做独立两样本$t$检验；(2) 事先写明比较范围（如$k-1$个时点与基线对比），并做多重性校正（如Bonferroni、Holm或Dunnett校正）。
+
 \subsection{常用分析方法}
-\textbf{基本模型。}第5章记号：$k$为测量次数（时点数），单组时$n$为人数；多组时$a$为组数，$n$为每组人数，$N=an$为总人数。第$i$个个体的$k$次测量组成向量$Y_i=(Y_{i1},\ldots,Y_{ik})^\top$，
+\textbf{基本模型。}本章统一约定：$k$为测量次数（时点数）；单组时$n$为人数；多组时$a$为组数，$n$为每组人数，$N=an$为总人数。第$i$个个体的$k$次测量排成$k$维向量$Y_i=(Y_{i1},\ldots,Y_{ik})^\top$，假定
 \[
 Y_i\sim N_k(\mu_{g(i)},\Sigma),\qquad Y_1,\ldots,Y_N\ \text{相互独立},
 \]
-$\mu_{g(i)}$为该个体所在组各时点的总体均数向量，$\Sigma$为$k\times k$的个体内协方差阵（各组共同）。即：不同个体之间独立，同一个体的各次测量相关，相关结构由$\Sigma$描述。普通方差分析把$kN$个观测都当作独立，忽略了$\Sigma$的非对角元。
+其中$\mu_{g(i)}$是该个体所在组在$k$个时点上的总体均数向量，$\Sigma$是各组共同的$k\times k$个体内协方差阵。换句话说：\textbf{人与人之间独立，同一个人内部各次测量相关，相关模式全部装在$\Sigma$里}。
+
+根据结局类型、数据结构与假设满足情况，主要有四类分析方法：
 \begin{enumerate}
-\item 重复测量方差分析（repeated measures ANOVA）：数据满足正态性、方差齐性及球形假设。
-\item 混合效应模型（Linear Mixed Model，LMM）：可处理缺失数据、非平衡设计及复杂相关结构，如自相关、随机效应。
-\item 广义估计方程（Generalized Estimating Equations，GEE）：因变量可为非正态分布，如二分类、计数数据。
-\item 非参数方法，如Friedman检验，或综合指标法：将多个时间点的数据汇总为均数等指标，再采用$t$检验或方差分析。需确保综合指标具有临床意义，可能损失时间趋势信息。
+\item \textbf{重复测量方差分析}（repeated measures ANOVA）：本章重点，要求数据平衡、无缺失且满足正态性与球形假设（不满足球形时作自由度校正）。
+\item \textbf{线性混合效应模型}（Linear Mixed Model，LMM）：通过随机截距/随机斜率或直接指定协方差结构（如一阶自回归AR(1)）刻画相关性，能自然处理缺失值与非等间隔随访，实际研究中最常用。
+\item \textbf{广义估计方程}（Generalized Estimating Equations，GEE）：推广到二分类、计数等非正态结局的重复测量资料，侧重估计人群平均效应。
+\item \textbf{非参数法与综合指标法}：如单组非参数的Friedman检验；或把每人的多次测量先浓缩成一个有临床意义的综合指标（如曲线下面积AUC、末次相对基线的变化量、变化斜率），再做常规$t$检验或方差分析，简单稳健但可能损失部分时间曲线细节。
 \end{enumerate}
-\ann{重点学习重复测量方差分析。混合效应模型常使用，作了解，时间关系不讲解。}
 \section{单组重复测量资料}
 例1：10名患者在医生指导下服用药物减肥，按统一标准记录服药前和服药后1--4周的体重，试分析减肥效果。
 \par\noindent\begin{minipage}{\linewidth}
@@ -112,19 +97,11 @@ $S$&16.2&16.6&16.6&15.9&16.1\\\bottomrule
 \end{center}
 \figtitle{图14-2\quad 10名肥胖患者服药前后体重的变化趋势}
 \subsection{分析步骤}
+分析重复测量资料通常分两步走：
 \begin{enumerate}
-\item 推断$k$次测量值的理论协方差阵$\Sigma$是否满足重复测量方差分析所需的球形条件（第\ref{sec:sph}节），即是否具有Huynh-Feldt（HF）结构；独立等方差结构$\sigma^2I$、复合对称（Compound Symmetry，CS）结构都是它的特例。
-\item 作重复测量方差分析。满足球形条件时结果无需校正，否则需要校正自由度。
+\item \textbf{考察协方差结构}：检验$k$次测量值的理论协方差阵$\Sigma$是否满足重复测量方差分析所需的\textbf{球形条件}（即Huynh--Feldt结构，见第\ref{sec:sph}节；独立等方差$\sigma^2I$和复合对称CS都是它的特例）。
+\item \textbf{实施重复测量方差分析}：若满足球形条件，直接用常规自由度查$F$分布；若不满足（或为求稳妥），保持$F$值不变，用校正系数$\varepsilon$缩小分子、分母自由度后再求$P$值。
 \end{enumerate}
-\ann{第一步：讨论$k$个指标之间的相关性。}
-\par\noindent\begin{rcode}
-d <- matrix(c(131.5,128.4,127.4,125.3,124.9, 154.7,152.9,150.7,148.2,145.9,
-              146.7,145.5,143.6,140.5,139.8, 163.2,161.6,158.4,154.2,153.4,
-              128.6,125.3,124.1,122.8,120.9, 134.2,132.6,130.4,129.4,124.8,
-              126.8,125.7,123.9,123.5,121.6, 119.5,118.1,115.6,114.3,112.1,
-              112.4,108.6,104.7,102.6,101.4, 121.3,120.1,118.5,116.9,114.2),
-            ncol=5,byrow=TRUE)    # 10人 x 5次（服药前、第1--4周）
-\end{rcode}\par\smallskip
 \section{协方差阵的特殊结构}\label{sec:sph}
 \subsection{球形结构}
 这里的“球形”指原协方差阵本身为$\sigma^2I$（以$k=5$为例）：
@@ -221,23 +198,21 @@ C^\top\Sigma C=\lambda C^\top C+\tfrac12\bigl(C^\top v\,\mathbf 1^\top C+C^\top\
 \ \subset\ \text{HF结构（球形性）}.
 \]
 \ann{$k$为观察次数；$\lambda$为常数。$k=2$时只有一个对比，$C^\top\Sigma C$是$1\times1$矩阵，球形条件自动成立。}
-\begin{sikao}[球形条件的直观含义]
-球形条件最直观的表述是第(2)条：任意两次测量之差的方差相等。重复测量方差分析检验时间效应时，实际利用的是每个个体自身的前后差值；将所有差值的变异合并作为误差，要求各差值的变异程度相近。
+\begin{sikao}[球形条件的直观含义：看两两差值的方差]
+上面三条等价表述里，最接地气的是第(2)条：\textbf{任意两次测量之差的方差都相等}。重复测量方差分析检验时间效应，骨子里就是把每个人各对时点的差值汇总起来；如果想用一个统一的“个体内误差均方”去衡量所有差值的噪声，前提自然是各对差值的波动幅度差不多。
 
-减肥资料中各对时点差值的方差如下：
-\par\noindent\begin{rcode}
-D <- outer(1:5,1:5,Vectorize(function(i,j) var(d[,i]-d[,j])))
-round(D,2)
-\end{rcode}
-\begin{routput}
-     [,1] [,2] [,3] [,4] [,5]
-[1,] 0.00 0.99 1.98 3.96 3.01
-[2,] 0.99 0.00 0.78 2.73 2.56
-[3,] 1.98 0.78 0.00 1.22 1.17
-[4,] 3.96 2.73 1.22 0.00 1.51
-[5,] 3.01 2.56 1.17 1.51 0.00
-\end{routput}
-相邻两周差值的方差约为1，服药前与第3周之差的方差接近4。这是纵向资料的常见特征：测量间隔越长，个体间变化速度的差异越明显，相关性越弱，差值越分散。这种协方差结构不满足球形条件，下文求得的$\widehat\varepsilon_{\mathrm{GG}}=0.54$也反映了这一点；由于样本量小，Mauchly检验未能拒绝球形假设。
+把减肥资料中任意两个时点之差$Y_i-Y_j$的样本方差排成表格：
+\begin{center}\small
+\begin{tabular}{crrrrr}
+\toprule 时点&服药前&第1周&第2周&第3周&第4周\\\midrule
+服药前&0.00&0.99&1.98&3.96&3.01\\
+第1周&0.99&0.00&0.78&2.73&2.56\\
+第2周&1.98&0.78&0.00&1.22&1.17\\
+第3周&3.96&2.73&1.22&0.00&1.51\\
+第4周&3.01&2.56&1.17&1.51&0.00\\\bottomrule
+\end{tabular}
+\end{center}
+规律非常典型：相邻两周之差的方差只有$0.78$--$1.51$，而跨度三四周的差值方差飙到了$3.0$--$4.0$。纵向随访数据几乎都有这个毛病——相隔越久，人与人之间变化快慢的差异越积越大，相关性越弱，差值方差也就越大。这正是球形假设在实际纵向数据里经常被违背的根本原因（下文算得的$\widehat\varepsilon_{\mathrm{GG}}=0.54$离1很远，印证了这一点；Mauchly检验$P=0.095$没拒绝，只是因为$n=10$效能太低）。
 \end{sikao}
 \section{球形与广义球形检验}
 \subsection{球形检验}
@@ -279,17 +254,12 @@ $y_4$&259.1&265.3&266.1&254.0&258.1\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
 
-\par\noindent\begin{rcode}
-fit <- lm(d~1)
-mauchly.test(fit)          # 默认：检验Sigma本身是否为sigma^2*I（d=5）
-mauchly.test(fit,X=~1)     # 检验与常数正交的对比：C'SigmaC=lambda*I（d=4）
-\end{rcode}\par\smallskip
-Mauchly's test of sphericity，\code{SSD matrix from lm(formula=d~1)}：
+直接检验原协方差阵$\Sigma=\sigma^2I$（$d=5$）与检验对比协方差阵$C^\top\Sigma C=\lambda I$（$d=4$），得到截然不同的两个结果：
 \[
-\text{默认}:\ W=3.3961\times10^{-11},\quad P<2.2\times10^{-16};\qquad
-\code{X=~1}:\ W=0.1305,\quad P=0.09544.
+\text{检验}\ \Sigma=\sigma^2I:\ W=3.396\times10^{-11},\quad P<2.2\times10^{-16};\qquad
+\text{检验}\ C^\top\Sigma C=\lambda I:\ W=0.1305,\quad P=0.0954.
 \]
-默认调用检验的是$\Sigma=\sigma^2I$。本例各次体重的相关系数都在0.99以上，强烈拒绝是意料之中的，并不说明不能作重复测量方差分析。重复测量需要的是\code{X=~1}所作的检验，其$W$与下文由$C^\top SC$手算的结果相同。
+各次体重的相关系数都在0.99以上，检验$\Sigma=\sigma^2I$（独立等方差）自然会被毫不留情地拒绝，但这并不妨碍做重复测量方差分析。重复测量方差分析真正需要的是后者——对对比协方差阵$C^\top\Sigma C$的球形检验（在R的\code{mauchly.test}中需显式传入\code{X=~1}，否则默认检验前者）。
 \subsection{广义球形检验}
 检验步骤：
 \begin{enumerate}
@@ -325,25 +295,16 @@ df_2^{\text{校正}}=\varepsilon\, df_2,
 \]
 $a$组时把$n$换为$N-a+1$、把$n-1$换为$N-a$；大于1时取1。一般$\widehat\varepsilon_{\mathrm{GG}}\le\widetilde\varepsilon_{\mathrm{HF}}$，GG校正偏保守，HF校正偏宽松。
 \subsection{单组体重资料的HF检验}
-\par\noindent\begin{rcode}
-contrasts <- contr.poly(5)       # C：5 x 4，C'C=I，C'1=0
-fit <- lm(d~1)
-res <- resid(fit)
-S <- cov(res)                    # 单组时等于cov(d)，自由度n-1=9
-A <- t(contrasts)%*%S%*%contrasts
-\end{rcode}\par\smallskip
-正交对比矩阵：
+取$5\times 4$的标准正交多项式对比矩阵$C$（满足$C^\top C=I_4,\ C^\top\mathbf 1=0$），将单组样本协方差阵$S$（自由度$\nu=n-1=9$）作变换$A=C^\top SC$：
 \[
 C=\begin{bmatrix}
 -.6324555&.5345225&-.3162278&.1195229\\
 -.3162278&-.2672612&.6324555&-.4780914\\
--3.510833\times10^{-17}&-.5345225&1.755417\times10^{-16}&.7171372\\
+0&-.5345225&0&.7171372\\
 .3162278&-.2672612&-.6324555&-.4780914\\
 .6324555&.5345225&.3162278&.1195229
-\end{bmatrix}_{\texttt{(.L, .Q, .C, \textasciicircum4)}}.
+\end{bmatrix},
 \]
-（$10^{-16}$、$10^{-17}$量级的元素是浮点运算误差，实为0。）
-残差协方差阵：
 \[
 S=\begin{bmatrix}
 263.0766&268.5609&268.2092&255.2719&259.0733\\
@@ -351,7 +312,7 @@ S=\begin{bmatrix}
 268.2092&274.7929&275.3246&262.7621&266.1167\\
 255.2719&261.8671&262.7621&251.4223&253.9989\\
 259.0733&265.2811&266.1167&253.9989&258.0822
-\end{bmatrix}.
+\end{bmatrix},
 \]
 \[
 A=C^\top SC=\begin{bmatrix}
@@ -361,20 +322,11 @@ A=C^\top SC=\begin{bmatrix}
 -.03643997&.1870169&.1978812&.26422381
 \end{bmatrix}.
 \]
-\par\noindent\begin{rcode}
-n <- 10; k <- 5
-dd <- k-1                        # 被检验矩阵A的维数d
-nu <- n-1                        # S的自由度
-W <- det(A)/(sum(diag(A))/dd)^dd; W
-chi <- -(nu-(2*dd^2+dd+2)/(6*dd))*log(W); chi
-df <- dd*(dd+1)/2-1; df
-1-pchisq(chi,df)                 # 一阶近似
-gg <- sum(diag(A))^2/((k-1)*sum(diag(A%*%A))); gg
-\end{rcode}\par\smallskip
+代入$d=k-1=4,\ \nu=9$，算得
 \[
-W=.1305064,\quad \chi^2=15.10281,\quad df=9,\quad P=.08815052,\quad \widehat\varepsilon_{\mathrm{GG}}=0.5397.
+W=0.1305,\qquad \chi^2=15.103,\qquad df=9,\qquad P_{\text{一阶}}=0.0882,\qquad \widehat\varepsilon_{\mathrm{GG}}=0.5397.
 \]
-$P=0.08815$是上面一阶$\chi^2$近似的结果；\code{mauchly.test(fit,X=~1)}及ez包报告的$P=0.09544$在此基础上加了二阶修正项（$P=P_1+\omega_2(P_2-P_1)$，$P_2$为自由度加4的$\chi^2$尾概率），二者同一来源，只是近似阶数不同。两者都大于0.05，未发现违背球形条件的证据，但不能据此断言球形成立。$A$的特征值为$2.527$、$0.839$、$0.495$、$0.122$，相差较大，$\widehat\varepsilon_{\mathrm{GG}}=0.54$，离1较远，说明样本对比协方差阵与球形相差不小，只是$n=10$时检验效能有限。
+一阶$\chi^2$近似给出$P=0.0882$，带二阶修正的软件输出为$P=0.0954$，来源完全相同。虽然$P>0.05$，未拒绝球形原假设，但看一眼$A$的四个特征值（$2.527,\ 0.839,\ 0.495,\ 0.122$）和$\widehat\varepsilon_{\mathrm{GG}}=0.54$就知道，样本对比协方差阵其实离球形相去甚远——只是$n=10$时Mauchly检验力不从心，实践中报告GG校正结果更为稳妥。
 \section{单组重复测量方差分析}
 \[
 y_{ij}=\mu+\alpha_i+\beta_j+\varepsilon_{ij},
@@ -423,75 +375,22 @@ F=\frac{n\bar D^2/2}{(n-1)s_D^2/[2(n-1)]}=\frac{n\bar D^2}{s_D^2}=t^2 .
 $C^\top\Sigma C$为$1\times1$矩阵，球形条件自动成立。
 \dpart{统计解释}例：只取服药前与第1周两次体重，配对$t^2$与重复测量方差分析的$F$同为40.63。
 \end{derivation}
-\subsection{R分析}
-\ann{用ez包作方差分析，需转换为长数据格式。}
-\par\noindent\begin{rcode}
-id <- rep(1:10,5)
-t <- rep(1:5,c(10,10,10,10,10))
-y <- c(d)
-da <- data.frame(id,t,y)
-da$id <- as.factor(da$id)
-da$t <- as.factor(da$t)
-library(ez)
-result <- ezANOVA(data=da,dv=y,wid=id,within=t)
-print(result)
-\end{rcode}\par\smallskip
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{长数据格式}
-\begin{center}\scriptsize\setlength{\tabcolsep}{4pt}\begin{tabular}{rrr@{\quad}rrr@{\quad}rrr@{\quad}rrr@{\quad}rrr}
-\toprule id&t&y&id&t&y&id&t&y&id&t&y&id&t&y\\\midrule
-1&1&131.5&1&2&128.4&1&3&127.4&1&4&125.3&1&5&124.9\\
-2&1&154.7&2&2&152.9&2&3&150.7&2&4&148.2&2&5&145.9\\
-3&1&146.7&3&2&145.5&3&3&143.6&3&4&140.5&3&5&139.8\\
-4&1&163.2&4&2&161.6&4&3&158.4&4&4&154.2&4&5&153.4\\
-5&1&128.6&5&2&125.3&5&3&124.1&5&4&122.8&5&5&120.9\\
-6&1&134.2&6&2&132.6&6&3&130.4&6&4&129.4&6&5&124.8\\
-7&1&126.8&7&2&125.7&7&3&123.9&7&4&123.5&7&5&121.6\\
-8&1&119.5&8&2&118.1&8&3&115.6&8&4&114.3&8&5&112.1\\
-9&1&112.4&9&2&108.6&9&3&104.7&9&4&102.6&9&5&101.4\\
-10&1&121.3&10&2&120.1&10&3&118.5&10&4&116.9&10&5&114.2\\
-\bottomrule\end{tabular}\end{center}
-\end{minipage}\par\medskip
+\subsection{单组体重资料的检验结果与混合模型视角}
+将10名患者的宽表数据整理为每行一次测量的长表（共50行）后作重复测量方差分析，结果汇总如下：
+\begin{center}\small
+\begin{tabular}{lcccc}
+\toprule 校正方式&$\varepsilon$&校正后自由度&时间效应$F$&$P$值\\\midrule
+不校正&1.000&$(4,\ 36)$&101.40&$4.4\times10^{-19}$\\
+Greenhouse--Geisser（GG）&0.540&$(2.16,\ 19.43)$&101.40&$3.3\times10^{-11}$\\
+Huynh--Feldt（HF）&0.716&$(2.86,\ 25.77)$&101.40&$3.2\times10^{-14}$\\\bottomrule
+\end{tabular}
+\end{center}
+无论是否做球形校正，服药前后体重随时间显著下降的结论都稳如磐石。校正过程中$F=101.40$纹丝不动，变得更保守的只是参考$F$分布的自由度。
 
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{ANOVA}
-\begin{center}\small\begin{tabular}{crrrrrc}
-\toprule Effect&DFn&DFd&$F$&$P$&ges&$P<.05$\\\midrule
-t&4&36&101.4041&$4.430774\times10^{-19}$&.03280533&*\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{Mauchly's Test for Sphericity}
-\begin{center}\begin{tabular}{crrc}
-\toprule Effect&$W$&$P$&$P<.05$\\\midrule
-t&.1305064&.09543534&\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{Sphericity Corrections}
-\begin{center}\small\setlength{\tabcolsep}{4.5pt}\begin{tabular}{crrcrrc}
-\toprule Effect&GGe&$P[\mathrm{GG}]$&$P[\mathrm{GG}]<.05$&HFe&$P[\mathrm{HF}]$&$P[\mathrm{HF}]<.05$\\\midrule
-t&.5396849&$3.303128\times10^{-11}$&*&.7157817&$3.159455\times10^{-14}$&*\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-GG校正时$F=101.40$不变，参考分布的自由度改为$4\times0.5397=2.16$与$36\times0.5397=19.43$，$P=3.3\times10^{-11}$；HF校正（$\widetilde\varepsilon=0.7158$）下自由度为$2.86$与$25.77$。无论是否校正，体重随服药时间的变化都有统计学意义。
-
-未安装ez包时，可用基础R的\code{aov()}加\code{Error()}项得到相同的方差分析表（不含球形检验与校正），前文两种分析的比较即采用此法。也可用线性混合模型拟合随机截距模型，该模型对应复合对称结构：
-\par\noindent\begin{rcode}
-library(nlme)
-anova(lme(y~t,random=~1|id,data=da))
-\end{rcode}
-\begin{routput}
-            numDF denDF  F-value p-value
-(Intercept)     1    36 639.0199  <.0001
-t               4    36 101.4041  <.0001
-\end{routput}
-平衡数据下，随机截距模型给出的$F=101.4041$与重复测量方差分析完全相同。混合模型可选用其他协方差结构（如一阶自回归），并可直接处理有缺失值的个体，在实际研究中应用日益广泛。
+顺便与\textbf{线性混合效应模型}打通一下：对同一份平衡数据拟合随机截距模型$Y_{ij}=\mu_j+b_i+\varepsilon_{ij}$（$b_i\sim N(0,\sigma_1^2)$，对应复合对称协方差结构），算出的时间效应同样精确等于$F=101.40$（$\nu_1=4,\nu_2=36,P<0.0001$）。混合模型的真正优势在于：实际随访中一旦有人中途失访（缺失值）或者测量间隔不整齐，传统重复测量方差分析只能把整个人删掉，而混合模型可以直接利用所有已有观测，还能灵活指定AR(1)等更贴合纵向数据的协方差结构。
 
 \section{多组重复测量资料}
-例12-3：将手术要求基本相同的15名患者随机分为3组，手术过程中分别采用A、B、C三种麻醉诱导方法，在$T_0$（诱导前）、$T_1,T_2,T_3,T_4$五个时相测量患者的收缩压，试进行方差分析。
+例12-3：将手术要求基本相同的15名患者随机均分为3组（$a=3,n=5,N=15$），分别采用A、B、C三种麻醉诱导方法，在诱导前$T_0$及诱导后$T_1$--$T_4$五个时相（$k=5$）测量收缩压（mmHg），比较三种方法及各时相的变化。
 \par\noindent\begin{minipage}{\linewidth}
 \tbltitle{表12-17\quad 不同麻醉诱导时相患者的收缩压（mmHg）}
 \begin{center}\small\begin{tabular}{ccrrrrr}
@@ -505,114 +404,39 @@ C&14&123&121&116&145&126\\C&15&125&124&118&142&130\\\bottomrule
 \end{tabular}\end{center}
 \end{minipage}\par\medskip
 
-\ann{三个影响因素。}
-本例$a=3$组，每组$n=5$人，$N=15$，$k=5$次测量。
-\par\noindent\begin{rcode}
-d <- cbind(g=rep(1:3,each=5), id=1:15, matrix(c(
-  120,108,112,120,117, 118,109,115,126,123, 119,112,119,124,118,
-  121,112,119,126,120, 127,121,127,133,126,                      # A组
-  121,120,118,131,137, 122,121,119,129,133, 128,129,126,135,142,
-  117,115,111,123,131, 118,114,116,123,133,                      # B组
-  131,119,118,135,129, 129,128,121,148,132, 123,123,120,143,136,
-  123,121,116,145,126, 125,124,118,142,130),ncol=5,byrow=TRUE))  # C组
-colnames(d)[3:7] <- paste0("T",0:4)
-d1 <- d[1:5,3:7]; d2 <- d[6:10,3:7]; d3 <- d[11:15,3:7]
-\end{rcode}\par\smallskip
 \subsection{分析步骤}
 \begin{enumerate}
-\item 用三组残差的合并协方差阵估计理论协方差阵$\Sigma$，推断有无HF结构。
-\item 作重复测量方差分析。有特殊结构时结果无需校正，否则需要校正。
+\item 先扣除各组各时点的均数，算出三组组内残差的\textbf{合并协方差阵}$S$（自由度$N-a=12$），再检验对比协方差阵$C^\top\Sigma C$是否满足球形条件（HF结构）。
+\item 作多组重复测量方差分析：组别效应以个体间误差检验（无需球形校正），时间效应与组别$\times$时间交互效应以个体内误差检验（不满足球形或求稳妥时作自由度校正）。
 \end{enumerate}
-\ann{三组合并成一组。}
-\begin{sikao}[多组设计中的两个误差项]
-本设计包含两类比较，其信息来源不同：
+
+\begin{sikao}[为什么多组重复测量有两个误差项？]
+多组重复测量设计里同时装着两类性质截然不同的比较：
 \begin{itemize}
-\item 三种诱导方法（组别）的比较在不同个体之间进行。每个个体只属于一组，有效样本量为15人，误差来自个体间差异，自由度为$15-3=12$。
-\item 不同时相的比较，以及时相变化模式在组间是否相同（交互作用）的比较，在同一个体内部进行，个体差异在差值中抵消，误差较小，自由度为48。
+\item \textbf{组别主效应（个体间比较）}：每人只能接受一种麻醉方案，比较A、B、C三组只能在不同的人之间比。独立样本量就是15人，随机误差包含人与人的个体差异，误差自由度只有$N-a=12$。
+\item \textbf{时间主效应与组别$\times$时间交互（个体内比较）}：比较不同时相、或比较三组随时间升降的曲线形状一不一样，都在每个个体自身内部取差值，个体基线差异自动抵消，误差小得多，自由度高达$(N-a)(k-1)=48$。
 \end{itemize}
-因此组别效应的检验效能通常低于时间效应。表12-19和表12-20中，组别$F=5.78$，时间$F=106.6$，二者的误差均方分别为78.87和5.48。重复测量设计提高的主要是个体内比较的精度；若研究问题主要为组间比较，增加样本量比增加测量次数更为有效。
+看后面的方差分析表就一目了然：个体间误差均方高达$78.87$，而个体内误差均方只有$5.48$，相差十几倍！由此也能悟出一个试验设计常识：\textbf{重复测量主要提高的是时间趋势与交互作用的检验效能；如果你的核心问题是比较各组之间的平均水平，多招受试者比对同一个人多测几次管用得多。}
 \end{sikao}
-\subsection{R分析}
-\par\noindent\begin{rcode}
-id <- rep(1:15,5)
-t <- rep(1:5,c(15,15,15,15,15))
-g <- rep(rep(1:3,c(5,5,5)),5)
-y <- c(d[,3:7])
-da <- data.frame(id,t,g,y)
-da$id <- as.factor(da$id)
-da$t <- as.factor(da$t)
-da$g <- as.factor(da$g)
-library(ez)
-result <- ezANOVA(data=da,dv=y,wid=id,within=t,between=g)
-print(result)
-\end{rcode}\par\smallskip
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{ANOVA}
-\begin{center}\small\begin{tabular}{crrrrrc}
-\toprule Effect&DFn&DFd&$F$&$P$&ges&$P<.05$\\\midrule
-g&2&12&5.782943&.01743351&.4299287&*\\
-t&4&48&106.557616&$3.017101\times10^{-23}$&.6588084&*\\
-g:t&8&48&19.100638&$1.621310\times10^{-12}$&.4091519&*\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
 
-基础R的写法如下：
-\par\noindent\begin{rcode}
-summary(aov(y~g*t+Error(id/t),data=da))
-\end{rcode}
-\begin{routput}
-Error: id
-          Df Sum Sq Mean Sq F value Pr(>F)  
-g          2  912.2   456.1   5.783 0.0174 *
-Residuals 12  946.5    78.9                 
-
-Error: id:t
-          Df Sum Sq Mean Sq F value   Pr(>F)    
-t          4 2336.5   584.1   106.6  < 2e-16 ***
-g:t        8  837.6   104.7    19.1 1.62e-12 ***
-Residuals 48  263.1     5.5                     
-\end{routput}
-输出按两层误差分为上下两部分，分别对应表12-19和表12-20。
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{Mauchly's Test for Sphericity}
-\begin{center}\begin{tabular}{crrc}
-\toprule Effect&$W$&$P$&$P<.05$\\\midrule
-t&.2930746&.1776608&\\g:t&.2930746&.1776608&\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
-
-\par\noindent\begin{minipage}{\linewidth}
-\tbltitle{Sphericity Corrections}
-\begin{center}\small\setlength{\tabcolsep}{4.5pt}\begin{tabular}{crrcrrc}
-\toprule Effect&GGe&$P[\mathrm{GG}]$&$P[\mathrm{GG}]<.05$&HFe&$P[\mathrm{HF}]$&$P[\mathrm{HF}]<.05$\\\midrule
-t&.678693&$1.867336\times10^{-16}$&*&.896371&$4.649080\times10^{-21}$&*\\
-g:t&.678693&$4.262529\times10^{-9}$&*&.896371&$2.041727\times10^{-11}$&*\\\bottomrule
-\end{tabular}\end{center}
-\end{minipage}\par\medskip
+\subsection{麻醉诱导资料的方差分析与球形检验汇总}
+本例三项效应的未校正与球形校正检验结果汇总如下（Mauchly球形检验$W=0.2931,P=0.1777$；$\widehat\varepsilon_{\mathrm{GG}}=0.6787,\ \widetilde\varepsilon_{\mathrm{HF}}=0.8964$）：
+\begin{center}\small
+\begin{tabular}{lrrrrrr}
+\toprule 效应&误差层&自由度&$SS$&$MS$&$F$&$P$（未校正 / GG校正）\\\midrule
+组别（$g$）&个体间&$(2,12)$&912.2&456.1&5.78&$0.0174$ / 无需校正\\
+时相（$t$）&个体内&$(4,48)$&2336.5&584.1&106.56&$3.0\times10^{-23}$ / $1.9\times10^{-16}$\\
+交互（$g\times t$）&个体内&$(8,48)$&837.6&104.7&19.10&$1.6\times10^{-12}$ / $4.3\times10^{-9}$\\\bottomrule
+\end{tabular}
+\end{center}
+其中个体间残差$SS=946.5$（$\nu=12,MS=78.87$），个体内残差$SS=263.1$（$\nu=48,MS=5.48$）。下面展示合并协方差阵与球形检验的具体计算过程。
 
 \subsection{三组残差的合并协方差阵}\label{sec:pool}
-合并的是“组内残差”：每个人的5次测量减去其所在组各时点的均数，从而扣除了组别与时点（及其交互）的均数差异，只留下个体内外的随机变异。合并的前提是各组有共同的协方差阵$\Sigma$（协方差阵齐性，可用Box's $M$检验考察），且个体间独立。合并协方差阵为
+合并的是“组内残差”：每个人的5次测量先减去所在组在对应时点的均数，把组别、时点及其交互的均数差异全部剥掉，只留下随机变异。合并的前提是各组共享同一理论协方差阵$\Sigma$（协方差阵齐性，可用Box's $M$检验考察）且个体间独立：
 \[
 S=\frac{\sum_{g=1}^a(n_g-1)S_g}{N-a},
 \]
-其自由度为$N-a=12$，用于后续Mauchly检验的$\nu$。
-\par\noindent\begin{rcode}
-k <- 5; n <- 5
-m1 <- apply(d1,2,mean)
-mean1 <- matrix(rep(m1,each=n),nrow=n,ncol=k)
-res1 <- d1-mean1
-S1 <- cov(res1)
-m2 <- apply(d2,2,mean)
-mean2 <- matrix(rep(m2,each=n),nrow=n,ncol=k)
-res2 <- d2-mean2
-S2 <- cov(res2)
-m3 <- apply(d3,2,mean)
-mean3 <- matrix(rep(m3,each=n),nrow=n,ncol=k)
-res3 <- d3-mean3
-S3 <- cov(res3)
-S <- (S1*(n-1)+S2*(n-1)+S3*(n-1))/(n+n+n-3)   # 分母N-a=12
-# 等价写法：S <- crossprod(resid(lm(d[,3:7]~factor(d[,1]))))/12
-\end{rcode}\par\smallskip
+自由度$\nu=N-a=12$。三组各自的样本协方差阵与合并协方差阵依次为：
 \[
 S_1=\begin{bmatrix}
 12.50&16.75&16.75&13.00&8.50\\
@@ -651,25 +475,16 @@ S=\begin{bmatrix}
 \end{bmatrix}.
 \]
 \subsection{HF结构检验}
-\par\noindent\begin{rcode}
-contrasts <- contr.poly(5)
-A <- t(contrasts)%*%S%*%contrasts
-N <- 15; a <- 3; k <- 5
-dd <- k-1; nu <- N-a             # d=4，nu=12
-W <- det(A)/(sum(diag(A))/dd)^dd
-chi <- -(nu-(2*dd^2+dd+2)/(6*dd))*log(W)
-1-pchisq(chi,dd*(dd+1)/2-1)      # 一阶近似
-gg <- sum(diag(A))^2/((k-1)*sum(diag(A%*%A)))
-\end{rcode}\par\smallskip
+用与单组相同的$5\times 4$标准正交多项式对比矩阵$C$作变换，得$A=C^\top SC$（$d=k-1=4,\ \nu=N-a=12$）：
 \[
 A=C^\top SC=\begin{bmatrix}
 7.9033333&-1.0226366&.4516667&-2.115971\\
 -1.0226366&6.6833333&.6014681&3.290747\\
 .4516667&.6014681&1.9966667&1.340514\\
 -2.1159711&3.2907475&1.3405140&5.343333
-\end{bmatrix},\qquad W=.2930746.
+\end{bmatrix},\qquad W=0.2931.
 \]
-$\chi^2=12.785$，$df=9$，一阶近似$P=0.1726$（ez包含二阶修正项，报告$P=0.1777$）；$\widehat\varepsilon_{\mathrm{GG}}=0.678693$，$\widetilde\varepsilon_{\mathrm{HF}}=0.896371$。上述$W$与GG系数都与ez输出一致。
+算得$\chi^2=12.785$，$df=9$，一阶近似$P=0.1726$（带二阶修正为$P=0.1777$），$\widehat\varepsilon_{\mathrm{GG}}=0.6787$，$\widetilde\varepsilon_{\mathrm{HF}}=0.8964$。
 \subsection{均数与变异分解}
 $y_{gij}$表示第$g$组第$i$个观测第$j$次测量值，$g=1,\ldots,a$，$i=1,\ldots,n$，$j=1,\ldots,k$。
 \begin{center}\begin{tabular}{cl}
@@ -753,37 +568,27 @@ A&$-8.6\ (-11.5,-5.7)$&$-2.6\ (-6.7,1.5)$&$4.8\ (1.1,8.5)$&$-0.2\ (-4.0,3.6)$\\
 B&$-1.4\ (-3.7,0.9)$&$-3.2\ (-5.2,-1.2)$&$7.0\ (4.7,9.3)$&$14.0\ (11.7,16.3)$\\
 C&$-3.2\ (-9.4,3.0)$&$-7.6\ (-12.0,-3.2)$&$16.4\ (7.5,25.3)$&$4.4\ (-2.4,11.2)$\\\bottomrule
 \end{tabular}\end{center}
-共12个对比，若需控制多重性，可按Bonferroni法把每个区间的置信水平提高到$1-0.05/12$。由此可见，B组在$T_4$较基线升高约14\,mmHg，C组在$T_3$升高约16\,mmHg，A组各时相相对基线的变化都在$-9$到$+5$\,mmHg之间。“A组不同诱导时相收缩压较为稳定”是对均数图的描述，上表的区间为其提供了数量依据；若要正式比较组间的稳定程度，应预先规定指标（如$T_1$--$T_4$相对$T_0$的最大变化）再作检验。
-\par\noindent\begin{rcode}
-for (g in 1:3) {                              # 各组相对T0的配对变化及95%CI
-  dg <- d[d[,"g"]==g,3:7]
-  for (j in 2:5) print(t.test(dg[,j]-dg[,1])$conf.int)
-}
-\end{rcode}\par\smallskip
-\subsection{复习提示}
-前两次为多重线性回归，后两次推广到一般线性模型。带电脑，考试2小时；题型为选择与计算分析，选择题50分。计算分析给数据，算出结果，形式为填空，不需要写过程，例如是否满足HF、自由度、统计量、校正后分子与分母自由度。手画图形轮廓？
+共12个对比，若需控制多重性，可按Bonferroni法将每个区间的置信水平提高到$1-0.05/12$。表中数字印证了轮廓图的直觉：B组在$T_4$较基线飙升约14\,mmHg，C组在$T_3$飙升约16\,mmHg，而A组各时相相对基线的波动始终控制在$-9$至$+5$\,mmHg之间，血流动力学相对平稳（若要正式检验组间“稳定程度”有无差别，应预先定义汇总指标如$T_1$--$T_4$相对$T_0$的最大绝对变化再作比较）。
 
-\ann{手画图形轮廓：可理解为按各组各时点均数手绘轮廓图（如上面的收缩压均数图、析因设计的交互作用图），重点画出曲线的走向以及各组曲线是否平行。}
-
-数据为dat格式。岭回归（原代码第一行未写完，原为\code{ry <- c(cor(d,}，下面按第\ref{sec:ridge}节的公式补全，以例15-1为例，须先运行第\ref{sec:select}节的数据定义）：
-\par\noindent\begin{rcode}
-X  <- cbind(x1,x2,x3,x4)         # 例15-1的自变量矩阵，y为空腹血糖
-R  <- cor(X)                     # 自变量的相关阵R_XX
-ry <- c(cor(X,y))                # 各自变量与y的相关系数r_y
-solve(R)%*%ry                    # 标准化偏回归系数
-k  <- 0.04
-solve(R+k*diag(ncol(X)))%*%ry    # 岭参数为k时的标准化岭回归系数
-\end{rcode}\par\smallskip
+\subsection{全书脉络回顾}
+回头串联全书五章，其实始终围绕着同一条主线逐步展开：
+\begin{enumerate}
+\item \textbf{第1章（矩阵工具）}：用均数向量、协方差阵、特征值和线性组合方差公式$a^\top\Sigma a$搭好语言与几何直觉。
+\item \textbf{第2章（模型构建）}：在线性模型$Y=X\beta+\varepsilon$下，借正交投影求出最小二乘估计，在LINE假设下完成$t$、$F$检验、区间估计、模型评价与变量筛选。
+\item \textbf{第3章（诊断与相关）}：拿学生化残差、杠杆值与Cook距离反查假设和异常观测，用VIF与岭回归应对共线性，再从偏相关视角重新理解“控制其他变量”。
+\item \textbf{第4章（一般线性模型）}：把完全随机、随机区组、析因方差分析与协方差分析全部纳入$Y=X\beta+\varepsilon$，看清哑变量编码、交互作用与误差缩减的统一逻辑。
+\item \textbf{第5章（重复测量）}：打破“观测独立”的限制，按个体间与个体内拆分两层误差，用球形条件（HF结构）与GG/HF自由度校正守住纵向推断的可靠性。
+\end{enumerate}
 
 \begin{fuxi}
 \begin{enumerate}
-\item 重复测量资料指同一个体的同一指标被测量多次（时间、部位或条件上的重复）。每个对象仅测量一次的分组比较资料，即使设有区组，也不属于重复测量资料。
-\item 不应将各时点视为独立组进行分析，也不宜对各时点反复进行未经校正的两两$t$检验。
-\item 三种协方差结构的关系：$\sigma^2I\subset$复合对称$\subset$HF（球形）。重复测量方差分析要求对比协方差阵$C^\top\Sigma C=\lambda I$，等价于任意两次测量之差的方差相等。
-\item Mauchly检验应针对$C^\top SC$进行（R中为\code{mauchly.test(fit,X=~1)}），$W=|A|/[\tr(A)/d]^d$，$d=k-1$。该检验在小样本时效能低，不拒绝$H_0$不等于球形条件成立。
-\item GG系数$\widehat\varepsilon=[\tr(A)]^2/[(k-1)\tr(A^2)]$，取值范围为$1/(k-1)$至1；校正时$F$值不变，两个自由度同乘$\varepsilon$。下界校正最保守，HF校正较宽松。
-\item 单组设计：$\SSq{总}=\SSq{时间}+\SSq{个体}+\SSq{误差}$，自由度$nk-1=(k-1)+(n-1)+(n-1)(k-1)$。$k=2$时等价于配对$t$检验。
-\item 多组设计：组别效应以个体间误差为分母（自由度$N-a$），时间与交互效应以个体内误差为分母（自由度$(N-a)(k-1)$）；球形校正仅用于个体内的两项。
-\item 应首先考察交互作用。交互作用有统计学意义表明各组随时间的变化模式不同，此时应报告各组、各时点的具体比较结果，而不宜笼统地报告组别差异。
+\item 重复测量资料指同一个体的同一指标被多次测量（时间、部位或条件重复）；每人只测一次的分组设计（哪怕有区组）不属于重复测量。
+\item 切忌把各时点当作独立组分析，也不宜对各时点反复做未经校正的两两$t$检验。
+\item 三种协方差结构从强到弱：$\sigma^2I\subset\text{复合对称}\subset\text{HF（球形）}$。重复测量方差分析只要求对比协方差阵满足$C^\top\Sigma C=\lambda I$，等价于任意两次测量之差的方差相等。
+\item Mauchly检验针对$C^\top SC$（维数$d=k-1$），小样本时效能很低，不拒绝$H_0$不等于证明球形成立，实践中常直接报告GG或HF校正结果。
+\item GG系数$\widehat\varepsilon=[\tr(A)]^2/[(k-1)\tr(A^2)]\in[1/(k-1),1]$；校正时$F$值不变，分子分母自由度同乘$\varepsilon$。下界校正最保守，HF校正较宽松。
+\item 单组重复测量：$\SSq{总}=\SSq{时间}+\SSq{个体}+\SSq{误差}$，自由度$nk-1=(k-1)+(n-1)+(n-1)(k-1)$；$k=2$时与配对$t$检验完全等价（$F=t^2$）。
+\item 多组重复测量：组别效应以个体间误差为分母（自由度$N-a$），时间与交互效应以个体内误差为分母（自由度$(N-a)(k-1)$）；球形校正只作用于个体内的两项。
+\item 解读多组结果先看交互作用：一旦交互显著，说明各组随时间的变化轨迹不平行，应结合均数轮廓图报告具体的时点对比，而不宜孤立解读平均主效应。
 \end{enumerate}
 \end{fuxi}

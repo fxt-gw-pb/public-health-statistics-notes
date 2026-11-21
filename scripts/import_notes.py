@@ -19,10 +19,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'public' / 'data'
 LOCAL = ROOT / '.local'
 COURSES = [
-    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=239,
+    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=227,
          description='从矩阵与最小二乘出发，理解回归模型的构建、诊断与解释。',
          topics=['矩阵基础', '多重线性回归', '一般线性模型', '重复测量'], exercises={2: 1, 3: 2, 4: 3, 5: 4},
-         supplements={1: 'supplement/ch1.tex'}),
+         supplements={1: 'supplement/ch1.tex'}, updated='2026-11-21'),
     dict(id='multivariate', title='应用多元分析', english='Applied Multivariate Analysis', pages=184,
          description='在多个变量中提炼结构，学习降维、聚类与判别的统计思路。',
          topics=['主成分分析', '因子分析', '聚类分析', '判别分析'], exercises={1: 1, 2: 2, 3: 3, 4: 4}),
@@ -32,9 +32,9 @@ COURSES = [
          supplements={8: 'supplement/ex8.tex'}),
     # R practice notes: prepared from the R learning kit by scripts/prepare_rcode.py.
     # Chapter 0 is the guide to the kit; there are no exercise sets.
-    dict(id='rcode', title='应用线性回归 · R 实操', english='Applied Linear Regression in R', pages=49,
-         description='把回归、方差分析与重复测量落到 R 代码：该运行哪几行，读哪几个数，结果怎么写。',
-         topics=['数据处理与公式', '回归诊断', '方差分析', '重复测量'], exercises={}, first=0, updated='2026-11-19',
+    dict(id='rcode', title='应用线性回归 · R 实操', english='Applied Linear Regression in R', pages=60,
+         description='把回归、方差分析、重复测量与四次作业落到 R 代码：该运行哪几行，读哪几个数，结果怎么写。',
+         topics=['数据处理与公式', '回归诊断', '方差分析', '四次作业题解'], exercises={}, first=0, updated='2026-11-21',
          downloads=[dict(label='下载原 PDF', href='./pdfs/rcode.pdf', filename='应用线性回归_R实操笔记.pdf'),
                     dict(label='下载 R 学习包', href='./downloads/rcode-kit.zip', filename='应用线性回归_R实操学习包.zip',
                          detail='代码 · 数据 · 作业脚本 · LaTeX 源文件')]),
@@ -446,10 +446,7 @@ def main():
                 entries.append((folder / 'content' / f'ex{course["exercises"][number]}.tex', number, None))
             if number in course.get('supplements', {}):
                 entries.append((folder / 'content' / course['supplements'][number], number, f'sup{number}'))
-        if (folder / 'content' / 'appendix.tex').exists():
-            entries.append((folder / 'content' / 'appendix.tex', None, None))
-        if (folder / 'content' / 'supplement' / 'sources.tex').exists():
-            entries.append((folder / 'content' / 'supplement' / 'sources.tex', None, 'sources'))
+        # 网页版笔记不收录附录与来源页（完整附录保留在原 PDF 中）
         figure_manifest[course['id']] = []
         counts = collections.Counter()
         course['no'] = f'{idx+1:02d}'
