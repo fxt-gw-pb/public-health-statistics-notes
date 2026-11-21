@@ -1,10 +1,10 @@
 \chapter{泊松回归与负二项回归}
 \sourcepages{8}{1-6}
-计数资料在公共卫生研究中十分常见，如某地每月发病数、队列中的死亡数、一年内哮喘发作次数、门诊就诊次数等。分析此类资料需考虑以下两点。
+计数资料在公共卫生研究中随处可见：某地每月新发病例数、队列中的死亡人数、儿童一年内哮喘发作次数、居民两周内门诊就诊次数。把这类非负整数计数放进回归模型时，有两件事最容易出错，也恰恰是本章的两条主线。
 
-一是观察量的大小。死亡数较多，可能是死亡率较高，也可能是观察人数较多或观察时间较长。因此计数模型通常通过offset纳入人年数（或人口数），模型描述的是率，系数为率比（IRR）。
+第一是\textbf{观察量（暴露规模）的对齐}。同样记下30例死亡，发生在1万人年里与发生在10万人年里含义天差地别。计数回归通过把 $\ln(\text{人年数})$ 作为系数固定为1的偏移项（offset）放进线性预测量，使模型刻画的不再是裸计数，而是单位人年的发生率，回归系数取指数后就是率比（IRR）。
 
-二是方差。Poisson分布要求方差等于均数，而实际资料的方差常大于均数（过离散），原因包括个体易感性不同、事件呈聚集性发生等。此时Poisson回归的点估计通常仍可用，但标准误偏小，结论偏于乐观。负二项回归在Poisson回归的基础上增加一个离散参数，以反映额外的变异。两个模型的均值结构相同，方差假设不同。
+第二是\textbf{方差与过离散}。Poisson分布施加了一条很强的约束：给定协变量后的条件方差必须等于条件均数。然而真实人群里个体易感性各异、事件往往呈聚集发生，实际方差常常远大于均数（过离散）。此时Poisson回归的点估计通常仍大致无偏，但标准误会被严重低估，进而制造虚假的“统计学显著”。负二项回归在保持相同均值结构的同时引入一个额外的离散参数 $\alpha$，专门吸收这部分超额变异。
 \section{泊松回归（Poisson Regression）}
 泊松回归：针对计数资料或列联表资料建模的一种回归分析方法。
 \begin{itemize}
@@ -24,8 +24,7 @@ P(Y=k)=\frac{\lambda^k}{k!}e^{-\lambda},\qquad k=0,1,2,\ldots.
 \textbf{医学中的例子} 罕见遗传病的出生数：某地区每年新生儿中苯丙酮尿症（PKU）、先天性聋哑等罕见遗传病的病例数；癌症的年发病数；药物不良反应的报告数；某地区每月的食物中毒事件数。
 \subsection{例题：职业暴露}
 \sourcepages{8}{7-12}
-一项回顾性队列研究，收集了湖北省某工厂1966年8月18日至1991年12月31日全部工人（共9572人）的有关信息，欲研究职业暴露与死亡情况的关系。该项研究总的观察人年数为114488人年，共有159名工人发生死亡结局。研究目的：推断职业暴露和年龄是否为死亡率的影响因素。
-\begin{annotation}罕见事件。\end{annotation}
+一项回顾性队列研究，收集了湖北省某工厂1966年8月18日至1991年12月31日全部工人（共9572人）的有关信息，欲研究职业暴露与死亡情况的关系。该项研究总的观察人年数为114488人年，共有159名工人发生死亡结局（总体死亡率仅约 $1.39$ 每千人年，属典型的罕见事件）。研究目的：推断职业暴露和年龄是否为死亡率的影响因素。
 \ctable{表4\quad 湖北省某工厂全死因死亡情况（死亡率单位：每千人年）}{\begin{tabular}{lrrrrrr}\toprule 年龄组（岁）&\multicolumn{3}{c}{非暴露组}&\multicolumn{3}{c}{暴露组}\\\cmidrule(lr){2-4}\cmidrule(lr){5-7}&死亡数&人年数&死亡率&死亡数&人年数&死亡率\\\midrule
 $<40$&39&59141&0.659&30&34995&0.857\\
 40--49&14&6621&2.114&33&9241&3.571\\
@@ -735,8 +734,7 @@ Combined sample characteristics and rates of severe COVID-19 outcomes for indivi
 \draw (982.000,593)--(982.000,598);\node[below] at (982.000,598) {10};
 \node[below,align=center] at (900,619) {Adjusted rate ratio\\(95\%CI)};
 \end{tikzpicture}}
-与女性相比，男性aRR [95\%CI]：1.23 [1.20--1.26]。与18--49岁者相比，$\ge80$ 岁者的aRR [95\%CI]：9.51 [9.07--9.97]。
-\begin{annotation}男性容易严重新冠；老人容易严重新冠。\end{annotation}
+与女性相比，男性发生严重COVID-19结局的aRR为1.23（95\%CI 1.20--1.26），风险略高于女性；与18--49岁者相比，$\ge80$ 岁者的aRR高达9.51（95\%CI 9.07--9.97），高龄是极强的危险因素。
 \textbf{结果描述}
 \begin{quote}
 Individuals with a greater number of comorbidities ($\ge5$ comorbidities vs none; 9.51 [9.07--9.97]), who were older (aged $\ge80$ years vs 18--49 years; 3.60 [3.45--3.75]), or who were male (male vs female; 1.23 [1.20--1.26]) were also associated with increased risk of severe COVID-19 outcomes.
@@ -758,10 +756,9 @@ All statistical analyses were done using the statistical software R.
 \item 前瞻性队列研究的报告依据：RECORD、STROBE。
 \item 提前撰写统计分析计划。
 \item 数据共享问题：对各国结果进行Meta分析。
-\item 人年发病率：发生严重COVID-19结局的人数/总的随访人年数 $\times1000$。
+\item 人年发病率（即流行病学中的发病密度）：发生严重COVID-19结局的人数/总的随访人年数 $\times1000$。
 \item 诸多人口统计学和临床特征的选取是基于研究团队在既往工作中确定的高风险因素，同时考虑到数据在每个国家的可用性而确定。
 \end{enumerate}
-\begin{annotation}发病密度。\end{annotation}
 \subsection{思考与练习}
 \sourcepages{8}{30-35}
 某疾控中心拟分析不同因素对儿童接种新型流感疫苗后1个月内发热次数的影响，为疫苗接种后的不良反应监测提供依据。选取500名3--12岁接种新型流感疫苗的儿童，随访1个月记录发热次数。分析年龄组、疫苗剂量、基础疾病对儿童接种疫苗后发热次数的影响。
@@ -791,15 +788,11 @@ All statistical analyses were done using the statistical software R.
 \subsection{负二项回归模型}
 医学研究中，很多事件的发生是非独立的（传染的、原因不明的聚集现象等），这种资料的特点是估计值的方差较Poisson分布的方差大（over-dispersion or extra-Poisson variation）。
 \begin{annotation}此时若仍用Poisson回归，只要均值结构正确，系数的点估计仍然一致，但模型低估了方差，标准误偏小、置信区间偏窄、$P$ 值偏小（见下文）。\end{annotation}
-\textbf{Poisson回归模型} $Y$ 服从Poisson分布，$\lambda$ 为相应的均数。
-\[
-\lambda\ \longleftrightarrow\ \beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,
-\]
+\textbf{Poisson回归模型} $Y$ 服从Poisson分布，$\lambda$ 为相应的均数，通过log连接函数与线性预测量相连：
 \[
 \ln\lambda=\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m,\qquad
 \lambda=e^{\beta_0+\beta_1x_1+\beta_2x_2+\cdots+\beta_mx_m}.
 \]
-\begin{annotation}连接函数。\end{annotation}
 Poisson回归用于描述当观察结果变量服从Poisson分布时的资料，即事件的发生是独立的。但医学研究中，很多事件的发生是非独立的，这种资料可基于负二项分布用负二项回归分析。
 
 负二项分布实际上是当Poisson分布中强度参数 $\lambda$ 服从 $\Gamma$ 分布时所得到的复合分布。在Poisson分布中，$\lambda$ 是一常数；在负二项分布中是一随机变量，并服从 $\Gamma$ 分布，因此负二项分布又称 $\Gamma$--Poisson分布（Gamma--Poisson distribution）。
@@ -874,7 +867,7 @@ Base/log(Base)&0.0276&0.0040&6.929&0.000&0.9303&0.1081&8.604&0.000\\
 常数项&0.4492&0.3723&1.206&0.228&$-1.5978$&0.4943&$-3.232$&0.001\\
 $\kappa$&0.2053&0.07435&2.761&0.006&0.1280&0.0610&2.098&0.036\\\bottomrule\end{tabular}}\[\text{模型C：}\quad\log L=-146.71662,\quad\chi_G^2=54.8151,\quad P=0.4435.\]\[\text{模型D：}\quad\log L=-143.21707,\quad\chi_G^2=62.4238,\quad P=0.2018.\]
 \begin{annotation}模型C以Base、模型D以 $\log(\text{Base})$ 作协变量（58人，剔除47号）。用 $\log(\text{Base})$ 时，$\log\mu$ 与 $\log(\text{Base})$ 呈线性，系数0.93接近1，意味着发作次数与基线次数大致成比例，比Base的线性项更符合计数资料的特点；模型D的对数似然更大（$-143.2$ 对 $-146.7$，参数个数相同），$\kappa$ 也更小。Pearson $\chi_G^2$ 用于检查NB模型本身的拟合，两个模型的 $P$ 值都大于0.05。用R \texttt{MASS::glm.nb} 复算，系数、$\kappa$ 与上表相差不超过0.03（Stata与R的收敛精度不同），Pearson $\chi^2$ 为54.80和62.36。\end{annotation}
-\textbf{过渡离散检验（overdispersion test）}
+\textbf{过离散检验（overdispersion test）}
 
 $H_0$：$\alpha=0$（Poisson模型足够）；$H_1$：$\alpha>0$（需要负二项模型）。
 
@@ -974,8 +967,7 @@ Lancet. 2021 May 15;397(10287):1819--1829. doi:10.1016/S0140-6736(21)00947-8. Ep
 \sourcepages{8}{56}
 描述性分析：以色列16岁及以上人口中完全接种BNT162b2疫苗的人数及比例。对“未接种疫苗”及“完全接种疫苗”两种人群，计算各年龄层的每种SARS-CoV-2结局的发生率（每10万人年）。
 
-广义线性模型——负二项回归：使用比传统的泊松回归方法更适合于方差过离散的负二项回归模型，得到每种结局的发生率比（IRR）及其95\%CI。疫苗有效性估计值的计算公式为 $(1-\mathrm{IRR})\times100$。模型中调整了年龄、性别和日历周。
-\begin{annotation}若接种疫苗相于未接种者，$\RR=0.4$，则保护率=60\%。\end{annotation}
+广义线性模型——负二项回归：使用比传统的泊松回归方法更适合于方差过离散的负二项回归模型，得到每种结局的发生率比（IRR）及其95\%CI。疫苗有效性估计值的计算公式为 $(1-\mathrm{IRR})\times100\%$（例如若接种者相对未接种者的 $\mathrm{IRR}=0.4$，则疫苗保护率为 $60\%$）。模型中调整了年龄、性别和日历周。
 敏感性分析：分别将“完全接种疫苗”人群换成以下人群，用同样的方法进行疫苗有效性估计：接种了两剂BNT162b2且距第二次接种后至少14天；接种了一剂BNT162b2且距第一次接种后14--21天。统计软件：STATA。
 \subsubsection{结果及解释}
 \sourcepages{8}{57-59}
@@ -1059,10 +1051,9 @@ Symptomatic COVID-19&96.4 (95.9--97.0)&96.7 (95.9--97.4)&96.6 (95.2--97.6)\\\add
 COVID-19-related hospitalisation&96.8 (96.2--97.3)&97.0 (96.2--97.7)&96.9 (95.5--97.9)\\\addlinespace
 Severe or critical COVID-19-related hospitalisation&97.3 (96.8--97.8)&97.6 (96.8--98.1)&97.4 (95.9--98.3)\\\addlinespace
 COVID-19-related death&96.9 (96.0--97.6)&97.1 (96.0--97.9)&97.0 (94.9--98.3)\\\addlinespace\bottomrule\end{tabularx}\par\smallskip\begin{minipage}{\linewidth}\footnotesize Estimates are \% (95\%CI). Model is adjusted for age group (16--24, 25--34, 35--44, 45--54, 55--64, 65--74, 75--84, and $\ge85$ years), sex, and calendar week. Includes asymptomatic and symptomatic infections, as well as cases with positive SARS-CoV-2 tests for which the symptom interview portion of the epidemiological investigation was not completed.\end{minipage}}
-\begin{annotation}有效率/保护率。\end{annotation}
 \textbf{结果描述}
 \begin{quote}Adjusted vaccine effectiveness estimates against all COVID-19 outcomes were higher than 96\% among people aged 75 years and older and people aged 85 years and older (table 3).\end{quote}
-在老龄人群中，两剂疫苗接种对于各种COVID-19相关结局的有效性均较高（$>80\%$）。
+在老龄人群中，两剂疫苗接种对各类COVID-19相关结局的有效率（保护率）均保持在较高水平（$>80\%$）。
 \subsubsection{英文表达}
 \sourcepages{8}{60}
 \textbf{Methods}

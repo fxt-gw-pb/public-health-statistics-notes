@@ -1,14 +1,14 @@
 \chapter{广义线性模型基本概念与方法}
 \sourcepages{2}{1}
-公共卫生研究中有大量非连续的结局变量：死亡与否、是否患病为二分类变量；病情轻、中、重为有序分类变量；一年内哮喘发作次数、某地某病新发病例数为计数变量；从确诊到死亡的时间为生存时间。这些资料不满足线性回归的条件，本课程讨论其分析方法。
+公共卫生研究中有大量非连续的结局变量：死亡与否、是否患病是二分类变量；病情轻、中、重是有序分类变量；一年内哮喘发作次数、某地某病新发病例数是计数变量；从确诊到死亡的时间是生存时间。把这类资料直接套进线性回归，往往会撞上两堵墙：一是预测值可能越界（比如算出负数概率或负的发病次数），二是离散资料的方差天然随均数变化，不再满足等方差假设。
 
-本章介绍全课程的基本框架。后续各章的模型均由以下三个要素确定：
+广义线性模型（GLM）用一套非常整洁的思路把这些看似分散的方法统一起来。后面各章遇到的模型，本质上都是在做三个选择：
 \begin{enumerate}
-\item \textbf{结局变量的分布。}二分类资料采用二项分布，计数资料采用Poisson分布或负二项分布。分布决定了方差与均数之间的关系。
-\item \textbf{均数与自变量的联系方式。}模型令均数的某一函数（连接函数）等于自变量的线性组合$\beta_0+\beta_1x_1+\cdots$。logit连接下系数为对数OR，log连接下系数为对数RR或对数率比。
-\item \textbf{参数估计方法。}统一采用极大似然法，计算上采用迭代加权最小二乘算法。
+\item \textbf{随机部分（结局的分布）：}二分类资料对应二项分布，计数资料对应Poisson分布或负二项分布。选定分布，也就同时定下了方差随均数变化的规律。
+\item \textbf{连接函数（均数如何接上线性组合）：}不再强求条件均数$\mu$本身等于$\beta_0+\beta_1x_1+\cdots$，而是先对$\mu$作适当变换$g(\mu)$再与线性组合画等号。选logit连接，系数就是对数OR；选log连接，系数就是对数RR或对数率比。
+\item \textbf{参数估计：}统一用极大似然法，数值计算上归结为迭代加权最小二乘（IRLS）。
 \end{enumerate}
-在这一框架下，logistic回归、Poisson回归与负二项回归是对上述三个要素的不同选择。Cox回归与对数线性模型严格而言不完全属于这一框架，但思路相通。
+顺着这条主线看，logistic回归、Poisson回归与负二项回归只是上述三要素的不同组合；Cox回归与对数线性模型严格来说不完全落在标准指数族GLM内，但建模与推断的思路一脉相承。
 \section{广义线性模型}
 \sourcepages{2}{2}
 \subsection{广义线性模型}
@@ -102,18 +102,13 @@ $V(\mu)=b''\{(b')^{-1}(\mu)\}$ 称为方差函数。
 \end{derivation}
 \sourcepages{2}{13}
 \subsection{常见的广义线性模型}
-Logistic回归模型、Poisson回归、对数线性模型、负二项回归、Probit回归、Cox回归。
+公共卫生与临床研究中最常见的模型包括：针对二分类与多分类结局的Logistic回归与Probit回归，针对计数与发生率的Poisson回归与负二项回归，分析高维列联表关联结构的对数线性模型，以及处理删失生存时间的Cox回归。
 \revnote{Cox回归常与GLM一起介绍，但它属于半参数生存回归模型：基线风险 $h_0(t)$ 不作参数设定，参数用部分似然估计，并不是指数族响应加连接函数的标准GLM。负二项回归在散布参数 $\alpha$ 固定时属于GLM，$\alpha$ 一并估计时是GLM的推广。}
 \section{连接函数}
 \sourcepages{2}{14-17}
-\begin{itemize}
-\item GLM关心一组自变量的线性组合预测因变量的条件均数或者条件均数的某种函数。
-\item 连接函数连接因变量的均数与自变量的线性组合。
-\item 连接函数是因变量均数的转化，转化后的变量为回归参数的一个线性函数。
-\end{itemize}
-一般线性模型，正态分布：$g(\mu)=\mu$，同一性连接、恒等连接。
+在线性回归里，自变量的线性组合 $\eta=\beta_0+\beta_1x_1+\cdots+\beta_mx_m$ 可以取遍 $(-\infty,+\infty)$，而二分类概率只能落在 $(0,1)$、计数均数必须大于 $0$。连接函数（link function）的作用就是搭一座桥：它把因变量的\emph{条件均数} $\mu$ 映射到整条实轴上，使得变换后的量 $g(\mu)$ 可以合理地表示为自变量的线性组合，即 $g(\mu_i)=\eta_i$。
 
-Logistic回归模型（响应为0/1或比例，$\mu=\pi$）：$g(\mu)=\log_e\dfrac{\mu}{1-\mu}$。
+需要特别分清的是，连接函数变换的是总体条件均数 $\mu=\E(Y\mid\bm x)$，而不是直接对原始观测值 $Y$ 取变换（例如 $Y=0$ 时 $\ln Y$ 根本无定义，但 $\ln\mu$ 始终有意义）。在一般线性模型（正态分布）中，$g(\mu)=\mu$，称为恒等连接（identity link）；在Logistic回归模型（响应为0/1或比例，$\mu=\pi$）中，$g(\mu)=\log_e\dfrac{\mu}{1-\mu}$，即logit连接。
 
 典型连接（canonical link）指使线性预测量恰为自然参数的连接，即 $\eta=\theta$，亦即 $g=(b')^{-1}$。
 \ctable{表7\quad 几种常见分布的自然参数、方差函数与典型连接}{\small\begin{tabular}{lllllll}\toprule
@@ -130,10 +125,10 @@ Poisson $P(\lambda)$&$\{0,1,2,\ldots\}$&$\lambda$&$\lambda$&$\log\lambda$&$\mu$&
 \textbf{logit与probit连接的比较}\quad 两者都把 $(0,1)$ 映射到整条实轴、关于 $\pi=0.5$ 对称。logit对应标准Logistic分布的分布函数（方差 $\pi^2/3$），probit对应标准正态分布函数，故在 $\pi$ 中段两者近似成比例：$\logit(\pi)\approx1.6\text{--}1.8\times\Phi^{-1}(\pi)$，系数也相应近似成比例。logit尾部稍重，且系数可解释为对数优势比（$\exp(\beta)$ 为OR，且在病例对照抽样下斜率不变）；probit系数没有OR解释，常对应潜在正态变量的阈值模型。拟合优度上两者通常差别很小。
 \section{常用参数估计方法}
 \sourcepages{2}{18-19}
-最小二乘估计（least squared estimation, LS）；加权最小二乘估计（weighted least squared, WLS）；极大似然估计（maximum likelihood estimation, MLE）。
+从经典线性模型过渡到广义线性模型，参数估计方法也沿着一条清晰的脉络演进：普通最小二乘估计（LS）要求等方差；当方差不再齐性时，按方差倒数加权的加权最小二乘估计（WLS）更为合适；而在GLM中，分布非正态且方差依赖未知均数本身，需要借助极大似然估计（MLE），其数值求解又恰好回到了不断更新权重的迭代加权最小二乘（IRLS）。
 \subsection{最小二乘估计}
 \sourcepages{2}{20-21}
-简单线性回归。
+以体重与基础代谢的简单线性回归为例，最小二乘法的几何直觉很直接：在所有可能的直线中，寻找使各观测点到直线的竖直距离平方和最小的那一条。
 \begin{center}
 \begin{minipage}{.48\textwidth}\centering\begin{tikzpicture}\begin{axis}[width=.95\linewidth,height=5cm,xmin=30,xmax=75,ymin=2800,ymax=6000,xtick={30,40,50,60,70},ytick={2800,3800,4800,5800},xlabel={体重（kg）},ylabel={基础代谢（KJ/day）},axis lines=left]
 \addplot[PlotSecondary,line width=1pt] coordinates {(37,3400)(71,5450)};
@@ -309,11 +304,7 @@ P_0=\frac{e^\alpha}{1+e^\alpha}.
 \revnote{本例的加权平方和中权重 $1/\{(a+c)P_1(1-P_1)\}$ 等含待估参数，严格说是“最小 $\chi^2$”估计。本例只有两组（暴露、非暴露）、两个参数，模型是\emph{饱和}的：参数恰好可以使 $\widehat P_1=a/(a+c)$、$\widehat P_0=b/(b+d)$，各项残差全为0，因此无论权重取什么正值，最小值都在同一点达到，结果与下面的MLE完全一致。这种一致性不能推广：模型不饱和（如多个协变量、连续协变量）时，固定权重的WLS一般不等于MLE；只有在每一步用当前估计更新权重、迭代至收敛（IRLS，见第2章）时，所得才是MLE。}
 \subsection{极大似然估计}
 \sourcepages{2}{31}
-\begin{itemize}
-\item 根据样本数据，极大似然估计会找到最有可能产生样本观察值的参数值。
-\item 极大似然估计需要指明假设被用来描绘样本数据的一个概率密度函数。
-\end{itemize}
-\begin{annotation}关键是如何写出这个似然函数。\end{annotation}
+极大似然估计（MLE）的核心想法很朴素：既然已经看到了手里这批样本数据，那就反过来寻找一组参数值，使得在这组参数下“恰好观测到当前样本”的可能性（似然）达到最大。与只需设定均数和方差的最小二乘法不同，极大似然估计需要明确假设样本服从的概率分布（密度函数或概率函数），而列出这一联合似然函数正是求解的第一步。
 \subsubsection{基于正态分布的极大似然估计}
 \sourcepages{2}{32-39}
 \begin{align*}
@@ -345,8 +336,7 @@ L(\bm\beta,\sigma^2\mid\bm y)=f(\bm y\mid\bm\beta,\sigma^2).
 \]
 似然函数不是参数的概率密度：它对参数积分一般不等于1，参数在频率学派框架下也不是随机变量。有的表格中“$f(\bm\beta,\sigma^2\mid\bm y)$：给定样本 $\bm y$，参数 $\bm\beta$ 的一个函数”的写法易被误读为参数的条件密度（那是贝叶斯后验，需另设先验），故删去。
 
-我们可以估计最大化似然函数 $L(\bm\beta,\sigma^2\mid\bm y)$ 的回归参数 $\bm\beta$，以 $\widehat{\bm\beta}$ 表示。这些估计值被称为极大似然估计（MLE）；它们是使观测到的样本 $\bm y=(y_1,y_2,\ldots,y_n)^\top$ 出现的可能性（似然）最大的参数值。
-\begin{annotation}由样本的联合密度写出似然函数，是极大似然估计的第一步。\end{annotation}
+由样本的联合密度写出似然函数后，使 $L(\bm\beta,\sigma^2\mid\bm y)$ 达到最大的参数值 $\widehat{\bm\beta}$ 即为极大似然估计（MLE）——也就是在当前正态模型下最有可能产生观测样本 $\bm y=(y_1,y_2,\ldots,y_n)^\top$ 的回归系数。由于乘积求导不便，实际计算通常先取自然对数。
 \textbf{对数似然函数}
 \begin{align*}
 l(\bm\beta,\sigma^2)=\log_eL(\bm\beta,\sigma^2\mid\bm y)

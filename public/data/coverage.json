@@ -62,8 +62,8 @@
   "multivariate-lec1": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 31571,
-    "webChars": 7102
+    "sourceChars": 31688,
+    "webChars": 7321
   },
   "multivariate-ex1": {
     "sourceQuestions": 31,
@@ -74,8 +74,8 @@
   "multivariate-lec2": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 24442,
-    "webChars": 3246
+    "sourceChars": 24870,
+    "webChars": 3426
   },
   "multivariate-ex2": {
     "sourceQuestions": 37,
@@ -86,8 +86,8 @@
   "multivariate-lec3": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 41382,
-    "webChars": 11379
+    "sourceChars": 41742,
+    "webChars": 11720
   },
   "multivariate-ex3": {
     "sourceQuestions": 27,
@@ -98,8 +98,8 @@
   "multivariate-lec4": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 39237,
-    "webChars": 7519
+    "sourceChars": 39557,
+    "webChars": 7677
   },
   "multivariate-ex4": {
     "sourceQuestions": 40,
@@ -110,8 +110,8 @@
   "glm-lec1": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 37952,
-    "webChars": 17346
+    "sourceChars": 38422,
+    "webChars": 18006
   },
   "glm-ex1": {
     "sourceQuestions": 29,
@@ -122,14 +122,14 @@
   "glm-lec2": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 30494,
-    "webChars": 17093
+    "sourceChars": 30668,
+    "webChars": 17416
   },
   "glm-lec3": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 28996,
-    "webChars": 9038
+    "sourceChars": 29439,
+    "webChars": 9169
   },
   "glm-ex2": {
     "sourceQuestions": 40,
@@ -140,14 +140,14 @@
   "glm-lec4": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 32020,
-    "webChars": 12195
+    "sourceChars": 32447,
+    "webChars": 12564
   },
   "glm-lec5": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 76984,
-    "webChars": 13726
+    "sourceChars": 77401,
+    "webChars": 14143
   },
   "glm-ex3": {
     "sourceQuestions": 50,
@@ -158,14 +158,14 @@
   "glm-lec6": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 33345,
-    "webChars": 16016
+    "sourceChars": 33492,
+    "webChars": 16323
   },
   "glm-lec7": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 90966,
-    "webChars": 18859
+    "sourceChars": 90892,
+    "webChars": 19021
   },
   "glm-ex4": {
     "sourceQuestions": 44,
@@ -176,8 +176,8 @@
   "glm-lec8": {
     "sourceQuestions": 0,
     "webQuestions": 0,
-    "sourceChars": 16863,
-    "webChars": 14776
+    "sourceChars": 17013,
+    "webChars": 14918
   },
   "glm-sup8": {
     "sourceQuestions": 10,

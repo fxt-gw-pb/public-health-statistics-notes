@@ -2,11 +2,11 @@
 \sourcepages{5}{1-2}
 \subsection*{主要内容}
 生存分析的基本概念；生存率的估计方法（统计描述）；生存曲线比较的方法（统计推断：单因素分析）；Cox回归分析（多因素分析）；生存分析方法的正确应用。
-若所有研究对象均随访至死亡，生存时间即为普通的连续变量，可计算均数，进行$t$检验或回归分析。生存资料的特殊性在于删失：随访结束时仍存活者与中途失访者，其生存时间仅知道不短于观察时间。这部分对象不能剔除（剔除后只剩死亡较早者，生存被低估），不能按死亡处理，也不能视为存活至随访结束以后。
+如果每个研究对象都能一路随访到终点事件发生，生存时间不过是一个普通的正偏态连续变量，算均数、做秩和检验或回归都可以。生存资料真正棘手的地方在于\textbf{删失}：研究结束时仍然活着、中途失访或死于其他原因的人，我们只知道他的真实生存时间“至少长于观察到的时间”，却不知道确切终点。这批人既不能直接剔除（剔除后只剩死得早的，会严重低估生存率），也不能当成已经死亡，更不能当作永远不会死亡。
 
-生存分析的各种方法均围绕如何利用删失数据所提供的部分信息展开。本章的主要内容为：Kaplan--Meier法将删失者纳入风险集以估计生存率；log-rank检验在每个死亡时刻比较实际死亡数与期望死亡数。第5章的Cox回归将这一思路推广至多因素分析。
+生存分析的全部方法，本质上都是在回答同一个问题：如何在不歪曲事实的前提下，把删失数据提供的“活过了某段时间”这部分宝贵信息用起来。本章先从单因素分析入手：Kaplan--Meier法把删失者在退出前一直留在风险集的分母里，逐点连乘得到生存率；log-rank检验则在每个死亡时刻把风险集列成四格表，比较各组的实际死亡数与期望死亡数。到第5章，Cox回归会把这套风险集思路推广到多因素情形。
 
-本章需注意区分以下几组概念：生存概率与生存率，风险函数与死亡概率，累积风险与累积发生概率。
+学习本章时，务必把三对极易混淆的概念钉牢：\textbf{生存概率与生存率}（单时段条件概率 vs 跨时段累积概率）、\textbf{风险函数与死亡概率}（瞬时速率 vs 区间概率）、\textbf{累积风险与累积发生概率}（$H(t)$ 可大于1，而 $F(t)=1-e^{-H(t)}\in[0,1]$）。
 \section{生存分析的基本概念}
 \sourcepages{5}{3-5}
 \subsection{生存分析}
@@ -27,8 +27,7 @@ relapse&是否复发&未复发：0；复发：1\\
 start&手术日期&月/日/年\\
 end&终止观察日期&月/日/年\\
 t&生存时间&月\\
-status&生存结局&删失：0；死亡：1\\\bottomrule\end{tabular}}
-\begin{annotation}死亡/失访/研究结束。\end{annotation}
+status&生存结局&删失（失访、研究结束存活或死于他因）：0；死亡：1\\\bottomrule\end{tabular}}
 \ctable{表2\quad 6例胃癌患者生存资料原始记录表}{\begin{tabular}{rrrrrllrrl}\toprule
 id&age&grade&size&relapse&start&end&t&status&结局\\\midrule
 1&76&3&0&1&1996/03/27&1996/08/24&5&0&失访\\
@@ -139,7 +138,7 @@ L_i\propto f(\tilde t_i)^{\delta_i}\,S(\tilde t_i)^{1-\delta_i}=h(\tilde t_i)^{\
 q=\frac{\text{某年内死亡人数}}{\text{某年年初人口数}},\qquad
 \text{分母校正例数}=\text{年初人口数}-\frac12\text{删失例数}.
 \]
-\begin{annotation}这里假设所有删失的人平均观察了半年。\end{annotation}
+这里的 $\frac12$ 校正隐含了一个近似假定：年内删失的个体大致在区间中点退出，平均暴露了半年风险。
 \subsection{生存概率}
 \sourcepages{5}{15}
 生存概率（probability of survival）：表示某时段开始时存活的个体，到该时段结束时仍存活的可能性。例如，年生存概率表示年初尚存人口存活满一年的可能性。
@@ -186,8 +185,7 @@ S(t_k)=P(T>t_k)=p_1p_2\cdots p_k=S(t_{k-1})p_k.
 \addplot[PlotPrimary,line width=1pt] coordinates {(0,1) (10,0.83) (20,0.7) (30,0.59) (40,0.5) (50,0.46) (60,0.43)};
 \draw[dashed] (axis cs:0,0.5)--(axis cs:40,0.5)--(axis cs:40,0);
 \end{axis}\end{tikzpicture}}
-中位生存期（median survival time）：又称半数生存期，生存函数为0.5时对应的时间，表示有50\%的个体可活这么长时间，用于描述生存期的平均水平。
-\begin{annotation}右图生存情况好于左图。\end{annotation}
+中位生存期（median survival time）又称半数生存期，即生存函数 $S(t)$ 降至 $0.5$ 时对应的时间，表示有50\%的个体能够活过这一时长。由于生存时间往往高度右偏且含删失，中位生存期比算术均数更适合刻画生存期的平均水平；例如图4中，右图的中位生存期明显长于左图，提示其整体预后更好。
 \subsection{风险函数}
 \sourcepages{5}{20-23}
 假如终点事件为死亡，风险函数（hazard function）表示 $t$ 时刻存活的个体在 $t$ 时刻的瞬时死亡风险，记为 $h(t)$，描述了某个体的瞬时死亡风险随时间变化的情况。表示 $t$ 时刻的死亡速率。
@@ -198,7 +196,7 @@ h(t)=\lim_{\Delta t\to0}\frac{P(t\le T<t+\Delta t\mid T\ge t)}{\Delta t}.
 \draw (0,0)--(7,0) node[right] {$t$};\draw (0,0)--(0,4) node[left] {$h(t)$};
 \draw[PlotPrimary,line width=1pt] (0,3.2) .. controls (.5,1.9) and (.6,1.2) .. (1.4,.8) .. controls (2,.55) and (3,.5) .. (3.8,.5) .. controls (5,.5) and (5.6,1) .. (6.3,4);
 \node[below] at (3.5,-.25) {Hazard function for death in human beings};\end{tikzpicture}}
-\begin{annotation}幼年和老年风险大。\end{annotation}
+人类全生命周期的死亡风险曲线呈典型的“浴盆形”：婴幼儿期风险较高，青壮年期维持在低位平台，步入老年后再度陡升。注意风险函数 $h(t)$ 是瞬时速率（单位是“时间的倒数”），不是概率，其数值可以大于 $1$。
 生存函数与风险函数的关系：
 \[
 S(t)=\exp\left[-\int_0^th(u)\,du\right],\qquad
@@ -233,7 +231,7 @@ $\widehat F(t)=1-\widehat S(t)$ 是 $t$ 之前发生事件的累积概率。它�
 \end{annotation}
 \section{生存率的估算方法}
 \sourcepages{5}{24-26}
-寿命表法（life table method）；乘积极限法（Kaplan--Meier）。
+根据资料是否记录了每个个体的确切生存时间，非参数估计生存率主要有两种方法：按时间区间汇总的\textbf{寿命表法}（life table method），以及逐个事件时点精确递推的\textbf{乘积极限法}（Kaplan--Meier法）。
 \subsection{寿命表法（life table method）}
 某些队列研究，并不知道个体确定的死亡时间或删失时间，例如肿瘤登记等大型监测系统。随访中某些个体死亡或删失发生在两次随访之间，寿命表法是分析分组生存资料的经典方法。
 
@@ -383,7 +381,7 @@ L(q_1,\ldots,q_k)=\prod_{i=1}^k q_i^{d_i}(1-q_i)^{n_i-d_i},
 \addplot[PlotSecondary,dashed,line width=1pt,const plot] coordinates {(0,100.000000) (1.0,91.670000) (2.0,83.330000) (7.0,83.330000) (10.0,74.070000) (12.0,64.810000) (13.0,64.810000) (24.0,54.010000) (29.0,43.210000) (30.0,32.410000) (32.0,21.600000) (61.0,10.800000) (62.0,0.000000)};\addlegendentry{size $\ge3$ cm}
 \addplot[only marks,mark=+,PlotPrimary,mark size=2pt] coordinates {(3,100)(5,100)(6,100)(10,100)(16,92.8571)(30,61.9048)(167,17.6871)};
 \addplot[only marks,mark=+,PlotSecondary,mark size=2pt] coordinates {(7,83.33)(13,64.81)};\draw[densely dashed] (axis cs:0,50)--(axis cs:94,50);\draw[densely dashed] (axis cs:29,50)--(axis cs:29,0);\draw[densely dashed] (axis cs:72,50)--(axis cs:72,0);\end{axis}\end{tikzpicture}}
-\begin{annotation}图中看觉得肿瘤越大，生存时间越短，预后越差。但这仍需要假设检验。\end{annotation}
+从图9可以直观看出，肿瘤 $\ge3.0$\,cm组的生存曲线整体位于下方、下降更快，似乎预后更差；不过样本仅有30例，曲线间的差距究竟反映总体差异还是随机波动，还必须通过下一节的假设检验来判断。
 R中用\texttt{survival}包完成KM估计，\texttt{Surv(time,status)}将时间与结局合成为生存对象：
 \par\noindent
 \begin{coursecode}{R}
@@ -541,7 +539,7 @@ Log-rank检验：
 \[
 \chi^2=\frac{(79-122.06)^2}{122.06}+\frac{(81-74.60)^2}{74.60}+\frac{(53-16.34)^2}{16.34}=97.99.
 \]
-\begin{annotation}log-rank只能说明三组间有区别，但不能说明存在趋势。\end{annotation}
+这里常规的log-rank检验只能判断三组生存曲线“整体上不全相同”，却无法直接回答“血尿素氮越高、预后是否呈单调恶化趋势”；要检验这一有序梯度，需进一步按分组等级赋分做趋势检验。
 \ctable{表7\quad 趋势检验卡方统计量计算表}{\begin{tabular}{crrrrrr}\toprule
 血尿素氮（mg/100ml）&记分 $S$&$A$&$T$&$S(A-T)$&$ST$&$S^2T$\\\midrule
 0--39&1&79&122.06&$-43.06$&122.06&122.06\\
