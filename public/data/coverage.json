@@ -42,10 +42,10 @@
     "webChars": 8545
   },
   "linear-ex3": {
-    "sourceQuestions": 61,
-    "webQuestions": 61,
-    "sourceChars": 42974,
-    "webChars": 12508
+    "sourceQuestions": 51,
+    "webQuestions": 51,
+    "sourceChars": 36357,
+    "webChars": 10427
   },
   "linear-lec5": {
     "sourceQuestions": 0,
@@ -132,10 +132,10 @@
     "webChars": 9169
   },
   "glm-ex2": {
-    "sourceQuestions": 40,
-    "webQuestions": 40,
-    "sourceChars": 40438,
-    "webChars": 13654
+    "sourceQuestions": 50,
+    "webQuestions": 50,
+    "sourceChars": 47055,
+    "webChars": 12404
   },
   "glm-lec4": {
     "sourceQuestions": 0,

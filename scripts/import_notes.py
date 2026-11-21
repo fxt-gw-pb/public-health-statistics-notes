@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'public' / 'data'
 LOCAL = ROOT / '.local'
 COURSES = [
-    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=227,
+    dict(id='linear', title='应用线性回归', english='Applied Linear Regression', pages=222,
          description='从矩阵与最小二乘出发，理解回归模型的构建、诊断与解释。',
          topics=['矩阵基础', '多重线性回归', '一般线性模型', '重复测量'], exercises={2: 1, 3: 2, 4: 3, 5: 4},
          supplements={1: 'supplement/ch1.tex'}, updated='2026-11-21'),
@@ -27,7 +27,7 @@ COURSES = [
          description='在多个变量中提炼结构，学习降维、聚类与判别的统计思路。',
          topics=['主成分分析', '因子分析', '聚类分析', '判别分析'], exercises={1: 1, 2: 2, 3: 3, 4: 4},
          updated='2026-11-21'),
-    dict(id='glm', title='广义线性模型', english='Generalized Linear Models', pages=296,
+    dict(id='glm', title='广义线性模型', english='Generalized Linear Models', pages=301,
          description='将回归扩展到二分类、计数与生存资料，建立模型选择的全局视野。',
          topics=['Logistic 回归', '生存分析', '对数线性模型', '计数回归'], exercises={1: 1, 3: 2, 5: 3, 7: 4},
          supplements={8: 'supplement/ex8.tex'}, updated='2026-11-21'),
